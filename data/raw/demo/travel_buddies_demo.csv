@@ -1,0 +1,501 @@
+user_id,destination_city,state,travel_date,budget,interests,languages,group_size,travel_style,is_demo_data
+demo_user_0001,Hampi,Karnataka,2026-10-02,25000,Nature | Spiritual,English,3,Adventure,True
+demo_user_0002,Munnar,Kerala,2026-11-03,10000,Adventure | Culture,English,3,Adventure,True
+demo_user_0003,Udaipur,Rajasthan,2026-12-04,8000,Heritage | Shopping,English,3,Comfort,True
+demo_user_0004,Kolkata,West Bengal,2026-09-05,15000,Nature | Adventure,English | Hindi,4,Comfort,True
+demo_user_0005,Leh,Ladakh,2026-10-06,8000,Shopping | Heritage,English,1,Balanced,True
+demo_user_0006,Visakhapatnam,Andhra Pradesh,2026-11-07,15000,Adventure | Spiritual,English,3,Balanced,True
+demo_user_0007,Chennai,Tamil Nadu,2026-12-08,3000,Culture | Heritage,English,3,Adventure,True
+demo_user_0008,Alappuzha,Kerala,2026-09-09,25000,Nature | Spiritual,English | Hindi,4,Balanced,True
+demo_user_0009,New Delhi,Delhi,2026-10-10,5000,Food | Shopping,English,1,Adventure,True
+demo_user_0010,Manali,Himachal Pradesh,2026-11-11,10000,Heritage | Food,English,3,Adventure,True
+demo_user_0011,Puri,Odisha,2026-12-12,5000,Shopping | Nature,English,1,Budget,True
+demo_user_0012,Tirupati,Andhra Pradesh,2026-09-13,3000,Spiritual | Culture,English | Hindi,2,Budget,True
+demo_user_0013,Madurai,Tamil Nadu,2026-10-14,25000,Photography | Shopping,English,3,Adventure,True
+demo_user_0014,Pune,Maharashtra,2026-11-15,3000,Shopping | Adventure,English,2,Adventure,True
+demo_user_0015,Varanasi,Uttar Pradesh,2026-12-16,8000,Spiritual | Heritage,English,1,Comfort,True
+demo_user_0016,Rishikesh,Uttarakhand,2026-09-17,5000,Nature | Shopping,English | Hindi,4,Comfort,True
+demo_user_0017,Ahmedabad,Gujarat,2026-10-18,5000,Spiritual | Photography,English,4,Balanced,True
+demo_user_0018,Mysuru,Karnataka,2026-11-19,15000,Shopping | Photography,English,2,Budget,True
+demo_user_0019,Kochi,Kerala,2026-12-20,8000,Photography | Adventure,English,4,Adventure,True
+demo_user_0020,Jaipur,Rajasthan,2026-09-21,25000,Culture | Adventure,English | Hindi,2,Balanced,True
+demo_user_0021,North Goa,Goa,2026-10-22,3000,Food | Photography,English,4,Budget,True
+demo_user_0022,Srinagar,Jammu and Kashmir,2026-11-23,15000,Adventure | Heritage,English,2,Comfort,True
+demo_user_0023,Warangal,Telangana,2026-12-24,8000,Adventure | Photography,English,3,Balanced,True
+demo_user_0024,Mangaluru,Karnataka,2026-09-25,15000,Photography | Culture,English | Hindi,1,Comfort,True
+demo_user_0025,Thiruvananthapuram,Kerala,2026-10-01,5000,Shopping | Spiritual,English,3,Comfort,True
+demo_user_0026,Jodhpur,Rajasthan,2026-11-02,3000,Culture | Nature,English,1,Balanced,True
+demo_user_0027,Guwahati,Assam,2026-12-03,8000,Spiritual | Heritage,English,1,Budget,True
+demo_user_0028,Bhubaneswar,Odisha,2026-09-04,8000,Photography | Food,English | Hindi,2,Balanced,True
+demo_user_0029,Vijayawada,Andhra Pradesh,2026-10-05,25000,Spiritual | Photography,English,2,Balanced,True
+demo_user_0030,Coimbatore,Tamil Nadu,2026-11-06,25000,Shopping | Spiritual,English,3,Comfort,True
+demo_user_0031,Mumbai,Maharashtra,2026-12-07,25000,Food | Culture,English,2,Budget,True
+demo_user_0032,Agra,Uttar Pradesh,2026-09-08,10000,Culture | Spiritual,English | Hindi,2,Comfort,True
+demo_user_0033,Shimla,Himachal Pradesh,2026-10-09,25000,Adventure | Food,English,3,Comfort,True
+demo_user_0034,Amritsar,Punjab,2026-11-10,3000,Shopping | Culture,English,2,Balanced,True
+demo_user_0035,Bengaluru,Karnataka,2026-12-11,5000,Food | Culture,English,1,Balanced,True
+demo_user_0036,Ooty,Tamil Nadu,2026-09-12,3000,Nature | Culture,English | Hindi,3,Adventure,True
+demo_user_0037,Nashik,Maharashtra,2026-10-13,10000,Shopping | Nature,English,4,Adventure,True
+demo_user_0038,Panaji,Goa,2026-11-14,10000,Photography | Culture,English,3,Adventure,True
+demo_user_0039,Dehradun,Uttarakhand,2026-12-15,5000,Nature | Adventure,English,1,Comfort,True
+demo_user_0040,Hyderabad,Telangana,2026-09-16,5000,Heritage | Nature,English | Hindi,2,Adventure,True
+demo_user_0041,Hampi,Karnataka,2026-10-17,15000,Spiritual | Nature,English,1,Budget,True
+demo_user_0042,Munnar,Kerala,2026-11-18,25000,Adventure | Shopping,English,2,Budget,True
+demo_user_0043,Udaipur,Rajasthan,2026-12-19,3000,Photography | Food,English,4,Balanced,True
+demo_user_0044,Kolkata,West Bengal,2026-09-20,5000,Shopping | Nature,English | Hindi,1,Budget,True
+demo_user_0045,Leh,Ladakh,2026-10-21,25000,Adventure | Heritage,English,4,Budget,True
+demo_user_0046,Visakhapatnam,Andhra Pradesh,2026-11-22,25000,Nature | Photography,English,4,Balanced,True
+demo_user_0047,Chennai,Tamil Nadu,2026-12-23,8000,Food | Culture,English,1,Budget,True
+demo_user_0048,Alappuzha,Kerala,2026-09-24,5000,Heritage | Nature,English | Hindi,1,Budget,True
+demo_user_0049,New Delhi,Delhi,2026-10-25,3000,Culture | Nature,English,1,Balanced,True
+demo_user_0050,Manali,Himachal Pradesh,2026-11-01,8000,Nature | Photography,English,2,Adventure,True
+demo_user_0051,Puri,Odisha,2026-12-02,10000,Spiritual | Food,English,3,Budget,True
+demo_user_0052,Tirupati,Andhra Pradesh,2026-09-03,25000,Nature | Shopping,English | Hindi,2,Budget,True
+demo_user_0053,Madurai,Tamil Nadu,2026-10-04,15000,Culture | Food,English,2,Budget,True
+demo_user_0054,Pune,Maharashtra,2026-11-05,8000,Nature | Shopping,English,1,Budget,True
+demo_user_0055,Varanasi,Uttar Pradesh,2026-12-06,10000,Culture | Heritage,English,1,Adventure,True
+demo_user_0056,Rishikesh,Uttarakhand,2026-09-07,3000,Spiritual | Heritage,English | Hindi,4,Budget,True
+demo_user_0057,Ahmedabad,Gujarat,2026-10-08,3000,Heritage | Adventure,English,2,Budget,True
+demo_user_0058,Mysuru,Karnataka,2026-11-09,3000,Nature | Food,English,3,Adventure,True
+demo_user_0059,Kochi,Kerala,2026-12-10,8000,Heritage | Culture,English,3,Comfort,True
+demo_user_0060,Jaipur,Rajasthan,2026-09-11,8000,Food | Spiritual,English | Hindi,4,Adventure,True
+demo_user_0061,North Goa,Goa,2026-10-12,5000,Food | Spiritual,English,3,Balanced,True
+demo_user_0062,Srinagar,Jammu and Kashmir,2026-11-13,25000,Photography | Spiritual,English,1,Balanced,True
+demo_user_0063,Warangal,Telangana,2026-12-14,15000,Food | Adventure,English,3,Adventure,True
+demo_user_0064,Mangaluru,Karnataka,2026-09-15,3000,Culture | Photography,English | Hindi,3,Balanced,True
+demo_user_0065,Thiruvananthapuram,Kerala,2026-10-16,10000,Shopping | Culture,English,4,Budget,True
+demo_user_0066,Jodhpur,Rajasthan,2026-11-17,15000,Nature | Culture,English,3,Budget,True
+demo_user_0067,Guwahati,Assam,2026-12-18,10000,Adventure | Shopping,English,2,Comfort,True
+demo_user_0068,Bhubaneswar,Odisha,2026-09-19,15000,Culture | Heritage,English | Hindi,1,Comfort,True
+demo_user_0069,Vijayawada,Andhra Pradesh,2026-10-20,5000,Shopping | Heritage,English,3,Comfort,True
+demo_user_0070,Coimbatore,Tamil Nadu,2026-11-21,3000,Food | Shopping,English,1,Adventure,True
+demo_user_0071,Mumbai,Maharashtra,2026-12-22,5000,Spiritual | Heritage,English,3,Adventure,True
+demo_user_0072,Agra,Uttar Pradesh,2026-09-23,10000,Nature | Photography,English | Hindi,3,Adventure,True
+demo_user_0073,Shimla,Himachal Pradesh,2026-10-24,3000,Shopping | Nature,English,1,Comfort,True
+demo_user_0074,Amritsar,Punjab,2026-11-25,5000,Adventure | Food,English,2,Comfort,True
+demo_user_0075,Bengaluru,Karnataka,2026-12-01,3000,Culture | Spiritual,English,4,Adventure,True
+demo_user_0076,Ooty,Tamil Nadu,2026-09-02,5000,Heritage | Spiritual,English | Hindi,1,Budget,True
+demo_user_0077,Nashik,Maharashtra,2026-10-03,25000,Spiritual | Shopping,English,3,Comfort,True
+demo_user_0078,Panaji,Goa,2026-11-04,5000,Photography | Nature,English,4,Comfort,True
+demo_user_0079,Dehradun,Uttarakhand,2026-12-05,10000,Adventure | Shopping,English,2,Adventure,True
+demo_user_0080,Hyderabad,Telangana,2026-09-06,15000,Food | Shopping,English | Hindi,4,Comfort,True
+demo_user_0081,Hampi,Karnataka,2026-10-07,25000,Heritage | Spiritual,English,2,Comfort,True
+demo_user_0082,Munnar,Kerala,2026-11-08,8000,Spiritual | Culture,English,4,Adventure,True
+demo_user_0083,Udaipur,Rajasthan,2026-12-09,10000,Culture | Food,English,2,Budget,True
+demo_user_0084,Kolkata,West Bengal,2026-09-10,8000,Culture | Shopping,English | Hindi,3,Budget,True
+demo_user_0085,Leh,Ladakh,2026-10-11,25000,Shopping | Spiritual,English,1,Budget,True
+demo_user_0086,Visakhapatnam,Andhra Pradesh,2026-11-12,8000,Nature | Spiritual,English,3,Adventure,True
+demo_user_0087,Chennai,Tamil Nadu,2026-12-13,10000,Culture | Nature,English,1,Comfort,True
+demo_user_0088,Alappuzha,Kerala,2026-09-14,10000,Adventure | Photography,English | Hindi,4,Comfort,True
+demo_user_0089,New Delhi,Delhi,2026-10-15,8000,Heritage | Shopping,English,3,Adventure,True
+demo_user_0090,Manali,Himachal Pradesh,2026-11-16,25000,Photography | Adventure,English,1,Budget,True
+demo_user_0091,Puri,Odisha,2026-12-17,8000,Nature | Adventure,English,1,Adventure,True
+demo_user_0092,Tirupati,Andhra Pradesh,2026-09-18,25000,Culture | Shopping,English | Hindi,4,Adventure,True
+demo_user_0093,Madurai,Tamil Nadu,2026-10-19,10000,Adventure | Culture,English,2,Comfort,True
+demo_user_0094,Pune,Maharashtra,2026-11-20,10000,Nature | Photography,English,1,Comfort,True
+demo_user_0095,Varanasi,Uttar Pradesh,2026-12-21,10000,Photography | Shopping,English,1,Budget,True
+demo_user_0096,Rishikesh,Uttarakhand,2026-09-22,8000,Spiritual | Culture,English | Hindi,4,Budget,True
+demo_user_0097,Ahmedabad,Gujarat,2026-10-23,5000,Food | Culture,English,1,Balanced,True
+demo_user_0098,Mysuru,Karnataka,2026-11-24,3000,Adventure | Shopping,English,1,Budget,True
+demo_user_0099,Kochi,Kerala,2026-12-25,8000,Adventure | Photography,English,2,Balanced,True
+demo_user_0100,Jaipur,Rajasthan,2026-09-01,8000,Spiritual | Food,English | Hindi,2,Comfort,True
+demo_user_0101,North Goa,Goa,2026-10-02,3000,Spiritual | Nature,English,1,Budget,True
+demo_user_0102,Srinagar,Jammu and Kashmir,2026-11-03,3000,Nature | Heritage,English,1,Comfort,True
+demo_user_0103,Warangal,Telangana,2026-12-04,15000,Spiritual | Nature,English,1,Balanced,True
+demo_user_0104,Mangaluru,Karnataka,2026-09-05,3000,Culture | Spiritual,English | Hindi,2,Adventure,True
+demo_user_0105,Thiruvananthapuram,Kerala,2026-10-06,15000,Shopping | Heritage,English,3,Adventure,True
+demo_user_0106,Jodhpur,Rajasthan,2026-11-07,8000,Photography | Shopping,English,2,Budget,True
+demo_user_0107,Guwahati,Assam,2026-12-08,25000,Culture | Food,English,2,Budget,True
+demo_user_0108,Bhubaneswar,Odisha,2026-09-09,15000,Adventure | Spiritual,English | Hindi,2,Comfort,True
+demo_user_0109,Vijayawada,Andhra Pradesh,2026-10-10,10000,Heritage | Food,English,2,Budget,True
+demo_user_0110,Coimbatore,Tamil Nadu,2026-11-11,3000,Adventure | Culture,English,3,Comfort,True
+demo_user_0111,Mumbai,Maharashtra,2026-12-12,15000,Shopping | Culture,English,4,Balanced,True
+demo_user_0112,Agra,Uttar Pradesh,2026-09-13,3000,Adventure | Heritage,English | Hindi,1,Budget,True
+demo_user_0113,Shimla,Himachal Pradesh,2026-10-14,10000,Nature | Shopping,English,1,Adventure,True
+demo_user_0114,Amritsar,Punjab,2026-11-15,15000,Nature | Heritage,English,1,Adventure,True
+demo_user_0115,Bengaluru,Karnataka,2026-12-16,10000,Adventure | Food,English,1,Balanced,True
+demo_user_0116,Ooty,Tamil Nadu,2026-09-17,5000,Food | Spiritual,English | Hindi,1,Adventure,True
+demo_user_0117,Nashik,Maharashtra,2026-10-18,10000,Adventure | Shopping,English,3,Comfort,True
+demo_user_0118,Panaji,Goa,2026-11-19,15000,Culture | Food,English,2,Budget,True
+demo_user_0119,Dehradun,Uttarakhand,2026-12-20,3000,Shopping | Heritage,English,1,Adventure,True
+demo_user_0120,Hyderabad,Telangana,2026-09-21,5000,Culture | Nature,English | Hindi,2,Comfort,True
+demo_user_0121,Hampi,Karnataka,2026-10-22,8000,Shopping | Nature,English,2,Budget,True
+demo_user_0122,Munnar,Kerala,2026-11-23,8000,Heritage | Food,English,1,Balanced,True
+demo_user_0123,Udaipur,Rajasthan,2026-12-24,25000,Food | Shopping,English,2,Comfort,True
+demo_user_0124,Kolkata,West Bengal,2026-09-25,25000,Spiritual | Food,English | Hindi,4,Budget,True
+demo_user_0125,Leh,Ladakh,2026-10-01,8000,Heritage | Food,English,1,Balanced,True
+demo_user_0126,Visakhapatnam,Andhra Pradesh,2026-11-02,25000,Heritage | Photography,English,4,Balanced,True
+demo_user_0127,Chennai,Tamil Nadu,2026-12-03,10000,Adventure | Nature,English,4,Adventure,True
+demo_user_0128,Alappuzha,Kerala,2026-09-04,3000,Adventure | Shopping,English | Hindi,2,Balanced,True
+demo_user_0129,New Delhi,Delhi,2026-10-05,25000,Food | Shopping,English,3,Balanced,True
+demo_user_0130,Manali,Himachal Pradesh,2026-11-06,10000,Spiritual | Heritage,English,1,Adventure,True
+demo_user_0131,Puri,Odisha,2026-12-07,10000,Photography | Heritage,English,3,Adventure,True
+demo_user_0132,Tirupati,Andhra Pradesh,2026-09-08,15000,Food | Spiritual,English | Hindi,3,Balanced,True
+demo_user_0133,Madurai,Tamil Nadu,2026-10-09,5000,Shopping | Photography,English,3,Adventure,True
+demo_user_0134,Pune,Maharashtra,2026-11-10,5000,Spiritual | Food,English,2,Balanced,True
+demo_user_0135,Varanasi,Uttar Pradesh,2026-12-11,15000,Nature | Heritage,English,4,Comfort,True
+demo_user_0136,Rishikesh,Uttarakhand,2026-09-12,8000,Culture | Food,English | Hindi,3,Balanced,True
+demo_user_0137,Ahmedabad,Gujarat,2026-10-13,8000,Spiritual | Adventure,English,2,Comfort,True
+demo_user_0138,Mysuru,Karnataka,2026-11-14,10000,Heritage | Photography,English,3,Adventure,True
+demo_user_0139,Kochi,Kerala,2026-12-15,10000,Photography | Culture,English,1,Comfort,True
+demo_user_0140,Jaipur,Rajasthan,2026-09-16,25000,Photography | Adventure,English | Hindi,4,Balanced,True
+demo_user_0141,North Goa,Goa,2026-10-17,5000,Shopping | Adventure,English,2,Adventure,True
+demo_user_0142,Srinagar,Jammu and Kashmir,2026-11-18,8000,Nature | Shopping,English,1,Balanced,True
+demo_user_0143,Warangal,Telangana,2026-12-19,8000,Adventure | Shopping,English,3,Comfort,True
+demo_user_0144,Mangaluru,Karnataka,2026-09-20,8000,Culture | Spiritual,English | Hindi,1,Comfort,True
+demo_user_0145,Thiruvananthapuram,Kerala,2026-10-21,10000,Nature | Adventure,English,2,Balanced,True
+demo_user_0146,Jodhpur,Rajasthan,2026-11-22,5000,Nature | Photography,English,3,Balanced,True
+demo_user_0147,Guwahati,Assam,2026-12-23,8000,Culture | Nature,English,4,Budget,True
+demo_user_0148,Bhubaneswar,Odisha,2026-09-24,5000,Photography | Food,English | Hindi,3,Comfort,True
+demo_user_0149,Vijayawada,Andhra Pradesh,2026-10-25,5000,Spiritual | Heritage,English,4,Budget,True
+demo_user_0150,Coimbatore,Tamil Nadu,2026-11-01,3000,Adventure | Spiritual,English,4,Budget,True
+demo_user_0151,Mumbai,Maharashtra,2026-12-02,25000,Food | Photography,English,4,Balanced,True
+demo_user_0152,Agra,Uttar Pradesh,2026-09-03,15000,Culture | Heritage,English | Hindi,2,Comfort,True
+demo_user_0153,Shimla,Himachal Pradesh,2026-10-04,25000,Adventure | Shopping,English,4,Comfort,True
+demo_user_0154,Amritsar,Punjab,2026-11-05,10000,Photography | Shopping,English,3,Comfort,True
+demo_user_0155,Bengaluru,Karnataka,2026-12-06,15000,Food | Culture,English,1,Balanced,True
+demo_user_0156,Ooty,Tamil Nadu,2026-09-07,15000,Photography | Shopping,English | Hindi,2,Comfort,True
+demo_user_0157,Nashik,Maharashtra,2026-10-08,10000,Photography | Heritage,English,3,Adventure,True
+demo_user_0158,Panaji,Goa,2026-11-09,25000,Culture | Photography,English,1,Adventure,True
+demo_user_0159,Dehradun,Uttarakhand,2026-12-10,25000,Culture | Adventure,English,4,Comfort,True
+demo_user_0160,Hyderabad,Telangana,2026-09-11,15000,Nature | Spiritual,English | Hindi,4,Balanced,True
+demo_user_0161,Hampi,Karnataka,2026-10-12,15000,Food | Nature,English,4,Adventure,True
+demo_user_0162,Munnar,Kerala,2026-11-13,5000,Adventure | Spiritual,English,1,Comfort,True
+demo_user_0163,Udaipur,Rajasthan,2026-12-14,25000,Adventure | Food,English,1,Balanced,True
+demo_user_0164,Kolkata,West Bengal,2026-09-15,10000,Adventure | Nature,English | Hindi,3,Comfort,True
+demo_user_0165,Leh,Ladakh,2026-10-16,10000,Spiritual | Culture,English,2,Comfort,True
+demo_user_0166,Visakhapatnam,Andhra Pradesh,2026-11-17,8000,Spiritual | Culture,English,3,Adventure,True
+demo_user_0167,Chennai,Tamil Nadu,2026-12-18,5000,Photography | Shopping,English,2,Budget,True
+demo_user_0168,Alappuzha,Kerala,2026-09-19,3000,Culture | Nature,English | Hindi,1,Adventure,True
+demo_user_0169,New Delhi,Delhi,2026-10-20,5000,Heritage | Adventure,English,3,Budget,True
+demo_user_0170,Manali,Himachal Pradesh,2026-11-21,3000,Culture | Nature,English,2,Budget,True
+demo_user_0171,Puri,Odisha,2026-12-22,25000,Heritage | Food,English,2,Comfort,True
+demo_user_0172,Tirupati,Andhra Pradesh,2026-09-23,25000,Shopping | Culture,English | Hindi,3,Budget,True
+demo_user_0173,Madurai,Tamil Nadu,2026-10-24,25000,Heritage | Photography,English,1,Balanced,True
+demo_user_0174,Pune,Maharashtra,2026-11-25,8000,Shopping | Food,English,2,Budget,True
+demo_user_0175,Varanasi,Uttar Pradesh,2026-12-01,15000,Photography | Adventure,English,1,Balanced,True
+demo_user_0176,Rishikesh,Uttarakhand,2026-09-02,10000,Nature | Food,English | Hindi,2,Comfort,True
+demo_user_0177,Ahmedabad,Gujarat,2026-10-03,15000,Photography | Heritage,English,1,Adventure,True
+demo_user_0178,Mysuru,Karnataka,2026-11-04,3000,Heritage | Nature,English,3,Comfort,True
+demo_user_0179,Kochi,Kerala,2026-12-05,3000,Culture | Shopping,English,2,Balanced,True
+demo_user_0180,Jaipur,Rajasthan,2026-09-06,5000,Food | Culture,English | Hindi,2,Comfort,True
+demo_user_0181,North Goa,Goa,2026-10-07,15000,Culture | Spiritual,English,3,Adventure,True
+demo_user_0182,Srinagar,Jammu and Kashmir,2026-11-08,25000,Spiritual | Adventure,English,2,Balanced,True
+demo_user_0183,Warangal,Telangana,2026-12-09,5000,Adventure | Spiritual,English,1,Balanced,True
+demo_user_0184,Mangaluru,Karnataka,2026-09-10,5000,Culture | Shopping,English | Hindi,3,Adventure,True
+demo_user_0185,Thiruvananthapuram,Kerala,2026-10-11,25000,Culture | Heritage,English,2,Comfort,True
+demo_user_0186,Jodhpur,Rajasthan,2026-11-12,5000,Photography | Heritage,English,1,Budget,True
+demo_user_0187,Guwahati,Assam,2026-12-13,3000,Nature | Shopping,English,1,Budget,True
+demo_user_0188,Bhubaneswar,Odisha,2026-09-14,8000,Photography | Adventure,English | Hindi,2,Budget,True
+demo_user_0189,Vijayawada,Andhra Pradesh,2026-10-15,3000,Food | Heritage,English,2,Adventure,True
+demo_user_0190,Coimbatore,Tamil Nadu,2026-11-16,10000,Nature | Spiritual,English,1,Budget,True
+demo_user_0191,Mumbai,Maharashtra,2026-12-17,8000,Culture | Photography,English,3,Balanced,True
+demo_user_0192,Agra,Uttar Pradesh,2026-09-18,5000,Adventure | Food,English | Hindi,3,Adventure,True
+demo_user_0193,Shimla,Himachal Pradesh,2026-10-19,15000,Culture | Nature,English,2,Budget,True
+demo_user_0194,Amritsar,Punjab,2026-11-20,10000,Food | Adventure,English,4,Budget,True
+demo_user_0195,Bengaluru,Karnataka,2026-12-21,15000,Culture | Heritage,English,1,Budget,True
+demo_user_0196,Ooty,Tamil Nadu,2026-09-22,3000,Heritage | Adventure,English | Hindi,3,Adventure,True
+demo_user_0197,Nashik,Maharashtra,2026-10-23,25000,Heritage | Spiritual,English,1,Balanced,True
+demo_user_0198,Panaji,Goa,2026-11-24,25000,Culture | Food,English,4,Adventure,True
+demo_user_0199,Dehradun,Uttarakhand,2026-12-25,25000,Nature | Shopping,English,3,Budget,True
+demo_user_0200,Hyderabad,Telangana,2026-09-01,8000,Spiritual | Photography,English | Hindi,2,Comfort,True
+demo_user_0201,Hampi,Karnataka,2026-10-02,3000,Nature | Adventure,English,2,Adventure,True
+demo_user_0202,Munnar,Kerala,2026-11-03,8000,Nature | Photography,English,3,Budget,True
+demo_user_0203,Udaipur,Rajasthan,2026-12-04,25000,Culture | Photography,English,3,Balanced,True
+demo_user_0204,Kolkata,West Bengal,2026-09-05,5000,Culture | Spiritual,English | Hindi,1,Adventure,True
+demo_user_0205,Leh,Ladakh,2026-10-06,8000,Food | Nature,English,4,Balanced,True
+demo_user_0206,Visakhapatnam,Andhra Pradesh,2026-11-07,3000,Food | Nature,English,2,Comfort,True
+demo_user_0207,Chennai,Tamil Nadu,2026-12-08,10000,Shopping | Photography,English,2,Budget,True
+demo_user_0208,Alappuzha,Kerala,2026-09-09,3000,Food | Photography,English | Hindi,4,Comfort,True
+demo_user_0209,New Delhi,Delhi,2026-10-10,15000,Food | Shopping,English,1,Balanced,True
+demo_user_0210,Manali,Himachal Pradesh,2026-11-11,15000,Nature | Shopping,English,2,Budget,True
+demo_user_0211,Puri,Odisha,2026-12-12,8000,Food | Nature,English,2,Budget,True
+demo_user_0212,Tirupati,Andhra Pradesh,2026-09-13,5000,Heritage | Photography,English | Hindi,4,Budget,True
+demo_user_0213,Madurai,Tamil Nadu,2026-10-14,8000,Heritage | Food,English,3,Budget,True
+demo_user_0214,Pune,Maharashtra,2026-11-15,3000,Heritage | Adventure,English,1,Balanced,True
+demo_user_0215,Varanasi,Uttar Pradesh,2026-12-16,8000,Food | Culture,English,3,Balanced,True
+demo_user_0216,Rishikesh,Uttarakhand,2026-09-17,8000,Food | Spiritual,English | Hindi,2,Budget,True
+demo_user_0217,Ahmedabad,Gujarat,2026-10-18,15000,Shopping | Heritage,English,3,Budget,True
+demo_user_0218,Mysuru,Karnataka,2026-11-19,15000,Spiritual | Heritage,English,2,Comfort,True
+demo_user_0219,Kochi,Kerala,2026-12-20,8000,Heritage | Food,English,4,Adventure,True
+demo_user_0220,Jaipur,Rajasthan,2026-09-21,3000,Adventure | Spiritual,English | Hindi,1,Adventure,True
+demo_user_0221,North Goa,Goa,2026-10-22,8000,Food | Heritage,English,1,Balanced,True
+demo_user_0222,Srinagar,Jammu and Kashmir,2026-11-23,8000,Shopping | Heritage,English,4,Adventure,True
+demo_user_0223,Warangal,Telangana,2026-12-24,25000,Food | Shopping,English,2,Balanced,True
+demo_user_0224,Mangaluru,Karnataka,2026-09-25,10000,Nature | Culture,English | Hindi,4,Balanced,True
+demo_user_0225,Thiruvananthapuram,Kerala,2026-10-01,15000,Culture | Shopping,English,2,Budget,True
+demo_user_0226,Jodhpur,Rajasthan,2026-11-02,10000,Food | Culture,English,4,Budget,True
+demo_user_0227,Guwahati,Assam,2026-12-03,15000,Shopping | Heritage,English,3,Balanced,True
+demo_user_0228,Bhubaneswar,Odisha,2026-09-04,15000,Nature | Culture,English | Hindi,4,Comfort,True
+demo_user_0229,Vijayawada,Andhra Pradesh,2026-10-05,8000,Shopping | Spiritual,English,3,Balanced,True
+demo_user_0230,Coimbatore,Tamil Nadu,2026-11-06,15000,Spiritual | Culture,English,4,Comfort,True
+demo_user_0231,Mumbai,Maharashtra,2026-12-07,8000,Nature | Culture,English,2,Comfort,True
+demo_user_0232,Agra,Uttar Pradesh,2026-09-08,8000,Spiritual | Culture,English | Hindi,1,Balanced,True
+demo_user_0233,Shimla,Himachal Pradesh,2026-10-09,10000,Culture | Heritage,English,3,Comfort,True
+demo_user_0234,Amritsar,Punjab,2026-11-10,25000,Shopping | Culture,English,4,Comfort,True
+demo_user_0235,Bengaluru,Karnataka,2026-12-11,15000,Photography | Adventure,English,3,Adventure,True
+demo_user_0236,Ooty,Tamil Nadu,2026-09-12,25000,Shopping | Food,English | Hindi,1,Comfort,True
+demo_user_0237,Nashik,Maharashtra,2026-10-13,25000,Heritage | Adventure,English,4,Balanced,True
+demo_user_0238,Panaji,Goa,2026-11-14,3000,Shopping | Spiritual,English,4,Budget,True
+demo_user_0239,Dehradun,Uttarakhand,2026-12-15,10000,Heritage | Spiritual,English,4,Comfort,True
+demo_user_0240,Hyderabad,Telangana,2026-09-16,3000,Heritage | Culture,English | Hindi,1,Adventure,True
+demo_user_0241,Hampi,Karnataka,2026-10-17,5000,Food | Nature,English,2,Budget,True
+demo_user_0242,Munnar,Kerala,2026-11-18,10000,Spiritual | Adventure,English,4,Adventure,True
+demo_user_0243,Udaipur,Rajasthan,2026-12-19,25000,Culture | Shopping,English,1,Balanced,True
+demo_user_0244,Kolkata,West Bengal,2026-09-20,15000,Food | Nature,English | Hindi,1,Balanced,True
+demo_user_0245,Leh,Ladakh,2026-10-21,5000,Nature | Food,English,1,Adventure,True
+demo_user_0246,Visakhapatnam,Andhra Pradesh,2026-11-22,15000,Shopping | Adventure,English,4,Comfort,True
+demo_user_0247,Chennai,Tamil Nadu,2026-12-23,25000,Photography | Shopping,English,1,Budget,True
+demo_user_0248,Alappuzha,Kerala,2026-09-24,8000,Photography | Adventure,English | Hindi,1,Comfort,True
+demo_user_0249,New Delhi,Delhi,2026-10-25,10000,Shopping | Adventure,English,4,Balanced,True
+demo_user_0250,Manali,Himachal Pradesh,2026-11-01,25000,Food | Culture,English,1,Budget,True
+demo_user_0251,Puri,Odisha,2026-12-02,25000,Adventure | Food,English,1,Balanced,True
+demo_user_0252,Tirupati,Andhra Pradesh,2026-09-03,15000,Culture | Adventure,English | Hindi,1,Budget,True
+demo_user_0253,Madurai,Tamil Nadu,2026-10-04,25000,Photography | Nature,English,2,Comfort,True
+demo_user_0254,Pune,Maharashtra,2026-11-05,10000,Food | Adventure,English,1,Balanced,True
+demo_user_0255,Varanasi,Uttar Pradesh,2026-12-06,15000,Food | Photography,English,3,Balanced,True
+demo_user_0256,Rishikesh,Uttarakhand,2026-09-07,25000,Spiritual | Nature,English | Hindi,2,Budget,True
+demo_user_0257,Ahmedabad,Gujarat,2026-10-08,10000,Nature | Food,English,1,Budget,True
+demo_user_0258,Mysuru,Karnataka,2026-11-09,10000,Food | Shopping,English,1,Adventure,True
+demo_user_0259,Kochi,Kerala,2026-12-10,8000,Food | Shopping,English,3,Comfort,True
+demo_user_0260,Jaipur,Rajasthan,2026-09-11,25000,Shopping | Spiritual,English | Hindi,2,Balanced,True
+demo_user_0261,North Goa,Goa,2026-10-12,3000,Culture | Nature,English,1,Comfort,True
+demo_user_0262,Srinagar,Jammu and Kashmir,2026-11-13,8000,Shopping | Nature,English,3,Budget,True
+demo_user_0263,Warangal,Telangana,2026-12-14,5000,Spiritual | Photography,English,3,Adventure,True
+demo_user_0264,Mangaluru,Karnataka,2026-09-15,8000,Heritage | Culture,English | Hindi,4,Adventure,True
+demo_user_0265,Thiruvananthapuram,Kerala,2026-10-16,25000,Culture | Heritage,English,1,Adventure,True
+demo_user_0266,Jodhpur,Rajasthan,2026-11-17,25000,Food | Adventure,English,1,Adventure,True
+demo_user_0267,Guwahati,Assam,2026-12-18,25000,Adventure | Nature,English,4,Balanced,True
+demo_user_0268,Bhubaneswar,Odisha,2026-09-19,25000,Heritage | Food,English | Hindi,2,Balanced,True
+demo_user_0269,Vijayawada,Andhra Pradesh,2026-10-20,15000,Photography | Food,English,1,Adventure,True
+demo_user_0270,Coimbatore,Tamil Nadu,2026-11-21,5000,Heritage | Adventure,English,1,Comfort,True
+demo_user_0271,Mumbai,Maharashtra,2026-12-22,10000,Adventure | Food,English,3,Adventure,True
+demo_user_0272,Agra,Uttar Pradesh,2026-09-23,8000,Adventure | Shopping,English | Hindi,4,Adventure,True
+demo_user_0273,Shimla,Himachal Pradesh,2026-10-24,5000,Nature | Spiritual,English,4,Adventure,True
+demo_user_0274,Amritsar,Punjab,2026-11-25,5000,Shopping | Nature,English,4,Balanced,True
+demo_user_0275,Bengaluru,Karnataka,2026-12-01,8000,Shopping | Nature,English,2,Balanced,True
+demo_user_0276,Ooty,Tamil Nadu,2026-09-02,5000,Heritage | Culture,English | Hindi,3,Budget,True
+demo_user_0277,Nashik,Maharashtra,2026-10-03,10000,Spiritual | Adventure,English,1,Adventure,True
+demo_user_0278,Panaji,Goa,2026-11-04,25000,Heritage | Photography,English,2,Budget,True
+demo_user_0279,Dehradun,Uttarakhand,2026-12-05,25000,Food | Culture,English,4,Budget,True
+demo_user_0280,Hyderabad,Telangana,2026-09-06,8000,Nature | Adventure,English | Hindi,4,Adventure,True
+demo_user_0281,Hampi,Karnataka,2026-10-07,3000,Photography | Food,English,2,Budget,True
+demo_user_0282,Munnar,Kerala,2026-11-08,25000,Food | Heritage,English,1,Comfort,True
+demo_user_0283,Udaipur,Rajasthan,2026-12-09,8000,Shopping | Culture,English,3,Comfort,True
+demo_user_0284,Kolkata,West Bengal,2026-09-10,15000,Food | Photography,English | Hindi,4,Comfort,True
+demo_user_0285,Leh,Ladakh,2026-10-11,10000,Shopping | Photography,English,1,Balanced,True
+demo_user_0286,Visakhapatnam,Andhra Pradesh,2026-11-12,3000,Nature | Heritage,English,2,Balanced,True
+demo_user_0287,Chennai,Tamil Nadu,2026-12-13,10000,Spiritual | Shopping,English,2,Adventure,True
+demo_user_0288,Alappuzha,Kerala,2026-09-14,3000,Spiritual | Nature,English | Hindi,3,Balanced,True
+demo_user_0289,New Delhi,Delhi,2026-10-15,5000,Photography | Food,English,1,Balanced,True
+demo_user_0290,Manali,Himachal Pradesh,2026-11-16,15000,Food | Shopping,English,4,Budget,True
+demo_user_0291,Puri,Odisha,2026-12-17,15000,Spiritual | Shopping,English,4,Budget,True
+demo_user_0292,Tirupati,Andhra Pradesh,2026-09-18,10000,Nature | Photography,English | Hindi,1,Comfort,True
+demo_user_0293,Madurai,Tamil Nadu,2026-10-19,25000,Nature | Culture,English,1,Balanced,True
+demo_user_0294,Pune,Maharashtra,2026-11-20,10000,Spiritual | Nature,English,4,Budget,True
+demo_user_0295,Varanasi,Uttar Pradesh,2026-12-21,15000,Food | Photography,English,3,Comfort,True
+demo_user_0296,Rishikesh,Uttarakhand,2026-09-22,10000,Heritage | Photography,English | Hindi,1,Balanced,True
+demo_user_0297,Ahmedabad,Gujarat,2026-10-23,8000,Culture | Shopping,English,3,Budget,True
+demo_user_0298,Mysuru,Karnataka,2026-11-24,15000,Adventure | Spiritual,English,3,Adventure,True
+demo_user_0299,Kochi,Kerala,2026-12-25,25000,Culture | Nature,English,1,Adventure,True
+demo_user_0300,Jaipur,Rajasthan,2026-09-01,15000,Culture | Photography,English | Hindi,2,Comfort,True
+demo_user_0301,North Goa,Goa,2026-10-02,15000,Photography | Spiritual,English,3,Balanced,True
+demo_user_0302,Srinagar,Jammu and Kashmir,2026-11-03,10000,Culture | Adventure,English,2,Comfort,True
+demo_user_0303,Warangal,Telangana,2026-12-04,3000,Nature | Adventure,English,3,Budget,True
+demo_user_0304,Mangaluru,Karnataka,2026-09-05,10000,Culture | Adventure,English | Hindi,2,Budget,True
+demo_user_0305,Thiruvananthapuram,Kerala,2026-10-06,8000,Photography | Heritage,English,1,Adventure,True
+demo_user_0306,Jodhpur,Rajasthan,2026-11-07,15000,Photography | Food,English,1,Adventure,True
+demo_user_0307,Guwahati,Assam,2026-12-08,15000,Culture | Food,English,2,Balanced,True
+demo_user_0308,Bhubaneswar,Odisha,2026-09-09,5000,Nature | Food,English | Hindi,3,Adventure,True
+demo_user_0309,Vijayawada,Andhra Pradesh,2026-10-10,5000,Shopping | Photography,English,4,Balanced,True
+demo_user_0310,Coimbatore,Tamil Nadu,2026-11-11,15000,Shopping | Nature,English,2,Balanced,True
+demo_user_0311,Mumbai,Maharashtra,2026-12-12,5000,Nature | Culture,English,3,Comfort,True
+demo_user_0312,Agra,Uttar Pradesh,2026-09-13,15000,Food | Photography,English | Hindi,2,Balanced,True
+demo_user_0313,Shimla,Himachal Pradesh,2026-10-14,5000,Adventure | Photography,English,1,Adventure,True
+demo_user_0314,Amritsar,Punjab,2026-11-15,5000,Nature | Spiritual,English,2,Budget,True
+demo_user_0315,Bengaluru,Karnataka,2026-12-16,8000,Food | Culture,English,1,Balanced,True
+demo_user_0316,Ooty,Tamil Nadu,2026-09-17,8000,Adventure | Culture,English | Hindi,4,Adventure,True
+demo_user_0317,Nashik,Maharashtra,2026-10-18,5000,Food | Culture,English,2,Budget,True
+demo_user_0318,Panaji,Goa,2026-11-19,3000,Adventure | Nature,English,4,Balanced,True
+demo_user_0319,Dehradun,Uttarakhand,2026-12-20,25000,Food | Photography,English,1,Adventure,True
+demo_user_0320,Hyderabad,Telangana,2026-09-21,8000,Nature | Adventure,English | Hindi,1,Adventure,True
+demo_user_0321,Hampi,Karnataka,2026-10-22,10000,Shopping | Nature,English,2,Adventure,True
+demo_user_0322,Munnar,Kerala,2026-11-23,15000,Shopping | Photography,English,2,Balanced,True
+demo_user_0323,Udaipur,Rajasthan,2026-12-24,15000,Adventure | Heritage,English,3,Balanced,True
+demo_user_0324,Kolkata,West Bengal,2026-09-25,8000,Spiritual | Nature,English | Hindi,2,Comfort,True
+demo_user_0325,Leh,Ladakh,2026-10-01,15000,Nature | Adventure,English,4,Budget,True
+demo_user_0326,Visakhapatnam,Andhra Pradesh,2026-11-02,15000,Food | Spiritual,English,1,Adventure,True
+demo_user_0327,Chennai,Tamil Nadu,2026-12-03,15000,Shopping | Adventure,English,1,Adventure,True
+demo_user_0328,Alappuzha,Kerala,2026-09-04,3000,Food | Culture,English | Hindi,3,Balanced,True
+demo_user_0329,New Delhi,Delhi,2026-10-05,15000,Photography | Adventure,English,2,Balanced,True
+demo_user_0330,Manali,Himachal Pradesh,2026-11-06,25000,Photography | Nature,English,1,Budget,True
+demo_user_0331,Puri,Odisha,2026-12-07,5000,Adventure | Food,English,3,Adventure,True
+demo_user_0332,Tirupati,Andhra Pradesh,2026-09-08,15000,Culture | Heritage,English | Hindi,1,Comfort,True
+demo_user_0333,Madurai,Tamil Nadu,2026-10-09,15000,Adventure | Food,English,1,Adventure,True
+demo_user_0334,Pune,Maharashtra,2026-11-10,25000,Food | Spiritual,English,4,Budget,True
+demo_user_0335,Varanasi,Uttar Pradesh,2026-12-11,5000,Photography | Spiritual,English,2,Budget,True
+demo_user_0336,Rishikesh,Uttarakhand,2026-09-12,25000,Food | Culture,English | Hindi,3,Balanced,True
+demo_user_0337,Ahmedabad,Gujarat,2026-10-13,3000,Spiritual | Nature,English,3,Balanced,True
+demo_user_0338,Mysuru,Karnataka,2026-11-14,15000,Adventure | Photography,English,3,Balanced,True
+demo_user_0339,Kochi,Kerala,2026-12-15,15000,Shopping | Adventure,English,3,Budget,True
+demo_user_0340,Jaipur,Rajasthan,2026-09-16,10000,Nature | Culture,English | Hindi,4,Budget,True
+demo_user_0341,North Goa,Goa,2026-10-17,5000,Food | Spiritual,English,3,Adventure,True
+demo_user_0342,Srinagar,Jammu and Kashmir,2026-11-18,15000,Food | Heritage,English,2,Comfort,True
+demo_user_0343,Warangal,Telangana,2026-12-19,3000,Food | Culture,English,1,Budget,True
+demo_user_0344,Mangaluru,Karnataka,2026-09-20,10000,Nature | Culture,English | Hindi,3,Adventure,True
+demo_user_0345,Thiruvananthapuram,Kerala,2026-10-21,10000,Photography | Adventure,English,1,Adventure,True
+demo_user_0346,Jodhpur,Rajasthan,2026-11-22,3000,Adventure | Culture,English,1,Adventure,True
+demo_user_0347,Guwahati,Assam,2026-12-23,3000,Food | Spiritual,English,1,Adventure,True
+demo_user_0348,Bhubaneswar,Odisha,2026-09-24,25000,Nature | Heritage,English | Hindi,1,Budget,True
+demo_user_0349,Vijayawada,Andhra Pradesh,2026-10-25,5000,Nature | Food,English,1,Balanced,True
+demo_user_0350,Coimbatore,Tamil Nadu,2026-11-01,5000,Adventure | Food,English,3,Adventure,True
+demo_user_0351,Mumbai,Maharashtra,2026-12-02,10000,Photography | Food,English,1,Balanced,True
+demo_user_0352,Agra,Uttar Pradesh,2026-09-03,5000,Heritage | Spiritual,English | Hindi,3,Balanced,True
+demo_user_0353,Shimla,Himachal Pradesh,2026-10-04,25000,Food | Nature,English,3,Balanced,True
+demo_user_0354,Amritsar,Punjab,2026-11-05,5000,Spiritual | Heritage,English,4,Comfort,True
+demo_user_0355,Bengaluru,Karnataka,2026-12-06,8000,Food | Adventure,English,2,Adventure,True
+demo_user_0356,Ooty,Tamil Nadu,2026-09-07,10000,Adventure | Food,English | Hindi,1,Budget,True
+demo_user_0357,Nashik,Maharashtra,2026-10-08,10000,Heritage | Shopping,English,3,Balanced,True
+demo_user_0358,Panaji,Goa,2026-11-09,3000,Photography | Spiritual,English,3,Budget,True
+demo_user_0359,Dehradun,Uttarakhand,2026-12-10,3000,Adventure | Food,English,1,Comfort,True
+demo_user_0360,Hyderabad,Telangana,2026-09-11,25000,Nature | Heritage,English | Hindi,1,Comfort,True
+demo_user_0361,Hampi,Karnataka,2026-10-12,25000,Adventure | Heritage,English,1,Comfort,True
+demo_user_0362,Munnar,Kerala,2026-11-13,10000,Nature | Culture,English,4,Budget,True
+demo_user_0363,Udaipur,Rajasthan,2026-12-14,5000,Nature | Adventure,English,3,Comfort,True
+demo_user_0364,Kolkata,West Bengal,2026-09-15,25000,Culture | Shopping,English | Hindi,4,Adventure,True
+demo_user_0365,Leh,Ladakh,2026-10-16,15000,Food | Shopping,English,2,Comfort,True
+demo_user_0366,Visakhapatnam,Andhra Pradesh,2026-11-17,5000,Shopping | Nature,English,2,Adventure,True
+demo_user_0367,Chennai,Tamil Nadu,2026-12-18,8000,Shopping | Heritage,English,4,Adventure,True
+demo_user_0368,Alappuzha,Kerala,2026-09-19,3000,Nature | Shopping,English | Hindi,2,Comfort,True
+demo_user_0369,New Delhi,Delhi,2026-10-20,10000,Nature | Heritage,English,1,Budget,True
+demo_user_0370,Manali,Himachal Pradesh,2026-11-21,10000,Culture | Photography,English,1,Balanced,True
+demo_user_0371,Puri,Odisha,2026-12-22,10000,Photography | Adventure,English,3,Adventure,True
+demo_user_0372,Tirupati,Andhra Pradesh,2026-09-23,8000,Spiritual | Shopping,English | Hindi,1,Adventure,True
+demo_user_0373,Madurai,Tamil Nadu,2026-10-24,5000,Culture | Food,English,2,Comfort,True
+demo_user_0374,Pune,Maharashtra,2026-11-25,25000,Spiritual | Adventure,English,2,Budget,True
+demo_user_0375,Varanasi,Uttar Pradesh,2026-12-01,25000,Photography | Culture,English,3,Balanced,True
+demo_user_0376,Rishikesh,Uttarakhand,2026-09-02,8000,Nature | Heritage,English | Hindi,4,Adventure,True
+demo_user_0377,Ahmedabad,Gujarat,2026-10-03,15000,Shopping | Heritage,English,2,Adventure,True
+demo_user_0378,Mysuru,Karnataka,2026-11-04,25000,Heritage | Culture,English,3,Balanced,True
+demo_user_0379,Kochi,Kerala,2026-12-05,10000,Shopping | Food,English,3,Adventure,True
+demo_user_0380,Jaipur,Rajasthan,2026-09-06,5000,Food | Photography,English | Hindi,2,Adventure,True
+demo_user_0381,North Goa,Goa,2026-10-07,15000,Shopping | Food,English,2,Budget,True
+demo_user_0382,Srinagar,Jammu and Kashmir,2026-11-08,8000,Shopping | Nature,English,1,Comfort,True
+demo_user_0383,Warangal,Telangana,2026-12-09,8000,Adventure | Spiritual,English,1,Balanced,True
+demo_user_0384,Mangaluru,Karnataka,2026-09-10,3000,Nature | Heritage,English | Hindi,2,Budget,True
+demo_user_0385,Thiruvananthapuram,Kerala,2026-10-11,3000,Shopping | Spiritual,English,1,Balanced,True
+demo_user_0386,Jodhpur,Rajasthan,2026-11-12,25000,Food | Photography,English,2,Adventure,True
+demo_user_0387,Guwahati,Assam,2026-12-13,5000,Shopping | Adventure,English,4,Balanced,True
+demo_user_0388,Bhubaneswar,Odisha,2026-09-14,15000,Culture | Food,English | Hindi,1,Budget,True
+demo_user_0389,Vijayawada,Andhra Pradesh,2026-10-15,5000,Nature | Heritage,English,1,Adventure,True
+demo_user_0390,Coimbatore,Tamil Nadu,2026-11-16,3000,Spiritual | Heritage,English,3,Adventure,True
+demo_user_0391,Mumbai,Maharashtra,2026-12-17,15000,Photography | Heritage,English,1,Comfort,True
+demo_user_0392,Agra,Uttar Pradesh,2026-09-18,8000,Shopping | Culture,English | Hindi,2,Comfort,True
+demo_user_0393,Shimla,Himachal Pradesh,2026-10-19,25000,Nature | Photography,English,3,Balanced,True
+demo_user_0394,Amritsar,Punjab,2026-11-20,5000,Heritage | Nature,English,2,Adventure,True
+demo_user_0395,Bengaluru,Karnataka,2026-12-21,15000,Nature | Food,English,4,Budget,True
+demo_user_0396,Ooty,Tamil Nadu,2026-09-22,15000,Spiritual | Adventure,English | Hindi,4,Comfort,True
+demo_user_0397,Nashik,Maharashtra,2026-10-23,10000,Spiritual | Adventure,English,4,Adventure,True
+demo_user_0398,Panaji,Goa,2026-11-24,5000,Shopping | Culture,English,2,Comfort,True
+demo_user_0399,Dehradun,Uttarakhand,2026-12-25,10000,Heritage | Shopping,English,4,Comfort,True
+demo_user_0400,Hyderabad,Telangana,2026-09-01,5000,Culture | Spiritual,English | Hindi,2,Comfort,True
+demo_user_0401,Hampi,Karnataka,2026-10-02,8000,Photography | Food,English,4,Budget,True
+demo_user_0402,Munnar,Kerala,2026-11-03,5000,Photography | Spiritual,English,3,Comfort,True
+demo_user_0403,Udaipur,Rajasthan,2026-12-04,10000,Shopping | Heritage,English,1,Balanced,True
+demo_user_0404,Kolkata,West Bengal,2026-09-05,8000,Spiritual | Heritage,English | Hindi,2,Balanced,True
+demo_user_0405,Leh,Ladakh,2026-10-06,15000,Shopping | Adventure,English,4,Adventure,True
+demo_user_0406,Visakhapatnam,Andhra Pradesh,2026-11-07,8000,Nature | Heritage,English,4,Balanced,True
+demo_user_0407,Chennai,Tamil Nadu,2026-12-08,10000,Nature | Heritage,English,3,Adventure,True
+demo_user_0408,Alappuzha,Kerala,2026-09-09,25000,Nature | Spiritual,English | Hindi,3,Comfort,True
+demo_user_0409,New Delhi,Delhi,2026-10-10,25000,Heritage | Adventure,English,2,Comfort,True
+demo_user_0410,Manali,Himachal Pradesh,2026-11-11,15000,Nature | Photography,English,2,Balanced,True
+demo_user_0411,Puri,Odisha,2026-12-12,10000,Nature | Spiritual,English,3,Balanced,True
+demo_user_0412,Tirupati,Andhra Pradesh,2026-09-13,10000,Nature | Food,English | Hindi,1,Budget,True
+demo_user_0413,Madurai,Tamil Nadu,2026-10-14,10000,Adventure | Heritage,English,2,Adventure,True
+demo_user_0414,Pune,Maharashtra,2026-11-15,10000,Spiritual | Adventure,English,1,Comfort,True
+demo_user_0415,Varanasi,Uttar Pradesh,2026-12-16,25000,Food | Heritage,English,4,Budget,True
+demo_user_0416,Rishikesh,Uttarakhand,2026-09-17,8000,Food | Photography,English | Hindi,2,Comfort,True
+demo_user_0417,Ahmedabad,Gujarat,2026-10-18,5000,Culture | Spiritual,English,1,Budget,True
+demo_user_0418,Mysuru,Karnataka,2026-11-19,5000,Shopping | Spiritual,English,1,Adventure,True
+demo_user_0419,Kochi,Kerala,2026-12-20,8000,Adventure | Culture,English,4,Budget,True
+demo_user_0420,Jaipur,Rajasthan,2026-09-21,15000,Spiritual | Culture,English | Hindi,3,Balanced,True
+demo_user_0421,North Goa,Goa,2026-10-22,10000,Photography | Shopping,English,1,Adventure,True
+demo_user_0422,Srinagar,Jammu and Kashmir,2026-11-23,3000,Nature | Culture,English,3,Adventure,True
+demo_user_0423,Warangal,Telangana,2026-12-24,8000,Culture | Shopping,English,2,Comfort,True
+demo_user_0424,Mangaluru,Karnataka,2026-09-25,15000,Food | Adventure,English | Hindi,4,Balanced,True
+demo_user_0425,Thiruvananthapuram,Kerala,2026-10-01,5000,Shopping | Nature,English,4,Adventure,True
+demo_user_0426,Jodhpur,Rajasthan,2026-11-02,10000,Spiritual | Adventure,English,1,Balanced,True
+demo_user_0427,Guwahati,Assam,2026-12-03,10000,Nature | Heritage,English,1,Comfort,True
+demo_user_0428,Bhubaneswar,Odisha,2026-09-04,10000,Nature | Photography,English | Hindi,3,Comfort,True
+demo_user_0429,Vijayawada,Andhra Pradesh,2026-10-05,15000,Nature | Culture,English,3,Budget,True
+demo_user_0430,Coimbatore,Tamil Nadu,2026-11-06,8000,Food | Photography,English,4,Balanced,True
+demo_user_0431,Mumbai,Maharashtra,2026-12-07,3000,Food | Heritage,English,4,Comfort,True
+demo_user_0432,Agra,Uttar Pradesh,2026-09-08,5000,Spiritual | Heritage,English | Hindi,1,Budget,True
+demo_user_0433,Shimla,Himachal Pradesh,2026-10-09,5000,Spiritual | Photography,English,3,Budget,True
+demo_user_0434,Amritsar,Punjab,2026-11-10,3000,Heritage | Spiritual,English,4,Budget,True
+demo_user_0435,Bengaluru,Karnataka,2026-12-11,3000,Heritage | Adventure,English,3,Comfort,True
+demo_user_0436,Ooty,Tamil Nadu,2026-09-12,5000,Adventure | Nature,English | Hindi,2,Budget,True
+demo_user_0437,Nashik,Maharashtra,2026-10-13,8000,Adventure | Spiritual,English,1,Budget,True
+demo_user_0438,Panaji,Goa,2026-11-14,10000,Food | Photography,English,2,Comfort,True
+demo_user_0439,Dehradun,Uttarakhand,2026-12-15,15000,Spiritual | Food,English,4,Comfort,True
+demo_user_0440,Hyderabad,Telangana,2026-09-16,3000,Adventure | Food,English | Hindi,4,Adventure,True
+demo_user_0441,Hampi,Karnataka,2026-10-17,25000,Photography | Nature,English,4,Balanced,True
+demo_user_0442,Munnar,Kerala,2026-11-18,15000,Adventure | Culture,English,3,Budget,True
+demo_user_0443,Udaipur,Rajasthan,2026-12-19,3000,Culture | Nature,English,2,Budget,True
+demo_user_0444,Kolkata,West Bengal,2026-09-20,5000,Nature | Photography,English | Hindi,1,Comfort,True
+demo_user_0445,Leh,Ladakh,2026-10-21,10000,Adventure | Photography,English,1,Comfort,True
+demo_user_0446,Visakhapatnam,Andhra Pradesh,2026-11-22,3000,Shopping | Heritage,English,3,Comfort,True
+demo_user_0447,Chennai,Tamil Nadu,2026-12-23,15000,Spiritual | Food,English,4,Budget,True
+demo_user_0448,Alappuzha,Kerala,2026-09-24,10000,Food | Nature,English | Hindi,1,Budget,True
+demo_user_0449,New Delhi,Delhi,2026-10-25,3000,Adventure | Photography,English,2,Budget,True
+demo_user_0450,Manali,Himachal Pradesh,2026-11-01,10000,Photography | Shopping,English,2,Adventure,True
+demo_user_0451,Puri,Odisha,2026-12-02,10000,Photography | Shopping,English,4,Adventure,True
+demo_user_0452,Tirupati,Andhra Pradesh,2026-09-03,15000,Shopping | Food,English | Hindi,1,Adventure,True
+demo_user_0453,Madurai,Tamil Nadu,2026-10-04,5000,Shopping | Nature,English,1,Adventure,True
+demo_user_0454,Pune,Maharashtra,2026-11-05,3000,Photography | Spiritual,English,2,Balanced,True
+demo_user_0455,Varanasi,Uttar Pradesh,2026-12-06,10000,Spiritual | Photography,English,3,Comfort,True
+demo_user_0456,Rishikesh,Uttarakhand,2026-09-07,15000,Heritage | Adventure,English | Hindi,1,Adventure,True
+demo_user_0457,Ahmedabad,Gujarat,2026-10-08,10000,Nature | Adventure,English,3,Balanced,True
+demo_user_0458,Mysuru,Karnataka,2026-11-09,25000,Shopping | Food,English,1,Balanced,True
+demo_user_0459,Kochi,Kerala,2026-12-10,25000,Nature | Food,English,3,Balanced,True
+demo_user_0460,Jaipur,Rajasthan,2026-09-11,10000,Shopping | Photography,English | Hindi,1,Budget,True
+demo_user_0461,North Goa,Goa,2026-10-12,25000,Adventure | Shopping,English,1,Adventure,True
+demo_user_0462,Srinagar,Jammu and Kashmir,2026-11-13,15000,Food | Photography,English,2,Adventure,True
+demo_user_0463,Warangal,Telangana,2026-12-14,3000,Food | Heritage,English,3,Adventure,True
+demo_user_0464,Mangaluru,Karnataka,2026-09-15,10000,Nature | Food,English | Hindi,3,Comfort,True
+demo_user_0465,Thiruvananthapuram,Kerala,2026-10-16,25000,Spiritual | Culture,English,2,Balanced,True
+demo_user_0466,Jodhpur,Rajasthan,2026-11-17,15000,Food | Adventure,English,3,Balanced,True
+demo_user_0467,Guwahati,Assam,2026-12-18,3000,Adventure | Spiritual,English,2,Adventure,True
+demo_user_0468,Bhubaneswar,Odisha,2026-09-19,3000,Nature | Shopping,English | Hindi,2,Comfort,True
+demo_user_0469,Vijayawada,Andhra Pradesh,2026-10-20,5000,Heritage | Culture,English,3,Balanced,True
+demo_user_0470,Coimbatore,Tamil Nadu,2026-11-21,5000,Culture | Heritage,English,1,Comfort,True
+demo_user_0471,Mumbai,Maharashtra,2026-12-22,3000,Photography | Heritage,English,2,Budget,True
+demo_user_0472,Agra,Uttar Pradesh,2026-09-23,5000,Adventure | Nature,English | Hindi,3,Comfort,True
+demo_user_0473,Shimla,Himachal Pradesh,2026-10-24,5000,Nature | Food,English,3,Comfort,True
+demo_user_0474,Amritsar,Punjab,2026-11-25,5000,Culture | Spiritual,English,4,Budget,True
+demo_user_0475,Bengaluru,Karnataka,2026-12-01,8000,Nature | Heritage,English,2,Balanced,True
+demo_user_0476,Ooty,Tamil Nadu,2026-09-02,5000,Culture | Shopping,English | Hindi,1,Balanced,True
+demo_user_0477,Nashik,Maharashtra,2026-10-03,25000,Nature | Food,English,1,Budget,True
+demo_user_0478,Panaji,Goa,2026-11-04,10000,Shopping | Nature,English,4,Balanced,True
+demo_user_0479,Dehradun,Uttarakhand,2026-12-05,15000,Heritage | Spiritual,English,4,Adventure,True
+demo_user_0480,Hyderabad,Telangana,2026-09-06,5000,Heritage | Spiritual,English | Hindi,1,Adventure,True
+demo_user_0481,Hampi,Karnataka,2026-10-07,25000,Food | Shopping,English,3,Comfort,True
+demo_user_0482,Munnar,Kerala,2026-11-08,5000,Shopping | Spiritual,English,3,Budget,True
+demo_user_0483,Udaipur,Rajasthan,2026-12-09,8000,Nature | Spiritual,English,3,Budget,True
+demo_user_0484,Kolkata,West Bengal,2026-09-10,15000,Culture | Heritage,English | Hindi,1,Budget,True
+demo_user_0485,Leh,Ladakh,2026-10-11,3000,Nature | Heritage,English,3,Balanced,True
+demo_user_0486,Visakhapatnam,Andhra Pradesh,2026-11-12,3000,Nature | Food,English,2,Balanced,True
+demo_user_0487,Chennai,Tamil Nadu,2026-12-13,3000,Food | Heritage,English,3,Adventure,True
+demo_user_0488,Alappuzha,Kerala,2026-09-14,25000,Food | Shopping,English | Hindi,1,Budget,True
+demo_user_0489,New Delhi,Delhi,2026-10-15,10000,Culture | Heritage,English,3,Comfort,True
+demo_user_0490,Manali,Himachal Pradesh,2026-11-16,25000,Spiritual | Shopping,English,4,Comfort,True
+demo_user_0491,Puri,Odisha,2026-12-17,15000,Food | Shopping,English,1,Balanced,True
+demo_user_0492,Tirupati,Andhra Pradesh,2026-09-18,8000,Shopping | Adventure,English | Hindi,2,Comfort,True
+demo_user_0493,Madurai,Tamil Nadu,2026-10-19,25000,Food | Shopping,English,3,Balanced,True
+demo_user_0494,Pune,Maharashtra,2026-11-20,5000,Nature | Heritage,English,3,Budget,True
+demo_user_0495,Varanasi,Uttar Pradesh,2026-12-21,15000,Nature | Photography,English,3,Comfort,True
+demo_user_0496,Rishikesh,Uttarakhand,2026-09-22,8000,Photography | Food,English | Hindi,2,Balanced,True
+demo_user_0497,Ahmedabad,Gujarat,2026-10-23,5000,Nature | Adventure,English,3,Balanced,True
+demo_user_0498,Mysuru,Karnataka,2026-11-24,3000,Adventure | Heritage,English,2,Budget,True
+demo_user_0499,Kochi,Kerala,2026-12-25,3000,Nature | Shopping,English,3,Budget,True
+demo_user_0500,Jaipur,Rajasthan,2026-09-01,10000,Photography | Nature,English | Hindi,4,Budget,True
