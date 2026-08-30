@@ -2,7 +2,7 @@
 
 **Product Name:** YatraSetu  
 **Tagline:** "Discover India. Connect Locally. Grow Tourism."  
-**Overall Status:** Phase 0 Complete — Awaiting Approval for Phase 1  
+**Overall Status:** Phase 1 Foundation & Data Ingestion Complete — Awaiting Approval for Phase 2  
 
 ---
 
@@ -11,8 +11,8 @@
 | Phase | Description | Status | Deliverables |
 | :--- | :--- | :--- | :--- |
 | **Phase 0** | **Project initialization, architecture, documentation & environment planning** | **COMPLETED (2026-08-31)** | Specification (`YATRSETU_SPEC.md`), Architecture (`ARCHITECTURE.md`), Data Dictionary (`DATA_DICTIONARY.md`), Decisions (`DECISIONS.md`), Git initialization, Dataset organization (`data/raw`), Environment templates (`.env.example`). |
-| **Phase 1** | **Project foundation + database + migrations + dataset import** | *Pending Approval* | Spring Boot backend setup, Next.js frontend scaffold, PostgreSQL/Supabase schema migrations, robust CSV import script with validation & error reporting. |
-| **Phase 2** | **Authentication + roles + profile** | *Queued* | Supabase Auth integration, RBAC (`TRAVELER`, `PARTNER`, `GOVERNMENT`), user profile management, partner verification state. |
+| **Phase 1** | **Project foundation + database + migrations + dataset import** | **COMPLETED (2026-08-31)** | Spring Boot 3.3.3 Java 21 backend scaffold with modular architecture, health endpoint (`GET /api/v1/health`), Next.js 14+ frontend shell with locked brand tokens and responsive layouts, PostgreSQL Flyway migrations (`V1__initial_schema.sql`, `V2__seed_data.sql`), reproducible data ingestion engine (`seed_database.py`), and comprehensive import audit report (`DATA_IMPORT_REPORT.md`). |
+| **Phase 2** | **Authentication + roles + profile** | *Pending Approval* | Supabase Auth integration, RBAC (`TRAVELER`, `PARTNER`, `GOVERNMENT`), user profile management, partner verification state. |
 | **Phase 3** | **Explore India + destinations + cities + search + maps** | *Queued* | Hierarchical exploration (India -> State -> City -> Destination), search filters, interactive Leaflet POI mapping, destination detail views. |
 | **Phase 4** | **Hotels + restaurants + businesses** | *Queued* | Hotel catalog, amenities filter, room pricing, local business and homestay listings. |
 | **Phase 5** | **AI Trip Planner + weather** | *Queued* | Gemini-backed structured itinerary generator grounded in DB POIs, Open-Meteo dynamic weather adaptation, interactive itinerary editor. |
@@ -26,15 +26,18 @@
 
 ---
 
-## Phase 0 Checklist & Verification
-- [x] Workspace inspected and cleaned.
-- [x] Java 21, Node 25, Git, Python runtimes verified.
-- [x] Git repository initialized with `main` branch.
-- [x] Raw dataset files organized under `data/raw/` preserving pristine source records.
-- [x] `.gitignore` created.
-- [x] `.env.example` created with all necessary environment variable placeholders.
-- [x] `YATRSETU_SPEC.md` written.
-- [x] `ARCHITECTURE.md` written.
-- [x] `DATA_DICTIONARY.md` written with complete table schemas and dataset field mappings.
-- [x] `DECISIONS.md` written with 8 foundational ADRs.
-- [x] `PROGRESS.md` created.
+## Phase 1 Deliverables & Ingestion Metrics
+- **Backend Build & Health:** Spring Boot 3.3.3 + Java 21 compilation and unit tests passing 100% (`GET /api/v1/health` operational).
+- **Frontend Build:** Next.js 14+ App Router, Tailwind CSS brand tokens, Header, Footer, and responsive MobileNav.
+- **Database Migrations:** `V1__initial_schema.sql` (22 normalized tables) and `V2__seed_data.sql` (generated seed data).
+- **Data Ingestion Report (`DATA_IMPORT_REPORT.md`):**
+  - **States:** 28 imported
+  - **Cities:** 138 imported & linked
+  - **Destinations:** 93 curated destinations imported
+  - **Destination POIs:** 743 POIs imported (270 linked to destinations, 14 unmatched recorded in report, 136 invalid coordinates safely skipped)
+  - **Hotels:** 1007 imported (961 matched, 46 unmatched city hubs auto-normalized)
+  - **Local Hosts:** 300 demo hosts imported (`is_demo_data = true`)
+  - **Travel Buddies:** 500 demo travel buddies imported (`is_demo_data = true`)
+  - **Reviews:** 999 historical reviews imported (`is_imported_dataset = true`, `is_verified_booking = false`)
+  - **User History:** 999 historical recommendation signals imported (`source = 'HISTORICAL_DATASET'`)
+  - **Users Seed:** 500 demo user records imported

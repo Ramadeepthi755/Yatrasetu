@@ -71,3 +71,31 @@ This document records the key architectural decisions, context, and rationales f
   - *Platform-generated metric* (YatraSetu platform transactions)
   - *Official Reference Data* (Census 2011 / Ministry of Tourism baselines)
   - *AI-derived Insight* (Opportunity scoring and trend forecasting)
+
+---
+
+## ADR-009: Unified Canonical Migration System
+- **Status:** Accepted
+- **Context:** Avoid duplicate or drifting migration systems between backend and data scripts.
+- **Decision:** Spring Boot Flyway migrations (`backend/src/main/resources/db/migration/`) are the single canonical source of truth for schema DDL and seed migrations, mirrored in `data/migrations/`.
+
+---
+
+## ADR-010: Dataset Separation of User History and Reviews
+- **Status:** Accepted
+- **Context:** `user_history.csv` contains user visitation logs for recommendation algorithms, while `reviews.csv` contains qualitative review text.
+- **Decision:** `user_history.csv` is mapped strictly to the `user_history` entity as recommendation signals. `reviews.csv` is mapped to `reviews` with `is_imported_dataset = true` and `is_verified_booking = false`.
+
+---
+
+## ADR-011: Synthetic Demo Data Isolation
+- **Status:** Accepted
+- **Context:** Prototype data for local hosts and travel buddies must not masquerade as real verified users.
+- **Decision:** All demo hosts and travel buddies imported from `demo/local_hosts_demo.csv` and `demo/travel_buddies_demo.csv` are explicitly tagged with `is_demo_data = true`.
+
+---
+
+## ADR-012: Graceful Startup and Offline Resilience
+- **Status:** Accepted
+- **Context:** Developers and testing environments should be able to compile, run tests, and inspect the application shell without requiring active live external database or API secrets.
+- **Decision:** The Spring Boot backend uses conditional Flyway execution, H2 in-memory testing profiles, and placeholder-safe configurations to ensure immediate compilation and test execution.
