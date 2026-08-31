@@ -9,7 +9,7 @@
 
 | Entity / Dataset | Total Source Rows | Successfully Imported | Matched / Linked | Unmatched (Safely Handled) | Duplicate Rows | Invalid / Dropped |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **states** (Geographic Reference) | 28 | 28 | 0 | 0 | 0 | 0 |
+| **states** (Geographic Reference) | 36 | 36 | 0 | 0 | 0 | 0 |
 | **cities** (Urban & Tourism Hubs) | 138 | 138 | 0 | 0 | 0 | 0 |
 | **destinations** (curated_destinations.csv) | 93 | 93 | 0 | 0 | 0 | 0 |
 | **destination_pois** (tourist_spots & city_specific) | 879 | 743 | 270 | 14 | 0 | 136 |

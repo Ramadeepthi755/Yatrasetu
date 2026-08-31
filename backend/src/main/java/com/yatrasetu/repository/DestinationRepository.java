@@ -34,10 +34,10 @@ public interface DestinationRepository extends JpaRepository<Destination, String
     List<Destination> findHiddenGems(Pageable pageable);
 
     @Query("SELECT d FROM Destination d WHERE d.isActive = true " +
-            "AND (:stateId IS NULL OR LOWER(d.state.id) = LOWER(:stateId) OR LOWER(d.state.stateName) = LOWER(:stateId)) " +
-            "AND (:region IS NULL OR LOWER(d.region) = LOWER(:region)) " +
+            "AND (CAST(:stateId AS string) IS NULL OR LOWER(d.state.id) = LOWER(CAST(:stateId AS string)) OR LOWER(d.state.stateName) = LOWER(CAST(:stateId AS string))) " +
+            "AND (CAST(:region AS string) IS NULL OR LOWER(d.region) = LOWER(CAST(:region AS string))) " +
             "AND (:minPopularity IS NULL OR d.popularityScore >= :minPopularity) " +
-            "AND (:searchQuery IS NULL OR LOWER(d.destinationName) LIKE LOWER(CONCAT('%', :searchQuery, '%')) OR LOWER(d.district) LIKE LOWER(CONCAT('%', :searchQuery, '%')) OR LOWER(d.description) LIKE LOWER(CONCAT('%', :searchQuery, '%')))")
+            "AND (CAST(:searchQuery AS string) IS NULL OR LOWER(d.destinationName) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')) OR LOWER(d.district) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')) OR LOWER(d.description) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')))")
     Page<Destination> findWithFilters(
             @Param("stateId") String stateId,
             @Param("region") String region,

@@ -76,7 +76,7 @@ def escape_sql(val):
     if isinstance(val, (int, float)):
         return str(val)
     if isinstance(val, (list, tuple)):
-        escaped_items = [f'"{str(x).replace(chr(34), chr(92)+chr(34))}"' for x in val]
+        escaped_items = [f'"{str(x).replace(chr(34), chr(92)+chr(34)).replace(chr(39), chr(39)+chr(39))}"' for x in val]
         return f"'{{{','.join(escaped_items)}}}'"
     if isinstance(val, dict):
         json_str = json.dumps(val).replace("'", "''")
@@ -124,6 +124,16 @@ class IngestionEngine:
         self.invalid_details = defaultdict(list)
         
         self.states = {} # state_id -> dict
+        for s_name, (s_id, reg, cap) in STATE_REGIONS.items():
+            self.states[s_id] = {
+                'id': s_id,
+                'state_name': s_name,
+                'region': reg,
+                'capital_city': cap,
+                'description': f"Explore the vibrant heritage, landscapes, and culture of {s_name}."
+            }
+            self.stats['states']['imported'] += 1
+
         self.cities = {} # city_id -> dict
         self.destinations = {} # dest_id -> dict
         self.pois = {} # poi_id -> dict

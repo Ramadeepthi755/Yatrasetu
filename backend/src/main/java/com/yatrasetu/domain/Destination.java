@@ -68,7 +68,7 @@ public class Destination {
     @Column(name = "nearest_major_city_distance_km", precision = 8, scale = 2)
     private BigDecimal nearestMajorCityDistanceKm;
 
-    @Column(name = "road_connectivity", length = 100)
+    @Column(name = "road_connectivity", columnDefinition = "TEXT")
     private String roadConnectivity;
 
     @Convert(converter = StringListConverter.class)
@@ -92,16 +92,16 @@ public class Destination {
     @Column(name = "hidden_gems", columnDefinition = "TEXT")
     private String hiddenGems;
 
-    @Column(name = "best_seasons", length = 100)
+    @Column(name = "best_seasons", columnDefinition = "TEXT")
     private String bestSeasons;
 
-    @Column(name = "avoid_seasons", length = 100)
+    @Column(name = "avoid_seasons", columnDefinition = "TEXT")
     private String avoidSeasons;
 
-    @Column(name = "peak_season", length = 100)
+    @Column(name = "peak_season", columnDefinition = "TEXT")
     private String peakSeason;
 
-    @Column(name = "off_season", length = 100)
+    @Column(name = "off_season", columnDefinition = "TEXT")
     private String offSeason;
 
     @Column(name = "average_temperature", columnDefinition = "TEXT")
@@ -149,13 +149,13 @@ public class Destination {
     @Column(name = "safety_notes", columnDefinition = "TEXT")
     private String safetyNotes;
 
-    @Column(name = "internet_connectivity", length = 100)
+    @Column(name = "internet_connectivity", columnDefinition = "TEXT")
     private String internetConnectivity;
 
-    @Column(name = "mobile_network", length = 100)
+    @Column(name = "mobile_network", columnDefinition = "TEXT")
     private String mobileNetwork;
 
-    @Column(name = "atm_availability", length = 100)
+    @Column(name = "atm_availability", columnDefinition = "TEXT")
     private String atmAvailability;
 
     @Column(name = "language_spoken", length = 150)
