@@ -51,7 +51,7 @@ export default function HomePage() {
           {/* Seed Foundation Badge */}
           <div className="pt-6 text-xs text-slate-300 flex items-center justify-center gap-2">
             <ShieldCheck className="w-4 h-4 text-[#059669]" />
-            <span>100 curated destination records currently available in the seed dataset</span>
+            <span>28 States &bull; 138 Cities &bull; 93 Curated Destinations &bull; 743 POIs &bull; 1,007 Hotels</span>
           </div>
         </div>
       </section>

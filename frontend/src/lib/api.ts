@@ -12,6 +12,17 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+}
+
 export interface UserProfile {
   id: string;
   email: string;
@@ -59,6 +70,186 @@ export interface GovernmentOverview {
   message: string;
   timestamp: string;
 }
+
+export interface StateSummary {
+  id: string;
+  stateName: string;
+  region: string;
+  capitalCity?: string;
+  description?: string;
+  bannerImageUrl?: string;
+  cityCount: number;
+  destinationCount: number;
+}
+
+export interface StateDetail extends StateSummary {
+  featuredDestinations: DestinationSummary[];
+  popularCities: CitySummary[];
+  topPois: PoiItem[];
+  hotels: HotelItem[];
+}
+
+export interface CitySummary {
+  id: string;
+  cityName: string;
+  stateId?: string;
+  stateName?: string;
+  districtName?: string;
+  latitude: number;
+  longitude: number;
+  tier?: string;
+  isTourismHub?: boolean;
+  destinationCount: number;
+  poiCount: number;
+  hotelCount: number;
+}
+
+export interface CityDetail extends CitySummary {
+  destinations: DestinationSummary[];
+  pois: PoiItem[];
+  hotels: HotelItem[];
+  nearbyDestinations: DestinationSummary[];
+}
+
+export interface DestinationSummary {
+  id: string;
+  destinationName: string;
+  stateId?: string;
+  stateName?: string;
+  cityId?: string;
+  cityName?: string;
+  district?: string;
+  region?: string;
+  latitude: number;
+  longitude: number;
+  popularityScore: number;
+  accessibility?: string;
+  tripTypes: string[];
+  bestSeasons?: string;
+  peakSeason?: string;
+  description: string;
+  heroImageUrl?: string;
+  safetyRating: number;
+  budgetIndicator?: string;
+  hiddenGems?: string;
+}
+
+export interface DestinationDetail extends DestinationSummary {
+  altitudeM?: number;
+  nearestAirport?: string;
+  nearestRailway?: string;
+  nearestMajorCity?: string;
+  nearestMajorCityDistanceKm?: number;
+  roadConnectivity?: string;
+  primaryAttractions: string[];
+  activitiesAvailable: string[];
+  uniqueExperiences?: string;
+  avoidSeasons?: string;
+  offSeason?: string;
+  averageTemperature?: string;
+  rainfallPattern?: string;
+  idealFor: string[];
+  idealForWhy?: string;
+  specialConsiderations?: string;
+  minimumDays: number;
+  idealDays: number;
+  maximumDays: number;
+  suggestedItinerary?: string;
+  accommodationTypes?: string;
+  foodScene?: string;
+  safetyNotes?: string;
+  internetConnectivity?: string;
+  mobileNetwork?: string;
+  atmAvailability?: string;
+  languageSpoken?: string;
+  permitsRequired: boolean;
+  permitsDetails?: string;
+  localCulture?: string;
+  festivalsEvents?: string;
+  localCustoms?: string;
+  shoppingHighlights?: string;
+  localCuisineMustTry?: string;
+  budgetRangeJson?: string;
+  midRangeJson?: string;
+  luxuryRangeJson?: string;
+  userReviewsSummary?: string;
+  recentDevelopments?: string;
+  sustainabilityNotes?: string;
+  topPois: PoiItem[];
+  nearbyHotels: HotelItem[];
+  recentReviews: ReviewItem[];
+}
+
+export interface PoiItem {
+  id: string;
+  poiName: string;
+  destinationId?: string;
+  destinationName?: string;
+  cityId?: string;
+  cityName?: string;
+  category?: string;
+  latitude: number;
+  longitude: number;
+  tags: string[];
+  characteristics?: string;
+  entryFeeInr?: number;
+  typicalDurationHours?: number;
+}
+
+export interface HotelItem {
+  id: string;
+  hotelName: string;
+  cityId?: string;
+  cityName?: string;
+  destinationId?: string;
+  destinationName?: string;
+  hotelRating: number;
+  pricePerNight: number;
+  amenities: string[];
+  category?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  isPartnerProperty?: boolean;
+}
+
+export interface ReviewItem {
+  id: string;
+  userName: string;
+  userAvatar?: string;
+  entityType: string;
+  entityId: string;
+  rating: number;
+  reviewText: string;
+  isVerifiedBooking: boolean;
+  isImportedDataset: boolean;
+  sentimentCategory?: string;
+  createdAt: string;
+}
+
+export interface SearchResults {
+  query: string;
+  totalResults: number;
+  destinations: DestinationSummary[];
+  cities: CitySummary[];
+  states: StateSummary[];
+  pois: PoiItem[];
+  hotels: HotelItem[];
+}
+
+export interface NearbyResult {
+  userLatitude: number;
+  userLongitude: number;
+  radiusKm: number;
+  nearbyDestinations: DestinationSummary[];
+  nearbyCities: CitySummary[];
+  nearbyPois: PoiItem[];
+  nearbyHotels: HotelItem[];
+}
+
+// --------------------------------------------------------------------------
+// Auth & Health API
+// --------------------------------------------------------------------------
 
 export async function fetchHealth() {
   const res = await fetch(`${API_BASE_URL}/health`, { cache: 'no-store' });
@@ -177,5 +368,130 @@ export async function getGovernmentOverview(token?: string): Promise<ApiResponse
     const err = await res.json().catch(() => ({}));
     throw new Error(err.message || `Failed to fetch government overview: ${res.status}`);
   }
+  return res.json();
+}
+
+// --------------------------------------------------------------------------
+// Exploration & Discovery Public APIs (Phase 3)
+// --------------------------------------------------------------------------
+
+export async function getStates(region?: string): Promise<ApiResponse<StateSummary[]>> {
+  const url = region && region !== 'all'
+    ? `${API_BASE_URL}/states?region=${encodeURIComponent(region)}`
+    : `${API_BASE_URL}/states`;
+  const res = await fetch(url, { next: { revalidate: 60 } });
+  if (!res.ok) throw new Error(`Failed to fetch states: ${res.status}`);
+  return res.json();
+}
+
+export async function getStateDetail(stateId: string): Promise<ApiResponse<StateDetail>> {
+  const res = await fetch(`${API_BASE_URL}/states/${encodeURIComponent(stateId)}`, { next: { revalidate: 60 } });
+  if (!res.ok) {
+    if (res.status === 404) throw new Error('State not found');
+    throw new Error(`Failed to fetch state: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCities(stateId?: string): Promise<ApiResponse<CitySummary[]>> {
+  const url = stateId
+    ? `${API_BASE_URL}/cities?stateId=${encodeURIComponent(stateId)}`
+    : `${API_BASE_URL}/cities`;
+  const res = await fetch(url, { next: { revalidate: 60 } });
+  if (!res.ok) throw new Error(`Failed to fetch cities: ${res.status}`);
+  return res.json();
+}
+
+export async function getCityDetail(cityId: string): Promise<ApiResponse<CityDetail>> {
+  const res = await fetch(`${API_BASE_URL}/cities/${encodeURIComponent(cityId)}`, { next: { revalidate: 60 } });
+  if (!res.ok) {
+    if (res.status === 404) throw new Error('City not found');
+    throw new Error(`Failed to fetch city: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getDestinations(params?: {
+  stateId?: string;
+  region?: string;
+  category?: string;
+  minPopularity?: number;
+  search?: string;
+  page?: number;
+  size?: number;
+}): Promise<ApiResponse<PageResponse<DestinationSummary>>> {
+  const query = new URLSearchParams();
+  if (params?.stateId && params.stateId !== 'all') query.set('stateId', params.stateId);
+  if (params?.region && params.region !== 'all') query.set('region', params.region);
+  if (params?.category && params.category !== 'all') query.set('category', params.category);
+  if (params?.minPopularity) query.set('minPopularity', params.minPopularity.toString());
+  if (params?.search) query.set('search', params.search);
+  if (params?.page !== undefined) query.set('page', params.page.toString());
+  if (params?.size !== undefined) query.set('size', params.size.toString());
+
+  const res = await fetch(`${API_BASE_URL}/destinations?${query.toString()}`, { next: { revalidate: 60 } });
+  if (!res.ok) throw new Error(`Failed to fetch destinations: ${res.status}`);
+  return res.json();
+}
+
+export async function getFeaturedDestinations(limit: number = 8): Promise<ApiResponse<DestinationSummary[]>> {
+  const res = await fetch(`${API_BASE_URL}/destinations/featured?limit=${limit}`, { next: { revalidate: 60 } });
+  if (!res.ok) throw new Error(`Failed to fetch featured destinations: ${res.status}`);
+  return res.json();
+}
+
+export async function getTrendingDestinations(limit: number = 8): Promise<ApiResponse<DestinationSummary[]>> {
+  const res = await fetch(`${API_BASE_URL}/destinations/trending?limit=${limit}`, { next: { revalidate: 60 } });
+  if (!res.ok) throw new Error(`Failed to fetch trending destinations: ${res.status}`);
+  return res.json();
+}
+
+export async function getHiddenGems(limit: number = 8): Promise<ApiResponse<DestinationSummary[]>> {
+  const res = await fetch(`${API_BASE_URL}/destinations/hidden-gems?limit=${limit}`, { next: { revalidate: 60 } });
+  if (!res.ok) throw new Error(`Failed to fetch hidden gems: ${res.status}`);
+  return res.json();
+}
+
+export async function getDestinationDetail(destinationId: string): Promise<ApiResponse<DestinationDetail>> {
+  const res = await fetch(`${API_BASE_URL}/destinations/${encodeURIComponent(destinationId)}`, { next: { revalidate: 60 } });
+  if (!res.ok) {
+    if (res.status === 404) throw new Error('Destination not found');
+    throw new Error(`Failed to fetch destination: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getDestinationPois(destinationId: string): Promise<ApiResponse<PoiItem[]>> {
+  const res = await fetch(`${API_BASE_URL}/destinations/${encodeURIComponent(destinationId)}/pois`, { next: { revalidate: 60 } });
+  if (!res.ok) throw new Error(`Failed to fetch destination POIs: ${res.status}`);
+  return res.json();
+}
+
+export async function getDestinationHotels(destinationId: string): Promise<ApiResponse<HotelItem[]>> {
+  const res = await fetch(`${API_BASE_URL}/destinations/${encodeURIComponent(destinationId)}/hotels`, { next: { revalidate: 60 } });
+  if (!res.ok) throw new Error(`Failed to fetch destination hotels: ${res.status}`);
+  return res.json();
+}
+
+export async function searchDiscovery(query: string, category?: string, limit: number = 10): Promise<ApiResponse<SearchResults>> {
+  const params = new URLSearchParams();
+  params.set('q', query);
+  if (category && category !== 'all') params.set('category', category);
+  params.set('limit', limit.toString());
+
+  const res = await fetch(`${API_BASE_URL}/search?${params.toString()}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Search failed: ${res.status}`);
+  return res.json();
+}
+
+export async function getNearbyPlaces(lat: number, lng: number, radiusKm: number = 300, limit: number = 12): Promise<ApiResponse<NearbyResult>> {
+  const params = new URLSearchParams({
+    lat: lat.toString(),
+    lng: lng.toString(),
+    radiusKm: radiusKm.toString(),
+    limit: limit.toString(),
+  });
+  const res = await fetch(`${API_BASE_URL}/discovery/nearby?${params.toString()}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Failed to fetch nearby places: ${res.status}`);
   return res.json();
 }

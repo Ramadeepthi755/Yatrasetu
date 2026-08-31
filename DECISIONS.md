@@ -99,3 +99,14 @@ This document records the key architectural decisions, context, and rationales f
 - **Status:** Accepted
 - **Context:** Developers and testing environments should be able to compile, run tests, and inspect the application shell without requiring active live external database or API secrets.
 - **Decision:** The Spring Boot backend uses conditional Flyway execution, H2 in-memory testing profiles, and placeholder-safe configurations to ensure immediate compilation and test execution.
+
+---
+
+## ADR-013: Spatial Search, Privacy-Preserving Geolocation & Lazy Leaflet Mapping
+- **Status:** Accepted
+- **Context:** Explore India discovery requires interactive maps and search across 28 states, 138 cities, 93 destinations, 743 POIs, and 1,007 hotels without bogging down browser memory or compromising user location privacy.
+- **Decision:**
+  - Search queries execute server-side via SQL `LIKE` and indexed filter parameters; datasets are never downloaded in bulk to the client.
+  - Interactive Leaflet mapping is loaded lazily with Next.js dynamic client rendering (`ssr: false`) and only loads markers relevant to the active state, city, or destination.
+  - User geolocation is strictly opt-in, computed on-demand via Haversine distance, and never persisted or exposed across public profiles.
+

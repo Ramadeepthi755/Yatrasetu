@@ -47,6 +47,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/health/**").permitAll()
                 .requestMatchers("/api/v1/public/**").permitAll()
                 .requestMatchers("/api/v1/auth/sync").permitAll()
+                .requestMatchers("/api/v1/states/**").permitAll()
+                .requestMatchers("/api/v1/cities/**").permitAll()
+                .requestMatchers("/api/v1/destinations/**").permitAll()
+                .requestMatchers("/api/v1/pois/**").permitAll()
+                .requestMatchers("/api/v1/hotels/**").permitAll()
+                .requestMatchers("/api/v1/search/**").permitAll()
+                .requestMatchers("/api/v1/discovery/**").permitAll()
                 .requestMatchers("/error").permitAll()
 
                 // Partner Protected Routes
