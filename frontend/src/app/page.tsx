@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Compass, Users, Landmark, MapPin, Sparkles, ArrowRight, ShieldCheck, BarChart3 } from 'lucide-react';
+import { Compass, Users, Landmark, MapPin, ArrowRight, ShieldCheck, BarChart3 } from 'lucide-react';
 
 export default function HomePage() {
   return (
@@ -12,7 +12,7 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto text-center relative z-10 space-y-6">
           {/* Tagline Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs sm:text-sm font-medium text-[#F59E0B]">
-            <Sparkles className="w-4 h-4 text-[#F59E0B]" />
+            <Compass className="w-4 h-4 text-[#F59E0B]" />
             Discover India • Connect Locally • Grow Tourism
           </div>
 

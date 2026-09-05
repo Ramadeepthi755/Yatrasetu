@@ -18,7 +18,7 @@ import {
   Send,
   MapPin,
   Clock,
-  Sparkles,
+  Compass,
   AlertCircle,
   Shield,
   ArrowLeft,
@@ -180,7 +180,7 @@ export default function ConnectionsPage() {
                 href="/travel-connect"
                 className="px-5 py-2.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow transition inline-flex items-center gap-1.5"
               >
-                <Sparkles className="w-3.5 h-3.5" />
+                <Compass className="w-3.5 h-3.5" />
                 Discover Travelers
               </Link>
               <Link

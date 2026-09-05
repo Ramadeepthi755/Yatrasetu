@@ -24,20 +24,30 @@ public interface HotelRepository extends JpaRepository<Hotel, String> {
     @Query("SELECT DISTINCT h.category FROM Hotel h WHERE h.isActive = true AND h.category IS NOT NULL")
     List<String> findDistinctCategories();
 
-    @Query("SELECT h FROM Hotel h WHERE h.isActive = true " +
-            "AND (CAST(:cityId AS string) IS NULL OR LOWER(h.city.id) = LOWER(CAST(:cityId AS string))) " +
-            "AND (CAST(:destinationId AS string) IS NULL OR LOWER(h.destination.id) = LOWER(CAST(:destinationId AS string)) OR LOWER(h.city.id) = LOWER(CAST(:destinationId AS string))) " +
+    @Query("SELECT h FROM Hotel h " +
+            "LEFT JOIN h.city c " +
+            "LEFT JOIN h.destination d " +
+            "LEFT JOIN c.state s " +
+            "WHERE h.isActive = true " +
+            "AND (CAST(:cityId AS string) IS NULL OR (c.id IS NOT NULL AND LOWER(c.id) = LOWER(CAST(:cityId AS string)))) " +
+            "AND (CAST(:destinationId AS string) IS NULL OR (d.id IS NOT NULL AND LOWER(d.id) = LOWER(CAST(:destinationId AS string))) OR (c.id IS NOT NULL AND LOWER(c.id) = LOWER(CAST(:destinationId AS string))) OR (CAST(:targetCityId AS string) IS NOT NULL AND c.id IS NOT NULL AND LOWER(c.id) = LOWER(CAST(:targetCityId AS string)))) " +
             "AND (CAST(:category AS string) IS NULL OR LOWER(h.category) = LOWER(CAST(:category AS string))) " +
             "AND (:minRating IS NULL OR h.hotelRating >= :minRating) " +
             "AND (:maxPrice IS NULL OR h.pricePerNight <= :maxPrice) " +
             "AND (:isPartnerProperty IS NULL OR h.isPartnerProperty = :isPartnerProperty) " +
             "AND (CAST(:searchQuery AS string) IS NULL OR " +
             "LOWER(h.hotelName) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')) OR " +
-            "LOWER(h.address) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')) OR " +
-            "LOWER(h.category) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')))")
+            "(h.address IS NOT NULL AND LOWER(h.address) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%'))) OR " +
+            "(h.category IS NOT NULL AND LOWER(h.category) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%'))) OR " +
+            "(c.cityName IS NOT NULL AND LOWER(c.cityName) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%'))) OR " +
+            "(c.id IS NOT NULL AND LOWER(c.id) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%'))) OR " +
+            "(d.destinationName IS NOT NULL AND LOWER(d.destinationName) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%'))) OR " +
+            "(d.id IS NOT NULL AND LOWER(d.id) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%'))) OR " +
+            "(s.stateName IS NOT NULL AND LOWER(s.stateName) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%'))))")
     Page<Hotel> findWithFilters(
             @Param("cityId") String cityId,
             @Param("destinationId") String destinationId,
+            @Param("targetCityId") String targetCityId,
             @Param("category") String category,
             @Param("minRating") BigDecimal minRating,
             @Param("maxPrice") BigDecimal maxPrice,

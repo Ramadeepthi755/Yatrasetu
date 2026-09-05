@@ -6,6 +6,7 @@ package com.yatrasetu.domain;
  */
 public enum PriceType {
     PRICE_UNAVAILABLE,
+    ESTIMATED,
     ESTIMATED_PRICE,
     EXACT_FARE
 }

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Clock, Users, Star, IndianRupee, MapPin, Sparkles } from 'lucide-react';
+import { Clock, Users, Star, IndianRupee, MapPin, Compass } from 'lucide-react';
 import { ExperienceItem } from '@/lib/api';
 
 interface ExperienceCardProps {
@@ -120,7 +120,7 @@ export function ExperienceCard({ experience }: ExperienceCardProps) {
           href={`/experiences/${experience.id}`}
           className="inline-flex items-center rounded-xl bg-amber-500 px-3.5 py-2 text-xs font-semibold text-stone-950 transition-colors hover:bg-amber-400 shadow-sm"
         >
-          <Sparkles className="h-3.5 w-3.5 mr-1" />
+          <Compass className="h-3.5 w-3.5 mr-1" />
           Explore
         </Link>
       </div>

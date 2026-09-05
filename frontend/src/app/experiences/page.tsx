@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Sparkles, Filter, RefreshCw, AlertCircle } from 'lucide-react';
+import { Search, Compass, Filter, RefreshCw, AlertCircle } from 'lucide-react';
 import { getExperiences, getExperienceCategories, ExperienceItem } from '@/lib/api';
 import { ExperienceCard } from '@/components/explore/ExperienceCard';
 
@@ -95,7 +95,7 @@ export default function ExperiencesCatalogPage() {
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <div className="inline-flex items-center rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-400 border border-amber-500/20 mb-4">
-              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+              <Compass className="h-3.5 w-3.5 mr-1.5" />
               Authentic Indian Experiences
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl">
@@ -245,7 +245,7 @@ export default function ExperiencesCatalogPage() {
         {/* Empty State */}
         {!loading && !error && experiences.length === 0 && (
           <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-12 text-center">
-            <Sparkles className="mx-auto h-12 w-12 text-stone-400 mb-3" />
+            <Compass className="mx-auto h-12 w-12 text-stone-400 mb-3" />
             <h3 className="text-base font-bold text-stone-900">No experiences match your search</h3>
             <p className="mt-1 text-xs text-stone-500 max-w-sm mx-auto">
               Try choosing a different category or clearing your search filters to explore available experiences.

@@ -44,6 +44,22 @@ public class TourismGovernmentAction {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 30, nullable = false)
+    @Builder.Default
+    private GovernmentActionStatus status = GovernmentActionStatus.LOGGED;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "priority", length = 20, nullable = false)
+    @Builder.Default
+    private GovernmentActionPriority priority = GovernmentActionPriority.MEDIUM;
+
+    @Column(name = "resolution_notes", columnDefinition = "TEXT")
+    private String resolutionNotes;
+
+    @Column(name = "resolved_at")
+    private Instant resolvedAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private Instant createdAt = Instant.now();

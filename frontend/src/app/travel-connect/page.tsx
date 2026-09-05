@@ -20,7 +20,6 @@ import {
   Search,
   SlidersHorizontal,
   X,
-  Sparkles,
   RefreshCw,
 } from 'lucide-react';
 

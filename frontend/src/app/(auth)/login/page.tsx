@@ -10,7 +10,6 @@ import {
   Mail,
   ArrowRight,
   AlertCircle,
-  Sparkles,
   Briefcase,
   Landmark,
   Eye,
@@ -89,7 +88,7 @@ export default function LoginPage() {
         {/* Central quote */}
         <div className="relative z-10 space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-[#F59E0B]">
-            <Sparkles className="w-3.5 h-3.5" />
+            <Compass className="w-3.5 h-3.5" />
             India&apos;s Connected Tourism Ecosystem
           </div>
           <h2 className="text-4xl font-extrabold text-white leading-tight tracking-tight">

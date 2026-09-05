@@ -12,7 +12,6 @@ import {
   ArrowLeft,
   Calendar,
   Wifi,
-  Sparkles,
   ShieldCheck,
   AlertCircle,
   Check,
@@ -180,7 +179,7 @@ export default function HotelDetailPage() {
             {/* Amenities Section */}
             <div className="rounded-3xl border border-stone-200 bg-white p-6 sm:p-8 shadow-sm">
               <h2 className="text-lg font-bold text-stone-900 mb-4 flex items-center">
-                <Sparkles className="h-4 w-4 mr-2 text-indigo-900" />
+                <ShieldCheck className="h-4 w-4 mr-2 text-indigo-900" />
                 Property Amenities & Services
               </h2>
 

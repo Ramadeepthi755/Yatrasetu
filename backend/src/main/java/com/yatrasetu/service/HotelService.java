@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class HotelService {
 
     private final HotelRepository hotelRepository;
+    private final com.yatrasetu.repository.DestinationRepository destinationRepository;
 
     @Transactional(readOnly = true)
     public Page<HotelDto> getAllHotels(
@@ -36,9 +37,18 @@ public class HotelService {
         String cleanedCat = (category != null && !category.trim().isEmpty() && !category.equalsIgnoreCase("all")) ? category.trim() : null;
         String cleanedSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
 
+        String targetCityId = null;
+        if (cleanedDest != null) {
+            var destOpt = destinationRepository.findById(cleanedDest);
+            if (destOpt.isPresent() && destOpt.get().getCity() != null) {
+                targetCityId = destOpt.get().getCity().getId();
+            }
+        }
+
         return hotelRepository.findWithFilters(
                 cleanedCity,
                 cleanedDest,
+                targetCityId,
                 cleanedCat,
                 minRating,
                 maxPrice,
@@ -55,8 +65,20 @@ public class HotelService {
 
     @Transactional(readOnly = true)
     public List<HotelDto> getHotelsByDestination(String destinationId) {
-        return hotelRepository.findByDestinationId(destinationId)
-                .stream()
+        List<Hotel> hotels = hotelRepository.findByDestinationId(destinationId);
+        if (hotels.isEmpty()) {
+            var destOpt = destinationRepository.findById(destinationId);
+            if (destOpt.isPresent()) {
+                var dest = destOpt.get();
+                if (dest.getCity() != null) {
+                    hotels = hotelRepository.findByCityId(dest.getCity().getId());
+                }
+                if (hotels.isEmpty() && dest.getLatitude() != null && dest.getLongitude() != null) {
+                    hotels = hotelRepository.findNearestHotels(dest.getLatitude().doubleValue(), dest.getLongitude().doubleValue(), 12);
+                }
+            }
+        }
+        return hotels.stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }

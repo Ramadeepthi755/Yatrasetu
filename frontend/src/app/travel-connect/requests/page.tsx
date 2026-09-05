@@ -25,7 +25,7 @@ import {
   MapPin,
   AlertCircle,
   Ban,
-  Sparkles,
+  Compass,
 } from 'lucide-react';
 
 export default function RequestsPage() {
@@ -236,7 +236,7 @@ export default function RequestsPage() {
                       href="/travel-connect"
                       className="px-4 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow-xs transition inline-flex items-center gap-1.5"
                     >
-                      <Sparkles className="w-3.5 h-3.5" />
+                      <Compass className="w-3.5 h-3.5" />
                       Browse Travelers
                     </Link>
                   </div>
@@ -376,7 +376,7 @@ export default function RequestsPage() {
                       href="/travel-connect"
                       className="px-4 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow-xs transition inline-flex items-center gap-1.5"
                     >
-                      <Sparkles className="w-3.5 h-3.5" />
+                      <Compass className="w-3.5 h-3.5" />
                       Find Travelers
                     </Link>
                   </div>

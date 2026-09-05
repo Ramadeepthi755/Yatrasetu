@@ -13,7 +13,6 @@ import {
   Loader2,
   AlertCircle,
   Landmark,
-  Sparkles,
 } from 'lucide-react';
 import { getCityDetail, CityDetail } from '@/lib/api';
 import { DestinationCard } from '@/components/explore/DestinationCard';
@@ -308,7 +307,7 @@ export default function CityDetailPage() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-stone-900 flex items-center">
-                  <Sparkles className="h-4 w-4 mr-2 text-amber-500" />
+                  <Compass className="h-4 w-4 mr-2 text-amber-600" />
                   Other Nearby Destinations in {city.stateName}
                 </h2>
                 <p className="text-xs text-stone-500 mt-0.5">

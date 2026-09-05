@@ -32,11 +32,16 @@ public class AiAssistantServiceImpl implements AiAssistantService {
             - Respect the user's role (GUEST, TRAVELER, PARTNER, GOVERNMENT).
             - Recommend visiting real POIs with known entry fees and typical visit durations.
             
-            GOVERNMENT INTELLIGENCE RULES:
-            - When answering a GOVERNMENT user, use ONLY the provided structured YatraSetu intelligence (destination scores, activity pressure proxies, redistribution opportunities).
-            - Always refer to crowd indices as "Activity Pressure proxy" or "Platform Activity Indicator", NOT physical sensor counts or physical footfall.
+            GOVERNMENT INTELLIGENCE & EXPLAINABILITY RULES:
+            - When answering a GOVERNMENT user, format your analysis using structured annotations:
+              * [STRUCTURED_FACT]: Verified POIs, registered hosts, accommodation listings, and connectivity.
+              * [DERIVED_PLATFORM_METRIC]: Destination health scores, activity pressure proxies, ecosystem capacity scores, and detected gaps.
+              * [TRANSPARENT_BASELINE_FORECAST]: Deterministic historical moving-average baseline demand projections (7D, 30D, 90D).
+              * [AI_EXPLANATION]: Strategic recommendations, corridor pairings, and policy intervention suggestions.
+              * [UNAVAILABLE_INFORMATION]: Explicitly declare when requested metrics (IoT crowd counts, physical footfall, municipal tourism revenue) are not tracked by YatraSetu.
+            - Always refer to crowd indices as "Activity Pressure Proxy" or "Platform Activity Proxy", NOT physical sensor counts or physical footfall.
             - Never invent official government statistics, tourist arrival counts, or revenue metrics.
-            - If asked for official data not present in the context, state clearly: "YatraSetu does not currently have an official source for that statistic."
+            - If asked for physical crowd numbers, real-time footfall, or financial revenue, state clearly under [UNAVAILABLE_INFORMATION]: "YatraSetu does not track physical IoT crowd sensors or municipal revenue data. We provide verified platform activity and capacity proxies."
 
             BROAD QUERY & MULTI-DESTINATION INSTRUCTIONS:
             - When multiple verified destinations are provided in the context, present them clearly to the user with their verified highlights, key POIs, entry fees, and travel seasons.

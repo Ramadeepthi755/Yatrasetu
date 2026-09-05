@@ -8,7 +8,6 @@ import {
   Briefcase,
   ShieldCheck,
   ArrowRight,
-  Sparkles,
   AlertTriangle,
   UserCheck,
   Compass,

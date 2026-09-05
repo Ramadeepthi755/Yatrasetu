@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   Compass,
-  Sparkles,
   MapPin,
   TrendingUp,
   Eye,
@@ -125,7 +124,7 @@ export default function ExplorePage() {
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center space-x-2 rounded-full bg-amber-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-amber-400 backdrop-blur-md border border-amber-500/20 mb-6">
             <Compass className="h-4 w-4 text-amber-400" />
-            <span>Discover India &bull; 28 States &bull; 138 Cities &bull; 93 Curated Destinations</span>
+            <span>Discover India &bull; 39 States &amp; UTs &bull; 202 Cities &bull; 164 Curated Destinations</span>
           </div>
 
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white max-w-4xl mx-auto leading-tight">
@@ -147,7 +146,7 @@ export default function ExplorePage() {
       </section>
 
       {/* Main Content Area */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-6">
         {/* 2. Filter & Facets Bar */}
         <FilterBar
           selectedRegion={selectedRegion}
@@ -223,7 +222,7 @@ export default function ExplorePage() {
                 <div className="flex items-end justify-between mb-6">
                   <div>
                     <div className="flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-amber-700 mb-1">
-                      <Sparkles className="h-4 w-4" />
+                      <MapPin className="h-4 w-4" />
                       <span>Curated Highlights</span>
                     </div>
                     <h2 className="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">

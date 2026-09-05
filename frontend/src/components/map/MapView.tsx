@@ -30,14 +30,14 @@ export function MapView({
   markers,
   center,
   zoom,
-  className = 'h-96 w-full rounded-2xl overflow-hidden shadow-inner border border-stone-200',
+  className = 'h-96 min-h-[380px] w-full rounded-2xl overflow-hidden shadow-inner border border-stone-200',
   title,
   subtitle,
 }: MapViewProps) {
   return (
-    <div className="w-full space-y-3">
+    <div className="w-full space-y-4">
       {(title || subtitle) && (
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             {title && (
               <h4 className="text-lg font-bold text-stone-900 flex items-center">
@@ -47,7 +47,7 @@ export function MapView({
             )}
             {subtitle && <p className="text-xs text-stone-500">{subtitle}</p>}
           </div>
-          <div className="flex items-center space-x-3 text-xs text-stone-600 font-medium">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-stone-600 font-medium">
             <span className="flex items-center">
               <span className="h-2.5 w-2.5 rounded-full bg-amber-500 mr-1.5" /> Destination
             </span>

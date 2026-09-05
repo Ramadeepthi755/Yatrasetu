@@ -70,5 +70,8 @@ public interface TourismDemandSignalRepository extends JpaRepository<TourismDema
         @Param("includeDemo") boolean includeDemo
     );
 
+    @Query("SELECT s.destination.id, COUNT(s) FROM TourismDemandSignal s GROUP BY s.destination.id")
+    List<Object[]> countSignalsByDestination();
+
     long countBySourceType(IntelligenceSourceType sourceType);
 }

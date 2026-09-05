@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Utensils, AlertCircle, RefreshCw, Sparkles, Leaf } from 'lucide-react';
+import { Utensils, AlertCircle, RefreshCw, Leaf } from 'lucide-react';
 import { getDestinationFood, FamousFoodItem } from '@/lib/api';
 import { ProvenanceBadge } from './ProvenanceBadge';
 import { EcosystemEmptyState } from './EcosystemEmptyState';
@@ -125,7 +125,7 @@ export function FamousFoodSection({ destinationId, destinationName }: FamousFood
 
               <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
                 <span className="flex items-center gap-1">
-                  <Sparkles className="w-3 h-3 text-orange-500" />
+                  <Utensils className="w-3 h-3 text-orange-500" />
                   <span>Curated Specialty</span>
                 </span>
                 <ProvenanceBadge

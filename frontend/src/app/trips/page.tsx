@@ -13,6 +13,7 @@ import {
   Users,
   Wallet,
   Sparkles,
+  Route,
   ArrowRight,
   Loader2,
   AlertCircle,
@@ -108,7 +109,7 @@ export default function MyTripsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-800">
           <div>
             <div className="flex items-center gap-2 text-xs font-bold text-primary mb-1">
-              <Sparkles className="w-3.5 h-3.5" />
+              <Route className="w-3.5 h-3.5" />
               <span>Traveler Dashboard</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">

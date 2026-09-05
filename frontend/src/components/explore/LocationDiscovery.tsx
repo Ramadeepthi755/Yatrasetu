@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Navigation, Loader2, AlertCircle, Sparkles, MapPin, ArrowRight } from 'lucide-react';
+import { Navigation, Loader2, AlertCircle, MapPin, ArrowRight } from 'lucide-react';
 import { getNearbyPlaces, NearbyResult } from '@/lib/api';
 import { DestinationCard } from './DestinationCard';
 import { CityCard } from './CityCard';
@@ -121,7 +121,7 @@ export function LocationDiscovery() {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-lg font-bold text-amber-400 flex items-center">
-                  <Sparkles className="h-4 w-4 mr-2" />
+                  <MapPin className="h-4 w-4 mr-2" />
                   Closest Destinations to You
                 </h4>
               </div>

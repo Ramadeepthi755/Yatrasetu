@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Bookmark, MapPin, Sparkles, Star, ShieldCheck, Tag } from 'lucide-react';
+import { Bookmark, MapPin, Star, ShieldCheck, Tag } from 'lucide-react';
 import { DestinationSummary } from '@/lib/api';
 
 interface DestinationCardProps {

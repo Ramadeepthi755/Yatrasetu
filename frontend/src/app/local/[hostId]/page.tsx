@@ -12,7 +12,7 @@ import {
   Languages,
   ArrowLeft,
   Calendar,
-  Sparkles,
+  Landmark,
   ShieldCheck,
   AlertCircle,
   MessageSquare,
@@ -239,7 +239,7 @@ export default function LocalHostProfilePage() {
         {host.about && (
           <div className="mt-8 rounded-3xl border border-stone-200 bg-white p-6 sm:p-8 shadow-sm">
             <h2 className="text-lg font-bold text-stone-900 flex items-center mb-3">
-              <Sparkles className="h-4 w-4 mr-2 text-amber-500" />
+              <Landmark className="h-4 w-4 mr-2 text-amber-600" />
               About {host.name}
             </h2>
             <p className="text-sm text-stone-700 leading-relaxed whitespace-pre-line">

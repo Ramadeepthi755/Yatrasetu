@@ -2,6 +2,8 @@ package com.yatrasetu.web.rest;
 
 import com.yatrasetu.config.UserPrincipal;
 import com.yatrasetu.domain.User;
+import com.yatrasetu.domain.intelligence.GovernmentActionPriority;
+import com.yatrasetu.domain.intelligence.GovernmentActionStatus;
 import com.yatrasetu.repository.UserRepository;
 import com.yatrasetu.service.intelligence.*;
 import com.yatrasetu.web.dto.ApiResponse;
@@ -28,6 +30,10 @@ public class GovernmentIntelligenceController {
     private final TourismForecastService forecastService;
     private final TourismRedistributionService redistributionService;
     private final LocalOpportunityService opportunityService;
+    private final HiddenGemDiscoveryService hiddenGemService;
+    private final DynamicRedistributionService dynamicRedistributionService;
+    private final EcosystemGapDetectionService gapDetectionService;
+    private final GovernmentAlertService alertService;
     private final UserRepository userRepository;
 
     @GetMapping("/overview")
@@ -86,6 +92,36 @@ public class GovernmentIntelligenceController {
         return ResponseEntity.ok(ApiResponse.ok(recommendations));
     }
 
+    @GetMapping("/redistribution/dynamic")
+    public ResponseEntity<ApiResponse<List<DynamicRedistributionPairDto>>> getDynamicRedistributionCorridors(
+            @RequestParam(name = "sourceId", required = false) String sourceId,
+            @RequestParam(name = "includeDemo", defaultValue = "true") boolean includeDemo,
+            @RequestParam(name = "limit", defaultValue = "15") int limit) {
+        List<DynamicRedistributionPairDto> corridors = dynamicRedistributionService.calculateDynamicCorridors(sourceId, includeDemo, limit);
+        return ResponseEntity.ok(ApiResponse.ok(corridors));
+    }
+
+    @GetMapping("/hidden-gems")
+    public ResponseEntity<ApiResponse<List<DynamicHiddenGemDto>>> getHiddenGems(
+            @RequestParam(name = "includeDemo", defaultValue = "true") boolean includeDemo,
+            @RequestParam(name = "limit", defaultValue = "15") int limit) {
+        List<DynamicHiddenGemDto> gems = hiddenGemService.discoverHiddenGems(includeDemo, limit);
+        return ResponseEntity.ok(ApiResponse.ok(gems));
+    }
+
+    @GetMapping("/ecosystem-gaps")
+    public ResponseEntity<ApiResponse<List<EcosystemGapDto>>> getEcosystemGaps() {
+        List<EcosystemGapDto> gaps = gapDetectionService.detectAndSyncEcosystemGaps();
+        return ResponseEntity.ok(ApiResponse.ok(gaps));
+    }
+
+    @GetMapping("/alerts")
+    public ResponseEntity<ApiResponse<List<GovernmentAlertDto>>> getPrioritizedAlerts(
+            @RequestParam(name = "includeDemo", defaultValue = "true") boolean includeDemo) {
+        List<GovernmentAlertDto> alerts = alertService.getPrioritizedAlerts(includeDemo);
+        return ResponseEntity.ok(ApiResponse.ok(alerts));
+    }
+
     @GetMapping("/map")
     public ResponseEntity<ApiResponse<List<GovernmentMapMarkerDto>>> getMapMarkers(
             @RequestParam(name = "includeDemo", defaultValue = "true") boolean includeDemo) {
@@ -103,6 +139,32 @@ public class GovernmentIntelligenceController {
         return ResponseEntity.ok(ApiResponse.ok(dto));
     }
 
+    @GetMapping("/actions/history")
+    public ResponseEntity<ApiResponse<List<GovernmentActionResponseDto>>> getActionHistory(
+            @RequestParam(name = "status", required = false) GovernmentActionStatus status,
+            @RequestParam(name = "priority", required = false) GovernmentActionPriority priority) {
+        List<GovernmentActionResponseDto> history = intelligenceService.getActionHistory(status, priority);
+        return ResponseEntity.ok(ApiResponse.ok(history));
+    }
+
+    @PatchMapping("/actions/{id}/status")
+    public ResponseEntity<ApiResponse<GovernmentActionResponseDto>> updateActionStatus(
+            @PathVariable("id") String id,
+            @RequestBody GovernmentActionStatusUpdateRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        User user = principal != null ? userRepository.findById(principal.getUserId()).orElse(null) : null;
+        GovernmentActionResponseDto updated = intelligenceService.updateActionStatus(
+                id,
+                request.getStatus(),
+                request.getResolutionNotes(),
+                user
+        );
+        if (updated == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(ApiResponse.ok(updated));
+    }
+
     @PostMapping("/recommendations/{id}/review")
     public ResponseEntity<ApiResponse<String>> reviewRecommendation(
             @PathVariable("id") String id,
@@ -117,11 +179,11 @@ public class GovernmentIntelligenceController {
     }
 
     @PostMapping("/actions")
-    public ResponseEntity<ApiResponse<String>> recordAction(
+    public ResponseEntity<ApiResponse<GovernmentActionResponseDto>> recordAction(
             @RequestBody GovernmentActionRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
         User user = principal != null ? userRepository.findById(principal.getUserId()).orElse(null) : null;
-        intelligenceService.recordAction(request, user);
-        return ResponseEntity.ok(ApiResponse.ok("Government action recorded successfully."));
+        GovernmentActionResponseDto saved = intelligenceService.recordAction(request, user);
+        return ResponseEntity.ok(ApiResponse.ok(saved));
     }
 }

@@ -318,7 +318,7 @@ export default function ExperienceDetailPage() {
                   </div>
                 </div>
                 <span className="text-xs font-semibold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
-                  Inquiry Mode
+                  Demo Payment Simulation
                 </span>
               </div>
 

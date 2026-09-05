@@ -187,6 +187,97 @@ export interface LocalOpportunity {
   disclaimer: string;
 }
 
+export interface GovernmentAlert {
+  id: string;
+  alertCategory: 'CRITICAL_PRESSURE' | 'SUPPLY_BOTTLENECK' | 'UNDERUTILIZED_ASSET' | 'WATCHLIST';
+  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  destinationId: string;
+  destinationName: string;
+  stateName: string;
+  metricValue: number;
+  metricLabel: string;
+  title: string;
+  explanation: string;
+  recommendedAction: string;
+  sourceType: string;
+  timestamp: string;
+}
+
+export interface EcosystemGap {
+  id: string;
+  destinationId: string;
+  destinationName: string;
+  stateName: string;
+  cityName: string;
+  gapType: 'GUIDE_HOST_DEFICIT' | 'STAYS_DEFICIT' | 'EXPERIENCE_DEFICIT' | 'CONNECTIVITY_GAP';
+  severity: 'HIGH' | 'MEDIUM' | 'LOW';
+  description: string;
+  suggestedIntervention: string;
+  observedDemand: number;
+  hostCount: number;
+  hotelCount: number;
+  experienceCount: number;
+  sourceType: string;
+  detectedAt: string;
+  disclaimer: string;
+}
+
+export interface DynamicHiddenGem {
+  destinationId: string;
+  destinationName: string;
+  stateName: string;
+  cityName: string;
+  classification: string;
+  demandScore: number;
+  activityPressureScore: number;
+  localOpportunityScore: number;
+  accessibilityScore: number;
+  sustainabilityProxyScore: number;
+  poiCount: number;
+  tripTypes: string[];
+  hiddenGemScore: number;
+  explanation: string;
+  sourceType: string;
+  disclaimer: string;
+}
+
+export interface DynamicRedistributionPair {
+  sourceDestinationId: string;
+  sourceDestinationName: string;
+  sourceStateName: string;
+  sourceActivityPressureScore: number;
+  sourceDemandScore: number;
+  targetDestinationId: string;
+  targetDestinationName: string;
+  targetStateName: string;
+  targetActivityPressureScore: number;
+  targetLocalOpportunityScore: number;
+  pressureDifferential: number;
+  compatibilityScore: number;
+  sharedThemes: string[];
+  reason: string;
+  expectedPotentialBenefit: string;
+  sourceType: string;
+  limitationsDisclaimer: string;
+}
+
+export interface GovernmentActionRecord {
+  id: string;
+  destinationId?: string;
+  destinationName: string;
+  stateName: string;
+  recommendationId?: string;
+  actionType: string;
+  title: string;
+  notes?: string;
+  status: 'LOGGED' | 'IN_PROGRESS' | 'RESOLVED' | 'DISMISSED';
+  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  resolutionNotes?: string;
+  resolvedAt?: string;
+  userFullName: string;
+  createdAt: string;
+}
+
 export interface StateSummary {
   id: string;
   stateName: string;
@@ -763,9 +854,9 @@ export async function reviewRecommendation(id: string, notes?: string, token?: s
 }
 
 export async function recordGovernmentAction(
-  action: { destinationId?: string; recommendationId?: string; actionType: string; title: string; notes?: string },
+  action: { destinationId?: string; recommendationId?: string; actionType: string; title: string; notes?: string; priority?: string },
   token?: string
-): Promise<ApiResponse<string>> {
+): Promise<ApiResponse<GovernmentActionRecord>> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
@@ -777,6 +868,91 @@ export async function recordGovernmentAction(
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.message || `Failed to record government action: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getGovernmentAlerts(token?: string, includeDemo = false): Promise<ApiResponse<GovernmentAlert[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/intelligence/alerts?includeDemo=${includeDemo}`, { headers, cache: 'no-store' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch alerts: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getEcosystemGaps(token?: string): Promise<ApiResponse<EcosystemGap[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/intelligence/ecosystem-gaps`, { headers, cache: 'no-store' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch ecosystem gaps: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getGovernmentHiddenGems(token?: string, limit = 15, includeDemo = false): Promise<ApiResponse<DynamicHiddenGem[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/intelligence/hidden-gems?limit=${limit}&includeDemo=${includeDemo}`, { headers, cache: 'no-store' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch hidden gems: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getDynamicRedistributionCorridors(sourceId?: string, token?: string, limit = 15, includeDemo = false): Promise<ApiResponse<DynamicRedistributionPair[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const url = sourceId
+    ? `${API_BASE_URL}/government/intelligence/redistribution/dynamic?sourceId=${encodeURIComponent(sourceId)}&limit=${limit}&includeDemo=${includeDemo}`
+    : `${API_BASE_URL}/government/intelligence/redistribution/dynamic?limit=${limit}&includeDemo=${includeDemo}`;
+
+  const res = await fetch(url, { headers, cache: 'no-store' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch dynamic corridors: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getActionHistory(status?: string, priority?: string, token?: string): Promise<ApiResponse<GovernmentActionRecord[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const params = new URLSearchParams();
+  if (status) params.append('status', status);
+  if (priority) params.append('priority', priority);
+
+  const url = `${API_BASE_URL}/government/intelligence/actions/history${params.toString() ? `?${params.toString()}` : ''}`;
+  const res = await fetch(url, { headers, cache: 'no-store' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch action history: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function updateActionStatus(id: string, status: string, resolutionNotes?: string, token?: string): Promise<ApiResponse<GovernmentActionRecord>> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/intelligence/actions/${id}/status`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({ status, resolutionNotes }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to update action status: ${res.status}`);
   }
   return res.json();
 }

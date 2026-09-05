@@ -149,10 +149,25 @@ export default function LeafletMapInner({
       map.setView([validMarkers[0].latitude, validMarkers[0].longitude], 12);
     }
 
+    // Force Leaflet to recalculate container dimensions to avoid partial tiles or cut-off maps
+    const timer1 = setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+    const timer2 = setTimeout(() => {
+      map.invalidateSize();
+    }, 350);
+
+    const handleResize = () => {
+      map.invalidateSize();
+    };
+    window.addEventListener('resize', handleResize);
+
     return () => {
-      // Map cleanup on unmount
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      window.removeEventListener('resize', handleResize);
     };
   }, [markers, center, zoom]);
 
-  return <div ref={mapContainerRef} className={className} />;
+  return <div ref={mapContainerRef} className={`relative z-0 isolate overflow-hidden ${className}`} />;
 }

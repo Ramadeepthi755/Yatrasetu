@@ -10,7 +10,6 @@ import {
   ArrowLeft,
   Camera,
   Bed,
-  Sparkles,
   Loader2,
   AlertCircle,
 } from 'lucide-react';

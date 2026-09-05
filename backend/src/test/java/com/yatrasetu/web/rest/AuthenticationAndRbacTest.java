@@ -267,5 +267,48 @@ public class AuthenticationAndRbacTest {
                 .header("Authorization", "Bearer mock-government-official@tourism.gov.in"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
+
+        // Phase 15 Endpoints
+        mockMvc.perform(get("/api/v1/government/intelligence/ecosystem-gaps")
+                .header("Authorization", "Bearer mock-government-official@tourism.gov.in"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        mockMvc.perform(get("/api/v1/government/intelligence/hidden-gems")
+                .header("Authorization", "Bearer mock-government-official@tourism.gov.in"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        mockMvc.perform(get("/api/v1/government/intelligence/redistribution/dynamic")
+                .header("Authorization", "Bearer mock-government-official@tourism.gov.in"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        mockMvc.perform(get("/api/v1/government/intelligence/alerts")
+                .header("Authorization", "Bearer mock-government-official@tourism.gov.in"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        mockMvc.perform(get("/api/v1/government/intelligence/actions/history")
+                .header("Authorization", "Bearer mock-government-official@tourism.gov.in"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    void testPhase15EndpointsBlockedForTravelerAndGuest() throws Exception {
+        mockMvc.perform(get("/api/v1/government/intelligence/ecosystem-gaps"))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(get("/api/v1/government/intelligence/ecosystem-gaps")
+                .header("Authorization", "Bearer mock-traveler-traveler@yatrasetu.in"))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/api/v1/government/intelligence/hidden-gems"))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(get("/api/v1/government/intelligence/hidden-gems")
+                .header("Authorization", "Bearer mock-partner-partner@yatrasetu.in"))
+                .andExpect(status().isForbidden());
     }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import {
@@ -9,7 +9,8 @@ import {
   Clock,
   CheckCircle,
   AlertTriangle,
-  Sparkles,
+  Compass,
+  Palette,
   MapPin,
   Plus,
   Edit2,
@@ -17,7 +18,9 @@ import {
   X,
   IndianRupee,
   Users,
-  AlertCircle
+  AlertCircle,
+  Store,
+  Landmark,
 } from 'lucide-react';
 import {
   getPartnerExperiences,
@@ -26,6 +29,25 @@ import {
   deletePartnerExperience,
   ExperienceItem
 } from '@/lib/api';
+
+const CULTURAL_CATEGORIES = [
+  'Handicraft / Artisan',
+  'Cultural Workshop',
+  'Traditional Food / Culinary',
+  'Folk Art / Performance',
+  'Local Cultural Business',
+  'Traditional Product',
+  'Heritage Craft',
+];
+
+const TOUR_CATEGORIES = [
+  'Heritage Tour',
+  'Food Walk',
+  'Adventure',
+  'Photography',
+  'Spiritual Walk',
+  'Nature Trail',
+];
 
 export default function PartnerDashboardPage() {
   const { user, partnerDetails, token, role, isAuthenticated, openAuthModal } = useAuth();
@@ -36,6 +58,7 @@ export default function PartnerDashboardPage() {
   const [editingExp, setEditingExp] = useState<ExperienceItem | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'EXPERIENCES' | 'CULTURE'>('EXPERIENCES');
 
   // Form State
   const [formData, setFormData] = useState({
@@ -72,17 +95,17 @@ export default function PartnerDashboardPage() {
     }
   }, [isAuthenticated, role, loadExperiences]);
 
-  const handleOpenCreate = () => {
+  const handleOpenCreate = (initialCategory = 'Heritage Tour') => {
     setEditingExp(null);
     setFormData({
       title: '',
-      category: 'Heritage Tour',
+      category: initialCategory,
       description: '',
       durationHours: 3.0,
       pricePerPerson: 900,
       maxGroupSize: 8,
-      includedItems: 'Local expert guide, Heritage walking map, Refreshments',
-      requirements: 'Comfortable walking shoes',
+      includedItems: 'Local artisan demonstration, Materials, Refreshments',
+      requirements: 'Open for all enthusiasts',
       languages: 'English, Hindi',
       coverImageUrl: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=1200&q=80',
     });
@@ -109,12 +132,12 @@ export default function PartnerDashboardPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this experience?')) return;
+    if (!confirm('Are you sure you want to delete this listing?')) return;
     try {
       await deletePartnerExperience(id, token || undefined);
       setExperiences((prev) => prev.filter((e) => e.id !== id));
     } catch (err: unknown) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to delete experience';
+      const errorMsg = err instanceof Error ? err.message : 'Failed to delete listing';
       alert(errorMsg);
     }
   };
@@ -151,12 +174,20 @@ export default function PartnerDashboardPage() {
       }
       setModalOpen(false);
     } catch (err: unknown) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to save experience';
+      const errorMsg = err instanceof Error ? err.message : 'Failed to save listing';
       setActionError(errorMsg);
     } finally {
       setSubmitting(false);
     }
   };
+
+  const culturalListings = useMemo(() => {
+    return experiences.filter((e) => CULTURAL_CATEGORIES.includes(e.category) || e.category.toLowerCase().includes('craft') || e.category.toLowerCase().includes('art') || e.category.toLowerCase().includes('culture'));
+  }, [experiences]);
+
+  const regularListings = useMemo(() => {
+    return experiences.filter((e) => !culturalListings.includes(e));
+  }, [experiences, culturalListings]);
 
   // Role Gate
   if (!isAuthenticated || role !== 'PARTNER') {
@@ -168,7 +199,7 @@ export default function PartnerDashboardPage() {
           </div>
           <h2 className="text-xl font-bold text-[#171717]">Partner Access Required</h2>
           <p className="text-xs text-[#64748B] leading-relaxed">
-            This dashboard is dedicated to verified local tourism partners, guides, and experience hosts.
+            This dashboard is dedicated to verified local tourism partners, guides, artisans, and cultural operators.
           </p>
           <div className="flex flex-col gap-2 pt-2">
             <button
@@ -208,7 +239,7 @@ export default function PartnerDashboardPage() {
                 </span>
               </div>
               <p className="text-xs text-amber-800 mt-0.5 leading-relaxed">
-                Your profile has been submitted to local authorities. You can prepare and publish your experiences while verification is underway.
+                Your profile has been submitted to local authorities. You can prepare and publish your experiences and cultural listings while verification is underway.
               </p>
             </div>
           </div>
@@ -260,7 +291,14 @@ export default function PartnerDashboardPage() {
 
         <div className="flex items-center space-x-2">
           <button
-            onClick={handleOpenCreate}
+            onClick={() => handleOpenCreate('Handicraft / Artisan')}
+            className="px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5"
+          >
+            <Palette className="w-4 h-4" />
+            Add Cultural Listing
+          </button>
+          <button
+            onClick={() => handleOpenCreate('Heritage Tour')}
             className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5"
           >
             <Plus className="w-4 h-4" />
@@ -268,7 +306,7 @@ export default function PartnerDashboardPage() {
           </button>
           <Link
             href="/partner/profile"
-            className="px-4 py-2.5 rounded-xl bg-[#0F766E] hover:bg-[#0D9488] text-white text-xs font-semibold transition-colors shadow-sm flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#171717] text-xs font-semibold transition-colors shadow-sm flex items-center gap-1.5"
           >
             <Briefcase className="w-4 h-4" />
             Edit Profile
@@ -276,104 +314,184 @@ export default function PartnerDashboardPage() {
         </div>
       </div>
 
-      {/* Metric Cards */}
+      {/* Metric Cards - Honest Demo Labeling */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-1">
           <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-            Active Experiences
+            Active Listings
           </span>
           <div className="text-2xl font-extrabold text-[#171717]">{experiences.length}</div>
-          <span className="text-[10px] text-teal-600 font-medium">Published Listings</span>
+          <span className="text-[10px] text-teal-600 font-medium">
+            {culturalListings.length} Culture • {regularListings.length} Tours
+          </span>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-1">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-            Total Inquiries
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              Inquiries
+            </span>
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
+              Demo
+            </span>
+          </div>
           <div className="text-2xl font-extrabold text-[#171717]">12</div>
-          <span className="text-[10px] text-emerald-600 font-medium">Verified Inquiries</span>
+          <span className="text-[10px] text-slate-500 font-medium">Sample Partner Activity</span>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-1">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-            Total Revenue
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              Revenue
+            </span>
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
+              Demo
+            </span>
+          </div>
           <div className="text-2xl font-extrabold text-[#171717]">₹18,500</div>
-          <span className="text-[10px] text-slate-400">Direct Local Payouts</span>
+          <span className="text-[10px] text-slate-500">Simulated Payouts</span>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-1">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-            Partner Trust Score
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              Trust Score
+            </span>
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-teal-50 text-teal-700 border border-teal-200">
+              Sample
+            </span>
+          </div>
           <div className="text-2xl font-extrabold text-[#0F766E]">4.9 / 5.0</div>
-          <span className="text-[10px] text-teal-600 font-medium">Verified Status</span>
+          <span className="text-[10px] text-teal-600 font-medium">Community Rating</span>
         </div>
       </div>
 
-      {/* My Experiences Management Section */}
+      {/* Tabs: Tours & Experiences vs Local Culture & Artisans */}
+      <div className="flex items-center space-x-3 border-b border-slate-200 pb-3">
+        <button
+          onClick={() => setActiveTab('EXPERIENCES')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 ${
+            activeTab === 'EXPERIENCES'
+              ? 'bg-amber-500 text-stone-950 shadow-sm'
+              : 'text-stone-600 hover:bg-stone-100'
+          }`}
+        >
+          <Compass className="w-4 h-4" />
+          <span>Tours &amp; Experiences ({regularListings.length})</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('CULTURE')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 ${
+            activeTab === 'CULTURE'
+              ? 'bg-teal-700 text-white shadow-sm'
+              : 'text-stone-600 hover:bg-stone-100'
+          }`}
+        >
+          <Palette className="w-4 h-4" />
+          <span>Local Culture &amp; Artisans ({culturalListings.length})</span>
+        </button>
+      </div>
+
+      {/* Listings Management Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-[#171717] flex items-center">
-              <Sparkles className="w-5 h-5 mr-2 text-amber-500" />
-              My Experiences & Walking Tours
+              {activeTab === 'CULTURE' ? (
+                <>
+                  <Palette className="w-5 h-5 mr-2 text-teal-700" />
+                  Local Culture &amp; Artisan Hub ({culturalListings.length})
+                </>
+              ) : (
+                <>
+                  <Compass className="w-5 h-5 mr-2 text-amber-600" />
+                  Tours &amp; Guided Experiences ({regularListings.length})
+                </>
+              )}
             </h2>
             <p className="text-xs text-[#64748B] mt-0.5">
-              Manage your published experiences, pricing, and guest capacity
+              {activeTab === 'CULTURE'
+                ? 'Showcase authentic local crafts, cultural workshops, and community businesses.'
+                : 'Manage your published tours, pricing, and guest capacity'}
             </p>
           </div>
           <button
-            onClick={handleOpenCreate}
-            className="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center"
+            onClick={() => handleOpenCreate(activeTab === 'CULTURE' ? 'Handicraft / Artisan' : 'Heritage Tour')}
+            className={`text-xs font-bold flex items-center ${
+              activeTab === 'CULTURE' ? 'text-teal-700 hover:text-teal-800' : 'text-amber-600 hover:text-amber-700'
+            }`}
           >
-            <Plus className="w-3.5 h-3.5 mr-1" /> Add New
+            <Plus className="w-3.5 h-3.5 mr-1" />
+            {activeTab === 'CULTURE' ? 'Add Cultural Listing' : 'Add Experience'}
           </button>
         </div>
 
-        {/* Experience Cards List */}
+        {/* Listings Cards List */}
         {loadingExps ? (
           <div className="rounded-2xl bg-white border border-slate-200 p-8 text-center text-xs text-slate-400 animate-pulse">
-            Loading your experiences...
+            Loading your listings...
           </div>
-        ) : experiences.length === 0 ? (
+        ) : (activeTab === 'CULTURE' ? culturalListings : regularListings).length === 0 ? (
           <div className="rounded-3xl border border-dashed border-slate-200 bg-white p-10 text-center space-y-3">
-            <Sparkles className="w-8 h-8 text-amber-500 mx-auto" />
-            <h4 className="text-sm font-bold text-slate-800">No experiences published yet</h4>
+            {activeTab === 'CULTURE' ? (
+              <Palette className="w-8 h-8 text-teal-600 mx-auto" />
+            ) : (
+              <Compass className="w-8 h-8 text-amber-500 mx-auto" />
+            )}
+            <h4 className="text-sm font-bold text-slate-800">
+              {activeTab === 'CULTURE'
+                ? 'No cultural listings published yet'
+                : 'No tour experiences published yet'}
+            </h4>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              Create your first walking tour, artisan workshop, or culinary walk to start receiving travelers.
+              {activeTab === 'CULTURE'
+                ? 'Showcase authentic local crafts, pottery, handloom, culinary workshops, or folk art to connect travelers with living heritage.'
+                : 'Create your first walking tour, heritage circuit, or nature exploration to start receiving travelers.'}
             </p>
             <button
-              onClick={handleOpenCreate}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-bold rounded-xl shadow transition-colors"
+              onClick={() => handleOpenCreate(activeTab === 'CULTURE' ? 'Handicraft / Artisan' : 'Heritage Tour')}
+              className={`px-4 py-2 text-xs font-bold rounded-xl shadow transition-colors ${
+                activeTab === 'CULTURE'
+                  ? 'bg-teal-700 hover:bg-teal-600 text-white'
+                  : 'bg-amber-500 hover:bg-amber-400 text-stone-950'
+              }`}
             >
-              Publish First Experience
+              {activeTab === 'CULTURE' ? 'Publish Cultural Listing' : 'Publish First Experience'}
             </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {experiences.map((exp) => (
+            {(activeTab === 'CULTURE' ? culturalListings : regularListings).map((exp) => (
               <div
                 key={exp.id}
                 className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
-                    <span className="rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-200">
-                      {exp.category}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold border ${
+                        CULTURAL_CATEGORIES.includes(exp.category)
+                          ? 'bg-teal-50 text-teal-800 border-teal-200'
+                          : 'bg-amber-50 text-amber-800 border-amber-200'
+                      }`}>
+                        {exp.category}
+                      </span>
+                      <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-600 border border-slate-200">
+                        PARTNER_SUBMITTED
+                      </span>
+                    </div>
                     <div className="flex items-center space-x-1">
                       <button
                         onClick={() => handleOpenEdit(exp)}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-                        title="Edit Experience"
+                        title="Edit Listing"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(exp.id)}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                        title="Delete Experience"
+                        title="Delete Listing"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -395,7 +513,7 @@ export default function PartnerDashboardPage() {
                     </span>
                     <span className="flex items-center">
                       <Users className="w-3.5 h-3.5 mr-1 text-stone-400" />
-                      Up to {exp.maxGroupSize} guests
+                      Up to {exp.maxGroupSize} participants
                     </span>
                   </div>
                 </div>
@@ -420,14 +538,16 @@ export default function PartnerDashboardPage() {
         )}
       </div>
 
-      {/* Modal: Create / Edit Experience */}
+      {/* Modal: Create / Edit Experience or Cultural Listing */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl border border-slate-200 max-w-xl w-full p-6 sm:p-8 shadow-2xl relative my-8">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
               <div>
                 <h3 className="text-lg font-bold text-stone-900">
-                  {editingExp ? 'Edit Experience' : 'Publish New Experience'}
+                  {editingExp
+                    ? (CULTURAL_CATEGORIES.includes(formData.category) ? 'Edit Cultural Listing' : 'Edit Experience')
+                    : (activeTab === 'CULTURE' ? 'Publish Cultural Listing' : 'Publish New Experience')}
                 </h3>
                 <p className="text-xs text-stone-500">
                   Protected with strict server-side partner ownership authorization
@@ -456,7 +576,11 @@ export default function PartnerDashboardPage() {
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="e.g. Dawn Heritage Ghats & Hidden Alleys Walk"
+                  placeholder={
+                    activeTab === 'CULTURE'
+                      ? 'e.g. Traditional Kalamkari Hand-Painting Workshop'
+                      : 'e.g. Dawn Heritage Ghats & Hidden Alleys Walk'
+                  }
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-stone-900 focus:border-amber-400 focus:outline-none"
                 />
               </div>
@@ -469,12 +593,20 @@ export default function PartnerDashboardPage() {
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-stone-900 focus:border-amber-400 focus:outline-none"
                   >
-                    <option value="Heritage Tour">Heritage Tour</option>
-                    <option value="Craft Workshop">Craft Workshop</option>
-                    <option value="Food Walk">Food Walk</option>
-                    <option value="Adventure">Adventure</option>
-                    <option value="Photography">Photography</option>
-                    <option value="Spiritual Walk">Spiritual Walk</option>
+                    <optgroup label="Local Culture & Artisans">
+                      {CULTURAL_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Tours & Sights">
+                      {TOUR_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </optgroup>
                   </select>
                 </div>
 
@@ -528,7 +660,11 @@ export default function PartnerDashboardPage() {
                   required
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Describe the journey, stories, stops, and what makes it extraordinary..."
+                  placeholder={
+                    activeTab === 'CULTURE'
+                      ? 'Describe the authentic craft tradition, master artisan history, workshop process, and materials...'
+                      : 'Describe the journey, stories, stops, and what makes it extraordinary...'
+                  }
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-stone-900 focus:border-amber-400 focus:outline-none"
                 />
               </div>
@@ -539,7 +675,7 @@ export default function PartnerDashboardPage() {
                   type="text"
                   value={formData.includedItems}
                   onChange={(e) => setFormData({ ...formData, includedItems: e.target.value })}
-                  placeholder="e.g. Certified guide, Sunrise boat ride, Traditional chai"
+                  placeholder="e.g. Master artisan guidance, Raw materials, Take-home craft piece, Chai"
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-stone-900 focus:border-amber-400 focus:outline-none"
                 />
               </div>
@@ -551,7 +687,7 @@ export default function PartnerDashboardPage() {
                     type="text"
                     value={formData.requirements}
                     onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
-                    placeholder="e.g. Comfortable walking sneakers"
+                    placeholder="e.g. Open to all skill levels"
                     className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-stone-900 focus:border-amber-400 focus:outline-none"
                   />
                 </div>
@@ -562,7 +698,7 @@ export default function PartnerDashboardPage() {
                     type="text"
                     value={formData.languages}
                     onChange={(e) => setFormData({ ...formData, languages: e.target.value })}
-                    placeholder="e.g. English, Hindi, Bengali"
+                    placeholder="e.g. English, Hindi, Telugu"
                     className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-stone-900 focus:border-amber-400 focus:outline-none"
                   />
                 </div>
@@ -574,7 +710,7 @@ export default function PartnerDashboardPage() {
                   type="url"
                   value={formData.coverImageUrl}
                   onChange={(e) => setFormData({ ...formData, coverImageUrl: e.target.value })}
-                  placeholder="https://images.unsplash.com/..."
+                  placeholder="https://upload.wikimedia.org/..."
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-stone-900 focus:border-amber-400 focus:outline-none"
                 />
               </div>
@@ -590,9 +726,19 @@ export default function PartnerDashboardPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold shadow disabled:opacity-50"
+                  className={`px-5 py-2 rounded-xl font-bold shadow disabled:opacity-50 ${
+                    activeTab === 'CULTURE'
+                      ? 'bg-teal-700 hover:bg-teal-600 text-white'
+                      : 'bg-amber-500 hover:bg-amber-400 text-stone-950'
+                  }`}
                 >
-                  {submitting ? 'Saving...' : editingExp ? 'Update Experience' : 'Publish Experience'}
+                  {submitting
+                    ? 'Saving...'
+                    : editingExp
+                    ? 'Update Listing'
+                    : activeTab === 'CULTURE'
+                    ? 'Publish Cultural Listing'
+                    : 'Publish Experience'}
                 </button>
               </div>
             </form>

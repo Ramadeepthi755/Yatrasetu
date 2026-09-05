@@ -10,7 +10,6 @@ import {
   ArrowRight,
   AlertCircle,
   X,
-  Sparkles,
   Briefcase,
   Landmark,
 } from 'lucide-react';
@@ -225,7 +224,7 @@ export default function AuthModal() {
           <div className="space-y-3">
             <div className="text-center">
               <span className="text-xs font-extrabold uppercase tracking-wider text-[#171717] inline-flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[#F59E0B]" />
+                <Compass className="w-3.5 h-3.5 text-[#F59E0B]" />
                 Try Demo Account
               </span>
               <p className="text-[11px] text-[#64748B] mt-0.5">

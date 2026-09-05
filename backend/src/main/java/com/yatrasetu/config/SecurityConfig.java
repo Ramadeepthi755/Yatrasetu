@@ -30,6 +30,8 @@ import java.time.Instant;
 public class SecurityConfig {
 
     private final SupabaseAuthenticationFilter supabaseAuthenticationFilter;
+    private final CorrelationIdFilter correlationIdFilter;
+    private final RateLimitingFilter rateLimitingFilter;
     private final ObjectMapper objectMapper;
 
     @Bean
@@ -43,6 +45,9 @@ public class SecurityConfig {
                 .accessDeniedHandler(accessDeniedHandler())
             )
             .authorizeHttpRequests(auth -> auth
+                // Actuator Probes
+                .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
+
                 // Public Health & Discovery
                 .requestMatchers("/api/v1/health/**").permitAll()
                 .requestMatchers("/api/v1/public/**").permitAll()
@@ -78,7 +83,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/**").authenticated()
                 .anyRequest().permitAll()
             )
-            .addFilterBefore(supabaseAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(correlationIdFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(supabaseAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(rateLimitingFilter, SupabaseAuthenticationFilter.class);
 
         return http.build();
     }

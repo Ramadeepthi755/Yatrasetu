@@ -32,6 +32,8 @@ import {
   HeartHandshake,
   Bot,
   ExternalLink,
+  Palette,
+  Store,
 } from 'lucide-react';
 import {
   getDestinationDetail,
@@ -338,7 +340,7 @@ export default function DestinationDetailPage() {
               href={`/experiences?destinationId=${destination.id}`}
               className="inline-flex items-center space-x-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-stone-950 shadow-sm hover:bg-amber-400 transition-colors"
             >
-              <Sparkles className="h-4 w-4" />
+              <Compass className="h-4 w-4" />
               <span>Experiences ({experiences.length})</span>
             </Link>
 
@@ -378,7 +380,7 @@ export default function DestinationDetailPage() {
               {destination.uniqueExperiences && (
                 <div className="mt-6 rounded-2xl bg-amber-500/10 p-4 border border-amber-500/20">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center mb-1">
-                    <Sparkles className="h-4 w-4 mr-1 text-amber-600" />
+                    <Compass className="h-4 w-4 mr-1 text-amber-600" />
                     Signature Experience
                   </h4>
                   <p className="text-xs text-amber-950 leading-relaxed">
@@ -492,8 +494,8 @@ export default function DestinationDetailPage() {
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-2xl font-bold text-stone-900 flex items-center">
-                      <Sparkles className="h-6 w-6 mr-2 text-amber-500" />
-                      Curated Experiences & Walks ({experiences.length})
+                      <Compass className="h-6 w-6 mr-2 text-amber-600" />
+                      Curated Experiences &amp; Walks ({experiences.length})
                     </h2>
                     <p className="text-xs text-stone-500 mt-0.5">
                       Hands-on workshops, heritage trails, and local culinary walks
@@ -514,6 +516,42 @@ export default function DestinationDetailPage() {
                 </div>
               </section>
             )}
+
+            {/* Local Culture & Artisan Experiences Section */}
+            <section id="local-culture" className="rounded-3xl border border-teal-100 bg-teal-50/40 p-6 md:p-8">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-xl md:text-2xl font-bold text-stone-900 flex items-center">
+                    <Palette className="h-5 w-5 mr-2 text-teal-700" />
+                    Local Culture &amp; Artisan Experiences
+                  </h2>
+                  <p className="text-xs text-stone-600 mt-0.5">
+                    Living craft heritage, traditional workshops, and indigenous community artisans
+                  </p>
+                </div>
+              </div>
+
+              {experiences.filter(e => ['Handicraft / Artisan', 'Cultural Workshop', 'Traditional Food / Culinary', 'Folk Art / Performance', 'Local Cultural Business', 'Traditional Product', 'Heritage Craft'].includes(e.category) || e.category.toLowerCase().includes('craft')).length > 0 ? (
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 mt-4">
+                  {experiences.filter(e => ['Handicraft / Artisan', 'Cultural Workshop', 'Traditional Food / Culinary', 'Folk Art / Performance', 'Local Cultural Business', 'Traditional Product', 'Heritage Craft'].includes(e.category) || e.category.toLowerCase().includes('craft')).map((exp) => (
+                    <ExperienceCard key={exp.id} experience={exp} />
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-teal-200 bg-white/80 p-6 text-center space-y-2.5 mt-4">
+                  <Store className="h-7 w-7 text-teal-600 mx-auto opacity-70" />
+                  <p className="text-xs text-stone-600">
+                    Local cultural listings are currently limited in this destination.
+                  </p>
+                  <Link
+                    href="/partner/dashboard"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-teal-800 hover:text-teal-900 underline"
+                  >
+                    Become a Local Culture Partner →
+                  </Link>
+                </div>
+              )}
+            </section>
 
             {/* Local People & Guides Section */}
             {hosts.length > 0 && (
@@ -601,7 +639,7 @@ export default function DestinationDetailPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                 <div>
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-bold uppercase tracking-wider mb-2">
-                    <Sparkles className="h-3 w-3 text-amber-700" />
+                    <Users className="h-3 w-3 text-amber-700" />
                     Travel Connect
                   </div>
                   <h2 className="text-2xl font-bold text-stone-900 flex items-center">
@@ -823,7 +861,7 @@ export default function DestinationDetailPage() {
             {/* Future Feature Teasers */}
             <div className="rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-stone-900 p-6 text-white shadow-md space-y-4">
               <h3 className="text-base font-bold text-amber-400 flex items-center">
-                <Sparkles className="h-4 w-4 mr-2" />
+                <Users className="h-4 w-4 mr-2" />
                 Community & Local Connect
               </h3>
               <p className="text-xs text-stone-300 leading-relaxed">
@@ -855,7 +893,7 @@ export default function DestinationDetailPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl space-y-4 text-center">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600">
-              <Sparkles className="h-6 w-6" />
+              <Compass className="h-6 w-6" />
             </div>
             <h3 className="text-xl font-bold text-stone-900">{modalFeature}</h3>
             <p className="text-xs text-stone-600 leading-relaxed">

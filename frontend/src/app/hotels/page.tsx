@@ -1,12 +1,18 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Bed, Filter, Map, Grid, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Search, Bed, Filter, Map, Grid, RefreshCw, CheckCircle, AlertCircle, X, MapPin } from 'lucide-react';
 import { getHotels, getHotelCategories, HotelItem } from '@/lib/api';
 import { HotelCard } from '@/components/explore/HotelCard';
 import { MapView, MapMarker } from '@/components/map/MapView';
 
-export default function HotelsDirectoryPage() {
+function HotelsDirectoryContent() {
+  const searchParams = useSearchParams();
+  const initialDestinationId = searchParams.get('destinationId') || '';
+  const initialCityId = searchParams.get('cityId') || '';
+  const initialSearch = searchParams.get('search') || '';
+
   const [hotels, setHotels] = useState<HotelItem[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -16,7 +22,9 @@ export default function HotelsDirectoryPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
 
   // Filters
-  const [search, setSearch] = useState<string>('');
+  const [search, setSearch] = useState<string>(initialSearch);
+  const [destinationId, setDestinationId] = useState<string>(initialDestinationId);
+  const [cityId, setCityId] = useState<string>(initialCityId);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isPartnerOnly, setIsPartnerOnly] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<string>('hotelRating');
@@ -25,6 +33,16 @@ export default function HotelsDirectoryPage() {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalElements, setTotalElements] = useState<number>(0);
+
+  // Synchronize when URL searchParams change
+  useEffect(() => {
+    const urlDest = searchParams.get('destinationId') || '';
+    const urlCity = searchParams.get('cityId') || '';
+    const urlSearch = searchParams.get('search') || '';
+    if (urlDest !== destinationId) setDestinationId(urlDest);
+    if (urlCity !== cityId) setCityId(urlCity);
+    if (urlSearch && urlSearch !== search) setSearch(urlSearch);
+  }, [searchParams, destinationId, cityId, search]);
 
   // Load distinct categories
   useEffect(() => {
@@ -46,6 +64,8 @@ export default function HotelsDirectoryPage() {
     setError(null);
     try {
       const res = await getHotels({
+        destinationId: destinationId || undefined,
+        cityId: cityId || undefined,
         search: search.trim() || undefined,
         category: selectedCategory !== 'all' ? selectedCategory : undefined,
         isPartnerProperty: isPartnerOnly ? true : undefined,
@@ -66,7 +86,7 @@ export default function HotelsDirectoryPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, selectedCategory, isPartnerOnly, sortBy, currentPage, viewMode]);
+  }, [destinationId, cityId, search, selectedCategory, isPartnerOnly, sortBy, currentPage, viewMode]);
 
   useEffect(() => {
     loadHotels();
@@ -80,6 +100,8 @@ export default function HotelsDirectoryPage() {
 
   const handleReset = () => {
     setSearch('');
+    setDestinationId('');
+    setCityId('');
     setSelectedCategory('all');
     setIsPartnerOnly(false);
     setSortBy('hotelRating');
@@ -152,6 +174,45 @@ export default function HotelsDirectoryPage() {
 
         {/* Filter Controls Bar */}
         <div className="mb-8 space-y-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+          {/* Active Context Badges (if destinationId or cityId active) */}
+          {(destinationId || cityId) && (
+            <div className="flex flex-wrap items-center gap-2 pb-2 border-b border-stone-100 text-xs">
+              <span className="text-stone-500 font-medium flex items-center">
+                <MapPin className="h-3.5 w-3.5 mr-1 text-amber-500" /> Location Filter:
+              </span>
+              {destinationId && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-900 border border-indigo-200">
+                  Destination: {destinationId}
+                  <button
+                    onClick={() => {
+                      setDestinationId('');
+                      setCurrentPage(0);
+                    }}
+                    className="ml-1 hover:text-rose-600"
+                    title="Remove destination filter"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+              {cityId && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-900 border border-teal-200">
+                  City: {cityId}
+                  <button
+                    onClick={() => {
+                      setCityId('');
+                      setCurrentPage(0);
+                    }}
+                    className="ml-1 hover:text-rose-600"
+                    title="Remove city filter"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Category Tabs */}
           <div className="flex items-center space-x-2 overflow-x-auto pb-1 text-xs">
             <button
@@ -222,7 +283,7 @@ export default function HotelsDirectoryPage() {
                 <option value="priceDesc">Price: High to Low</option>
               </select>
 
-              {(search || selectedCategory !== 'all' || isPartnerOnly || sortBy !== 'hotelRating') && (
+              {(search || destinationId || cityId || selectedCategory !== 'all' || isPartnerOnly || sortBy !== 'hotelRating') && (
                 <button
                   onClick={handleReset}
                   className="flex items-center text-xs text-indigo-700 hover:text-indigo-800 font-medium ml-2"
@@ -262,6 +323,7 @@ export default function HotelsDirectoryPage() {
         <div className="mb-4 flex items-center justify-between text-xs text-stone-500 px-1">
           <span>
             Showing <strong className="text-stone-900">{hotels.length}</strong> properties
+            {totalElements > 0 && <span> of <strong>{totalElements}</strong> total</span>}
           </span>
           {viewMode === 'grid' && totalPages > 1 && (
             <span>
@@ -372,5 +434,21 @@ export default function HotelsDirectoryPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function HotelsDirectoryPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+          <div className="animate-pulse text-xs font-semibold uppercase tracking-wider text-stone-400">
+            Loading Accommodations...
+          </div>
+        </div>
+      }
+    >
+      <HotelsDirectoryContent />
+    </Suspense>
   );
 }

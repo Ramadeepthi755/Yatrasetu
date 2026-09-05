@@ -27,7 +27,7 @@ import {
   History,
   Landmark,
   ShieldCheck,
-  Sparkles,
+  Palette,
   Bed,
   Car,
   Palmtree,
@@ -154,7 +154,7 @@ const PARTNER_TYPES: PartnerTypeOption[] = [
     subtype: 'EXPERIENCE_PROVIDER',
     label: 'Experience & Workshop Host',
     desc: 'Pottery, cooking classes, yoga & artisan crafts',
-    icon: Sparkles,
+    icon: Palette,
   },
 ];
 
@@ -409,7 +409,7 @@ export default function SignupPage() {
 
         <div className="relative z-10 space-y-5">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-semibold text-[#F59E0B]">
-            <Sparkles className="w-3.5 h-3.5" />
+            <ShieldCheck className="w-3.5 h-3.5" />
             Verified Tourism Network
           </div>
           <h2 className="text-3xl font-extrabold text-white leading-tight">
