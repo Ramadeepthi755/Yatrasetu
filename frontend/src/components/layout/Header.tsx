@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
@@ -92,7 +92,7 @@ export default function Header() {
                 )}
               </span>
               <span className="text-[11px] text-slate-300 font-light tracking-wide hidden sm:inline">
-                Discover ΓÇó Connect ΓÇó Grow
+                Discover • Connect • Grow
               </span>
             </div>
           </Link>
@@ -186,7 +186,7 @@ export default function Header() {
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs sm:text-sm font-medium text-slate-200 hover:text-white border border-white/10 transition-all shadow-sm"
                 >
                   <UserCircle className="w-4 h-4 text-[#F59E0B]" />
-                  <span>Guest ΓÇó Sign In</span>
+                  <span>Guest • Sign In</span>
                 </button>
 
                 {/* Get Started dropdown */}

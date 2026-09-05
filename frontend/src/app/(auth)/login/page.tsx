@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -71,7 +71,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
-      {/* Left panel ΓÇö hero visual */}
+      {/* Left panel — hero visual */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-[#1E1B4B] via-[#312E81] to-[#1E1B4B] overflow-hidden flex-col justify-between p-12">
         {/* Decorative grid */}
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#F59E0B_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
@@ -90,7 +90,7 @@ export default function LoginPage() {
         <div className="relative z-10 space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-[#F59E0B]">
             <Sparkles className="w-3.5 h-3.5" />
-            India's Connected Tourism Ecosystem
+            India&apos;s Connected Tourism Ecosystem
           </div>
           <h2 className="text-4xl font-extrabold text-white leading-tight tracking-tight">
             Every journey<br/>
@@ -98,7 +98,7 @@ export default function LoginPage() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F59E0B] to-[#FBBF24]">bridge.</span>
           </h2>
           <p className="text-slate-300 text-sm leading-relaxed max-w-xs">
-            Connecting India's 1.4 billion stories ΓÇö travelers, local guides, and cultural custodians ΓÇö into one living ecosystem.
+            Connecting India&apos;s 1.4 billion stories — travelers, local guides, and cultural custodians — into one living ecosystem.
           </p>
 
           {/* Stats row */}
@@ -122,11 +122,11 @@ export default function LoginPage() {
         {/* Bottom badge */}
         <div className="relative z-10 flex items-center gap-2 text-[11px] text-slate-400">
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          28 States covered ┬╖ Real-time tourism intelligence
+          28 States covered • Real-time tourism intelligence
         </div>
       </div>
 
-      {/* Right panel ΓÇö sign-in form */}
+      {/* Right panel — sign-in form */}
       <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-10 bg-[#FFFBF5]">
         <div className="w-full max-w-md space-y-7">
           {/* Mobile brand */}
@@ -144,8 +144,8 @@ export default function LoginPage() {
             </h1>
             <p className="text-sm text-[#64748B]">
               Sign in to continue your India journey.{' '}
-              <Link href="/signup" className="text-[#312E81] font-semibold hover:text-[#F59E0B] transition-colors">
-                New here? Create account ΓåÆ
+              <Link href="/signup" className="text-[#312E81] font-semibold hover:text-[#F59E0B] transition-colors inline-flex items-center gap-1">
+                New here? Create account <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </p>
           </div>
@@ -194,7 +194,7 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="ΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇó"
+                  placeholder="••••••••"
                   className="w-full pl-10 pr-11 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:bg-white focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none transition-all shadow-sm"
                 />
                 <button
@@ -239,7 +239,7 @@ export default function LoginPage() {
               {
                 role: 'TRAVELER' as const,
                 label: 'Traveler Demo',
-                sub: 'Aditi Sharma ┬╖ Explorer persona',
+                sub: 'Aditi Sharma • Explorer persona',
                 icon: Compass,
                 color: 'amber',
                 textColor: 'text-amber-700',
@@ -250,7 +250,7 @@ export default function LoginPage() {
               {
                 role: 'PARTNER' as const,
                 label: 'Local Partner Demo',
-                sub: 'Rajesh Guide ┬╖ Host & Guide portal',
+                sub: 'Rajesh Guide • Host & Guide portal',
                 icon: Briefcase,
                 color: 'teal',
                 textColor: 'text-[#0F766E]',
@@ -260,8 +260,8 @@ export default function LoginPage() {
               },
               {
                 role: 'GOVERNMENT' as const,
-                label: 'Government Demo',
-                sub: 'Director General ┬╖ Tourism analytics',
+                label: 'Government Authority Demo',
+                sub: 'Director General • Tourism analytics',
                 icon: Landmark,
                 color: 'indigo',
                 textColor: 'text-[#312E81]',
@@ -292,7 +292,9 @@ export default function LoginPage() {
                 <span className={`text-xs font-bold ${textColor} group-hover:translate-x-0.5 transition-transform`}>
                   {demoLoadingRole === role ? (
                     <span className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin inline-block" />
-                  ) : 'ΓåÆ'}
+                  ) : (
+                    <ArrowRight className="w-4 h-4" />
+                  )}
                 </span>
               </button>
             ))}
