@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -13,6 +13,11 @@ import {
   Sparkles,
   Briefcase,
   Landmark,
+  Eye,
+  EyeOff,
+  MapPin,
+  Users,
+  Star,
 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -20,6 +25,7 @@ export default function LoginPage() {
   const { login, loginAsDemo } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [demoLoadingRole, setDemoLoadingRole] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -64,190 +70,236 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-7 bg-white p-8 sm:p-10 rounded-3xl border border-slate-200/90 shadow-xl">
-        {/* Brand Header */}
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#312E81] to-[#4338CA] text-white flex items-center justify-center mx-auto shadow-md">
-            <Compass className="w-7 h-7 text-[#F59E0B]" />
+    <div className="min-h-screen flex flex-col lg:flex-row">
+      {/* Left panel ΓÇö hero visual */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-[#1E1B4B] via-[#312E81] to-[#1E1B4B] overflow-hidden flex-col justify-between p-12">
+        {/* Decorative grid */}
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#F59E0B_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
+        {/* Glowing orb */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-[#F59E0B]/10 blur-3xl pointer-events-none" />
+
+        {/* Brand */}
+        <div className="relative z-10 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#F59E0B] to-[#FBBF24] flex items-center justify-center shadow-lg">
+            <Compass className="w-6 h-6 text-[#312E81]" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#171717] tracking-tight">
-            Welcome to YatraSetu
-          </h1>
-          <p className="text-xs sm:text-sm text-[#64748B]">
-            Sign in to discover India, connect locally, and plan journeys.
+          <span className="text-xl font-bold text-white tracking-tight">YatraSetu</span>
+        </div>
+
+        {/* Central quote */}
+        <div className="relative z-10 space-y-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-[#F59E0B]">
+            <Sparkles className="w-3.5 h-3.5" />
+            India's Connected Tourism Ecosystem
+          </div>
+          <h2 className="text-4xl font-extrabold text-white leading-tight tracking-tight">
+            Every journey<br/>
+            begins with a<br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F59E0B] to-[#FBBF24]">bridge.</span>
+          </h2>
+          <p className="text-slate-300 text-sm leading-relaxed max-w-xs">
+            Connecting India's 1.4 billion stories ΓÇö travelers, local guides, and cultural custodians ΓÇö into one living ecosystem.
           </p>
+
+          {/* Stats row */}
+          <div className="flex items-center gap-6 pt-2">
+            {[
+              { icon: MapPin, value: '138', label: 'Cities' },
+              { icon: Users, value: '743', label: 'POIs' },
+              { icon: Star, value: '93', label: 'Destinations' },
+            ].map(({ icon: Icon, value, label }) => (
+              <div key={label} className="text-center">
+                <div className="flex items-center justify-center gap-1 text-[#F59E0B]">
+                  <Icon className="w-3.5 h-3.5" />
+                  <span className="text-lg font-extrabold text-white">{value}</span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{label}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {error && (
-          <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-3 text-rose-700 text-xs sm:text-sm">
-            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-            <span>{error}</span>
-          </div>
-        )}
+        {/* Bottom badge */}
+        <div className="relative z-10 flex items-center gap-2 text-[11px] text-slate-400">
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          28 States covered ┬╖ Real-time tourism intelligence
+        </div>
+      </div>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div>
-            <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1.5">
-              Email Address
-            </label>
-            <div className="relative rounded-xl shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                <Mail className="w-4 h-4" />
-              </div>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="traveler@yatrasetu.in"
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:bg-white focus:border-[#312E81] outline-none transition-all"
-              />
+      {/* Right panel ΓÇö sign-in form */}
+      <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-10 bg-[#FFFBF5]">
+        <div className="w-full max-w-md space-y-7">
+          {/* Mobile brand */}
+          <div className="lg:hidden flex items-center gap-3 justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#312E81] to-[#4338CA] flex items-center justify-center shadow-md">
+              <Compass className="w-6 h-6 text-[#F59E0B]" />
             </div>
+            <span className="text-xl font-bold text-[#312E81]">YatraSetu</span>
           </div>
 
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider">
-                Password
-              </label>
-              <Link
-                href="/forgot-password"
-                className="text-xs text-[#312E81] hover:text-[#F59E0B] font-medium"
-              >
-                Forgot password?
+          {/* Header */}
+          <div className="space-y-1.5">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#171717] tracking-tight">
+              Welcome back
+            </h1>
+            <p className="text-sm text-[#64748B]">
+              Sign in to continue your India journey.{' '}
+              <Link href="/signup" className="text-[#312E81] font-semibold hover:text-[#F59E0B] transition-colors">
+                New here? Create account ΓåÆ
               </Link>
-            </div>
-            <div className="relative rounded-xl shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                <Lock className="w-4 h-4" />
-              </div>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:bg-white focus:border-[#312E81] outline-none transition-all"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading || Boolean(demoLoadingRole)}
-            className="w-full py-3.5 px-4 bg-[#312E81] hover:bg-[#1E1B4B] text-white font-semibold rounded-xl text-sm shadow-md shadow-[#312E81]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </form>
-
-        {/* Divider */}
-        <div className="relative flex items-center justify-center">
-          <div className="border-t border-slate-200 w-full" />
-          <span className="bg-white px-3 text-[11px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap">
-            OR
-          </span>
-          <div className="border-t border-slate-200 w-full" />
-        </div>
-
-        {/* Demo Account Section */}
-        <div className="space-y-3">
-          <div className="text-center">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-[#171717] inline-flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-[#F59E0B]" />
-              Try Demo Account
-            </span>
-            <p className="text-[11px] text-[#64748B] mt-0.5">
-              Explore YatraSetu with a preconfigured demo account.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-2.5">
-            {/* Traveler Demo */}
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('TRAVELER')}
-              disabled={loading || Boolean(demoLoadingRole)}
-              className="w-full p-3 rounded-2xl border border-slate-200 hover:border-amber-400 bg-amber-50/50 hover:bg-amber-50 text-left transition-all flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Compass className="w-4 h-4 text-[#F59E0B]" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-[#171717] flex items-center gap-1.5">
-                    Traveler Demo
-                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-medium">Demo</span>
-                  </div>
-                  <div className="text-[11px] text-slate-500">Aditi Sharma • Explorer persona</div>
-                </div>
-              </div>
-              <span className="text-xs font-bold text-amber-700 group-hover:translate-x-0.5 transition-transform">
-                {demoLoadingRole === 'TRAVELER' ? 'Entering...' : 'Continue →'}
-              </span>
-            </button>
+          {error && (
+            <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-3 text-rose-700 text-xs sm:text-sm">
+              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+          )}
 
-            {/* Local Partner Demo */}
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('PARTNER')}
-              disabled={loading || Boolean(demoLoadingRole)}
-              className="w-full p-3 rounded-2xl border border-slate-200 hover:border-teal-400 bg-teal-50/50 hover:bg-teal-50 text-left transition-all flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-teal-100 text-[#0F766E] flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Briefcase className="w-4 h-4" />
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div>
+              <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1.5">
+                Email Address
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <Mail className="w-4 h-4" />
                 </div>
-                <div>
-                  <div className="text-xs font-bold text-[#171717] flex items-center gap-1.5">
-                    Local Partner Demo
-                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-teal-100 text-teal-800 font-medium">Demo</span>
-                  </div>
-                  <div className="text-[11px] text-slate-500">Rajesh Guide • Host & Guide portal</div>
-                </div>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:bg-white focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none transition-all shadow-sm"
+                />
               </div>
-              <span className="text-xs font-bold text-[#0F766E] group-hover:translate-x-0.5 transition-transform">
-                {demoLoadingRole === 'PARTNER' ? 'Entering...' : 'Continue →'}
-              </span>
-            </button>
+            </div>
 
-            {/* Government Demo */}
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('GOVERNMENT')}
-              disabled={loading || Boolean(demoLoadingRole)}
-              className="w-full p-3 rounded-2xl border border-slate-200 hover:border-indigo-400 bg-indigo-50/50 hover:bg-indigo-50 text-left transition-all flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-indigo-100 text-[#312E81] flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Landmark className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-[#171717] flex items-center gap-1.5">
-                    Government Demo
-                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-800 font-medium">Demo</span>
-                  </div>
-                  <div className="text-[11px] text-slate-500">Director General • Tourism analytics</div>
-                </div>
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider">
+                  Password
+                </label>
+                <Link href="/forgot-password" className="text-xs text-[#312E81] hover:text-[#F59E0B] font-medium transition-colors">
+                  Forgot password?
+                </Link>
               </div>
-              <span className="text-xs font-bold text-[#312E81] group-hover:translate-x-0.5 transition-transform">
-                {demoLoadingRole === 'GOVERNMENT' ? 'Entering...' : 'Continue →'}
-              </span>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="ΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇó"
+                  className="w-full pl-10 pr-11 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:bg-white focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none transition-all shadow-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading || Boolean(demoLoadingRole)}
+              className="w-full py-3.5 px-4 bg-[#312E81] hover:bg-[#1E1B4B] text-white font-semibold rounded-xl text-sm shadow-md shadow-[#312E81]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
+            >
+              {loading ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                <>
+                  Sign In
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                </>
+              )}
             </button>
+          </form>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 border-t border-slate-200" />
+            <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">or try demo</span>
+            <div className="flex-1 border-t border-slate-200" />
           </div>
 
-          <p className="text-[11px] text-center text-slate-400 leading-relaxed px-2 pt-1">
-            Demo accounts are provided for platform exploration and do not represent verified real-world users.
-          </p>
-        </div>
+          {/* Demo accounts */}
+          <div className="space-y-2.5">
+            {[
+              {
+                role: 'TRAVELER' as const,
+                label: 'Traveler Demo',
+                sub: 'Aditi Sharma ┬╖ Explorer persona',
+                icon: Compass,
+                color: 'amber',
+                textColor: 'text-amber-700',
+                bgClass: 'bg-amber-50/80 hover:bg-amber-50 border-slate-200 hover:border-amber-400',
+                iconBg: 'bg-amber-100',
+                iconColor: 'text-[#F59E0B]',
+              },
+              {
+                role: 'PARTNER' as const,
+                label: 'Local Partner Demo',
+                sub: 'Rajesh Guide ┬╖ Host & Guide portal',
+                icon: Briefcase,
+                color: 'teal',
+                textColor: 'text-[#0F766E]',
+                bgClass: 'bg-teal-50/60 hover:bg-teal-50 border-slate-200 hover:border-teal-400',
+                iconBg: 'bg-teal-100',
+                iconColor: 'text-[#0F766E]',
+              },
+              {
+                role: 'GOVERNMENT' as const,
+                label: 'Government Demo',
+                sub: 'Director General ┬╖ Tourism analytics',
+                icon: Landmark,
+                color: 'indigo',
+                textColor: 'text-[#312E81]',
+                bgClass: 'bg-indigo-50/60 hover:bg-indigo-50 border-slate-200 hover:border-indigo-400',
+                iconBg: 'bg-indigo-100',
+                iconColor: 'text-[#312E81]',
+              },
+            ].map(({ role, label, sub, icon: Icon, textColor, bgClass, iconBg, iconColor }) => (
+              <button
+                key={role}
+                type="button"
+                onClick={() => handleDemoLogin(role)}
+                disabled={loading || Boolean(demoLoadingRole)}
+                className={`w-full p-3 rounded-2xl border ${bgClass} text-left transition-all flex items-center justify-between group disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-xl ${iconBg} flex items-center justify-center group-hover:scale-105 transition-transform`}>
+                    <Icon className={`w-4 h-4 ${iconColor}`} />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-[#171717] flex items-center gap-1.5">
+                      {label}
+                      <span className="text-[10px] px-1.5 rounded bg-slate-100 text-slate-500 font-medium">Demo</span>
+                    </div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">{sub}</div>
+                  </div>
+                </div>
+                <span className={`text-xs font-bold ${textColor} group-hover:translate-x-0.5 transition-transform`}>
+                  {demoLoadingRole === role ? (
+                    <span className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin inline-block" />
+                  ) : 'ΓåÆ'}
+                </span>
+              </button>
+            ))}
+          </div>
 
-        <div className="text-center pt-1 border-t border-slate-100">
-          <p className="text-xs text-[#64748B]">
-            Don&apos;t have an account?{' '}
-            <Link href="/signup" className="text-[#312E81] hover:text-[#F59E0B] font-semibold">
-              Create an account
-            </Link>
+          <p className="text-[11px] text-center text-slate-400 leading-relaxed">
+            Demo accounts are for platform exploration only.
           </p>
         </div>
       </div>
