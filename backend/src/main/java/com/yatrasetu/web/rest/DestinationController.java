@@ -22,6 +22,9 @@ public class DestinationController {
     private final DestinationService destinationService;
     private final PoiService poiService;
     private final HotelService hotelService;
+    private final com.yatrasetu.service.LocalHostService localHostService;
+    private final com.yatrasetu.service.ExperienceService experienceService;
+    private final com.yatrasetu.service.DestinationEcosystemService ecosystemService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<DestinationSummaryDto>>> getDestinations(
@@ -122,4 +125,93 @@ public class DestinationController {
                 .timestamp(Instant.now())
                 .build());
     }
+
+    @GetMapping("/{id}/hosts")
+    public ResponseEntity<ApiResponse<List<LocalHostDto>>> getDestinationHosts(@PathVariable("id") String id) {
+        List<LocalHostDto> hosts = localHostService.getHostsByDestination(id);
+        return ResponseEntity.ok(ApiResponse.<List<LocalHostDto>>builder()
+                .success(true)
+                .message("Retrieved destination local hosts successfully")
+                .data(hosts)
+                .timestamp(Instant.now())
+                .build());
+    }
+
+    @GetMapping("/{id}/experiences")
+    public ResponseEntity<ApiResponse<List<ExperienceDto>>> getDestinationExperiences(@PathVariable("id") String id) {
+        List<ExperienceDto> experiences = experienceService.getExperiencesByDestination(id);
+        return ResponseEntity.ok(ApiResponse.<List<ExperienceDto>>builder()
+                .success(true)
+                .message("Retrieved destination experiences successfully")
+                .data(experiences)
+                .timestamp(Instant.now())
+                .build());
+    }
+
+    @GetMapping("/{id}/food")
+    public ResponseEntity<ApiResponse<List<FamousFoodDto>>> getDestinationFood(@PathVariable("id") String id) {
+        List<FamousFoodDto> food = ecosystemService.getFamousFoods(id);
+        return ResponseEntity.ok(ApiResponse.<List<FamousFoodDto>>builder()
+                .success(true)
+                .message("Retrieved destination famous food successfully")
+                .data(food)
+                .timestamp(Instant.now())
+                .build());
+    }
+
+    @GetMapping("/{id}/restaurants")
+    public ResponseEntity<ApiResponse<List<RestaurantDto>>> getDestinationRestaurants(@PathVariable("id") String id) {
+        List<RestaurantDto> restaurants = ecosystemService.getRestaurants(id);
+        return ResponseEntity.ok(ApiResponse.<List<RestaurantDto>>builder()
+                .success(true)
+                .message("Retrieved destination restaurants successfully")
+                .data(restaurants)
+                .timestamp(Instant.now())
+                .build());
+    }
+
+    @GetMapping("/{id}/transport")
+    public ResponseEntity<ApiResponse<List<DestinationTransportDto>>> getDestinationTransport(@PathVariable("id") String id) {
+        List<DestinationTransportDto> transport = ecosystemService.getTransports(id);
+        return ResponseEntity.ok(ApiResponse.<List<DestinationTransportDto>>builder()
+                .success(true)
+                .message("Retrieved destination transport connectivity successfully")
+                .data(transport)
+                .timestamp(Instant.now())
+                .build());
+    }
+
+    @GetMapping("/{id}/agencies")
+    public ResponseEntity<ApiResponse<List<TravelAgencyDto>>> getDestinationAgencies(@PathVariable("id") String id) {
+        List<TravelAgencyDto> agencies = ecosystemService.getTravelAgencies(id);
+        return ResponseEntity.ok(ApiResponse.<List<TravelAgencyDto>>builder()
+                .success(true)
+                .message("Retrieved destination travel agencies successfully")
+                .data(agencies)
+                .timestamp(Instant.now())
+                .build());
+    }
+
+    @GetMapping("/{id}/rentals")
+    public ResponseEntity<ApiResponse<List<RentalProviderDto>>> getDestinationRentals(@PathVariable("id") String id) {
+        List<RentalProviderDto> rentals = ecosystemService.getRentalProviders(id);
+        return ResponseEntity.ok(ApiResponse.<List<RentalProviderDto>>builder()
+                .success(true)
+                .message("Retrieved destination rental providers successfully")
+                .data(rentals)
+                .timestamp(Instant.now())
+                .build());
+    }
+
+    @GetMapping("/{id}/ecosystem")
+    public ResponseEntity<ApiResponse<DestinationEcosystemDto>> getDestinationEcosystem(@PathVariable("id") String id) {
+        DestinationEcosystemDto ecosystem = ecosystemService.getEcosystem(id);
+        return ResponseEntity.ok(ApiResponse.<DestinationEcosystemDto>builder()
+                .success(true)
+                .message("Retrieved destination ecosystem overview successfully")
+                .data(ecosystem)
+                .timestamp(Instant.now())
+                .build());
+    }
 }
+

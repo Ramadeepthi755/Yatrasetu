@@ -57,6 +57,10 @@ public class Profile {
     @Column(name = "phone", length = 30)
     private String phone;
 
+    @Column(name = "travel_connect_enabled")
+    @Builder.Default
+    private boolean travelConnectEnabled = true;
+
     @Column(name = "business_name", length = 200)
     private String businessName;
 
@@ -68,21 +72,18 @@ public class Profile {
     @Column(name = "emergency_contact", length = 50)
     private String emergencyContact;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "profile_languages", joinColumns = @JoinColumn(name = "profile_id"))
-    @Column(name = "language")
+    @Convert(converter = com.yatrasetu.domain.converter.StringListConverter.class)
+    @Column(name = "languages", columnDefinition = "TEXT")
     @Builder.Default
     private List<String> languages = new ArrayList<>();
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "profile_interests", joinColumns = @JoinColumn(name = "profile_id"))
-    @Column(name = "interest")
+    @Convert(converter = com.yatrasetu.domain.converter.StringListConverter.class)
+    @Column(name = "interests", columnDefinition = "TEXT")
     @Builder.Default
     private List<String> interests = new ArrayList<>();
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "profile_partner_skills", joinColumns = @JoinColumn(name = "profile_id"))
-    @Column(name = "skill")
+    @Convert(converter = com.yatrasetu.domain.converter.StringListConverter.class)
+    @Column(name = "partner_skills", columnDefinition = "TEXT")
     @Builder.Default
     private List<String> partnerSkills = new ArrayList<>();
 

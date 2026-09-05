@@ -14,6 +14,9 @@ public interface DestinationPoiRepository extends JpaRepository<DestinationPoi, 
 
     List<DestinationPoi> findByDestinationId(String destinationId);
 
+    @Query("SELECT p.destination.id, COUNT(p) FROM DestinationPoi p WHERE p.destination IS NOT NULL GROUP BY p.destination.id")
+    List<Object[]> countPoisByDestination();
+
     List<DestinationPoi> findByCityId(String cityId);
 
     @Query("SELECT p FROM DestinationPoi p WHERE p.isActive = true AND " +

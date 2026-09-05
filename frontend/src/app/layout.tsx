@@ -3,7 +3,9 @@ import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import MobileNav from '@/components/layout/MobileNav';
+import AuthModal from '@/components/auth/AuthModal';
 import { AuthProvider } from '@/context/AuthContext';
+import { YatraSetuAIAssistant } from '@/components/ai/YatraSetuAIAssistant';
 
 export const metadata: Metadata = {
   title: 'YatraSetu | Discover India. Connect Locally. Grow Tourism.',
@@ -29,9 +31,11 @@ export default function RootLayout({
       <body className="bg-[#FFFBF5] text-[#171717] antialiased selection:bg-[#F59E0B]/30 min-h-screen flex flex-col">
         <AuthProvider>
           <Header />
+          <AuthModal />
           <main className="flex-1 w-full">{children}</main>
           <Footer />
           <MobileNav />
+          <YatraSetuAIAssistant />
         </AuthProvider>
       </body>
     </html>

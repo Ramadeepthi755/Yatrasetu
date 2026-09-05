@@ -187,4 +187,85 @@ public class AuthenticationAndRbacTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false));
     }
+
+    @Test
+    void testMockTokenAuthenticationAcrossRoles() throws Exception {
+        // 1. Traveler Mock Token with dot in domain
+        mockMvc.perform(get("/api/v1/trips")
+                .header("Authorization", "Bearer mock-traveler-traveler@yatrasetu.in"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        // 2. Partner Mock Token with dot in domain
+        mockMvc.perform(get("/api/v1/partner/profile/me")
+                .header("Authorization", "Bearer mock-partner-partner@yatrasetu.in"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        // 3. Government Mock Token with dot in domain
+        mockMvc.perform(get("/api/v1/government/overview")
+                .header("Authorization", "Bearer mock-government-official@tourism.gov.in"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    void testGovernmentIntelligenceGuestAccessReturns401() throws Exception {
+        mockMvc.perform(get("/api/v1/government/intelligence/overview"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false));
+
+        mockMvc.perform(get("/api/v1/government/intelligence/demand"))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(get("/api/v1/government/intelligence/destinations"))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(get("/api/v1/government/intelligence/redistribution"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void testGovernmentIntelligenceTravelerAccessReturns403() throws Exception {
+        mockMvc.perform(get("/api/v1/government/intelligence/overview")
+                .header("Authorization", "Bearer mock-traveler-traveler@yatrasetu.in"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false));
+
+        mockMvc.perform(get("/api/v1/government/intelligence/demand")
+                .header("X-Test-User-Email", "traveler@yatrasetu.in"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void testGovernmentIntelligencePartnerAccessReturns403() throws Exception {
+        mockMvc.perform(get("/api/v1/government/intelligence/overview")
+                .header("Authorization", "Bearer mock-partner-partner@yatrasetu.in"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false));
+
+        mockMvc.perform(get("/api/v1/government/intelligence/redistribution")
+                .header("X-Test-User-Email", "partner@yatrasetu.in"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void testGovernmentIntelligenceGovernmentAccessReturns200() throws Exception {
+        mockMvc.perform(get("/api/v1/government/intelligence/overview")
+                .header("Authorization", "Bearer mock-government-official@tourism.gov.in"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.totalDestinationsMonitored").exists())
+                .andExpect(jsonPath("$.data.dataDisclaimer").exists());
+
+        mockMvc.perform(get("/api/v1/government/intelligence/demand")
+                .header("Authorization", "Bearer mock-government-official@tourism.gov.in"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        mockMvc.perform(get("/api/v1/government/intelligence/redistribution")
+                .header("Authorization", "Bearer mock-government-official@tourism.gov.in"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
 }

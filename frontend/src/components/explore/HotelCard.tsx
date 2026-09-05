@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Bed, Star, MapPin, CheckCircle, IndianRupee } from 'lucide-react';
 import { HotelItem } from '@/lib/api';
 
@@ -19,10 +20,16 @@ export function HotelCard({ hotel }: HotelCardProps) {
             </div>
             <div>
               <div className="flex items-center space-x-1.5">
-                <h4 className="font-bold text-stone-900 leading-snug">{hotel.hotelName}</h4>
-                {hotel.isPartnerProperty && (
-                  <span className="flex items-center rounded-full bg-teal-50 px-1.5 py-0.2 text-[10px] font-bold text-teal-800 border border-teal-200">
+                <Link href={`/hotels/${hotel.id}`} className="font-bold text-stone-900 hover:text-indigo-900 transition-colors leading-snug">
+                  {hotel.hotelName}
+                </Link>
+                {hotel.isPartnerProperty ? (
+                  <span className="flex items-center rounded-full bg-teal-50 px-1.5 py-0.5 text-[10px] font-bold text-teal-800 border border-teal-200">
                     <CheckCircle className="h-3 w-3 mr-0.5" /> Partner
+                  </span>
+                ) : (
+                  <span className="rounded bg-stone-100 px-1.5 py-0.5 text-[10px] text-stone-500 border border-stone-200">
+                    Dataset Property
                   </span>
                 )}
               </div>
@@ -66,13 +73,12 @@ export function HotelCard({ hotel }: HotelCardProps) {
           </p>
         </div>
 
-        {/* Future route placeholder with clear indication */}
-        <button
-          onClick={() => alert(`Hotel bookings will be available in Phase 4. Property: ${hotel.hotelName}`)}
+        <Link
+          href={`/hotels/${hotel.id}`}
           className="rounded-lg bg-indigo-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-800 shadow-sm"
         >
-          Check Rates
-        </button>
+          View Details
+        </Link>
       </div>
     </div>
   );

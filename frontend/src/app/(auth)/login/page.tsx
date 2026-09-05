@@ -4,7 +4,16 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { Compass, Lock, Mail, ArrowRight, AlertCircle, Sparkles } from 'lucide-react';
+import {
+  Compass,
+  Lock,
+  Mail,
+  ArrowRight,
+  AlertCircle,
+  Sparkles,
+  Briefcase,
+  Landmark,
+} from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,6 +21,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [demoLoadingRole, setDemoLoadingRole] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,15 +35,17 @@ export default function LoginPage() {
     try {
       await login(email, password);
       router.push('/');
-    } catch (err: any) {
-      setError(err.message || 'Failed to sign in. Please verify your credentials.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to sign in. Please verify your credentials.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDemoLogin = async (role: 'TRAVELER' | 'PARTNER' | 'GOVERNMENT') => {
-    setLoading(true);
+    setDemoLoadingRole(role);
+    setError(null);
     try {
       await loginAsDemo(role);
       if (role === 'PARTNER') {
@@ -41,26 +53,27 @@ export default function LoginPage() {
       } else if (role === 'GOVERNMENT') {
         router.push('/government/dashboard');
       } else {
-        router.push('/');
+        router.push('/explore');
       }
-    } catch (err: any) {
-      setError(err.message || 'Demo login failed');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Demo login failed';
+      setError(msg);
     } finally {
-      setLoading(false);
+      setDemoLoadingRole(null);
     }
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 sm:p-10 rounded-3xl border border-slate-200/80 shadow-xl">
+    <div className="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-7 bg-white p-8 sm:p-10 rounded-3xl border border-slate-200/90 shadow-xl">
         {/* Brand Header */}
         <div className="text-center space-y-2">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#312E81] to-[#4338CA] text-white flex items-center justify-center mx-auto shadow-md">
             <Compass className="w-7 h-7 text-[#F59E0B]" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#171717] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#171717] tracking-tight">
             Welcome to YatraSetu
-          </h2>
+          </h1>
           <p className="text-xs sm:text-sm text-[#64748B]">
             Sign in to discover India, connect locally, and plan journeys.
           </p>
@@ -73,9 +86,9 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
+            <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1.5">
               Email Address
             </label>
             <div className="relative rounded-xl shadow-sm">
@@ -87,14 +100,14 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@domain.com"
-                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:bg-white focus:border-[#312E81] transition-all"
+                placeholder="traveler@yatrasetu.in"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:bg-white focus:border-[#312E81] outline-none transition-all"
               />
             </div>
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider">
                 Password
               </label>
@@ -111,18 +124,17 @@ export default function LoginPage() {
               </div>
               <input
                 type="password"
-                required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:bg-white focus:border-[#312E81] transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:bg-white focus:border-[#312E81] outline-none transition-all"
               />
             </div>
           </div>
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || Boolean(demoLoadingRole)}
             className="w-full py-3.5 px-4 bg-[#312E81] hover:bg-[#1E1B4B] text-white font-semibold rounded-xl text-sm shadow-md shadow-[#312E81]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {loading ? 'Signing in...' : 'Sign In'}
@@ -130,38 +142,107 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Quick Demo Stakeholder Sign-In Selector */}
-        <div className="pt-4 border-t border-slate-100 space-y-3">
-          <div className="text-center text-xs font-semibold text-slate-400 flex items-center justify-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#F59E0B]" />
-            Fast Demo Login (Explore Stakeholder Views)
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              onClick={() => handleDemoLogin('TRAVELER')}
-              type="button"
-              className="px-2 py-2 rounded-lg bg-indigo-50 border border-indigo-100 text-[#312E81] hover:bg-indigo-100 text-[11px] font-semibold transition-colors"
-            >
-              Traveler
-            </button>
-            <button
-              onClick={() => handleDemoLogin('PARTNER')}
-              type="button"
-              className="px-2 py-2 rounded-lg bg-teal-50 border border-teal-100 text-[#0F766E] hover:bg-teal-100 text-[11px] font-semibold transition-colors"
-            >
-              Partner
-            </button>
-            <button
-              onClick={() => handleDemoLogin('GOVERNMENT')}
-              type="button"
-              className="px-2 py-2 rounded-lg bg-amber-50 border border-amber-100 text-amber-900 hover:bg-amber-100 text-[11px] font-semibold transition-colors"
-            >
-              Government
-            </button>
-          </div>
+        {/* Divider */}
+        <div className="relative flex items-center justify-center">
+          <div className="border-t border-slate-200 w-full" />
+          <span className="bg-white px-3 text-[11px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap">
+            OR
+          </span>
+          <div className="border-t border-slate-200 w-full" />
         </div>
 
-        <div className="text-center pt-2">
+        {/* Demo Account Section */}
+        <div className="space-y-3">
+          <div className="text-center">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-[#171717] inline-flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#F59E0B]" />
+              Try Demo Account
+            </span>
+            <p className="text-[11px] text-[#64748B] mt-0.5">
+              Explore YatraSetu with a preconfigured demo account.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-2.5">
+            {/* Traveler Demo */}
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('TRAVELER')}
+              disabled={loading || Boolean(demoLoadingRole)}
+              className="w-full p-3 rounded-2xl border border-slate-200 hover:border-amber-400 bg-amber-50/50 hover:bg-amber-50 text-left transition-all flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Compass className="w-4 h-4 text-[#F59E0B]" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-[#171717] flex items-center gap-1.5">
+                    Traveler Demo
+                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-medium">Demo</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500">Aditi Sharma • Explorer persona</div>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-amber-700 group-hover:translate-x-0.5 transition-transform">
+                {demoLoadingRole === 'TRAVELER' ? 'Entering...' : 'Continue →'}
+              </span>
+            </button>
+
+            {/* Local Partner Demo */}
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('PARTNER')}
+              disabled={loading || Boolean(demoLoadingRole)}
+              className="w-full p-3 rounded-2xl border border-slate-200 hover:border-teal-400 bg-teal-50/50 hover:bg-teal-50 text-left transition-all flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-teal-100 text-[#0F766E] flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Briefcase className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-[#171717] flex items-center gap-1.5">
+                    Local Partner Demo
+                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-teal-100 text-teal-800 font-medium">Demo</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500">Rajesh Guide • Host & Guide portal</div>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-[#0F766E] group-hover:translate-x-0.5 transition-transform">
+                {demoLoadingRole === 'PARTNER' ? 'Entering...' : 'Continue →'}
+              </span>
+            </button>
+
+            {/* Government Demo */}
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('GOVERNMENT')}
+              disabled={loading || Boolean(demoLoadingRole)}
+              className="w-full p-3 rounded-2xl border border-slate-200 hover:border-indigo-400 bg-indigo-50/50 hover:bg-indigo-50 text-left transition-all flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-indigo-100 text-[#312E81] flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Landmark className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-[#171717] flex items-center gap-1.5">
+                    Government Demo
+                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-800 font-medium">Demo</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500">Director General • Tourism analytics</div>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-[#312E81] group-hover:translate-x-0.5 transition-transform">
+                {demoLoadingRole === 'GOVERNMENT' ? 'Entering...' : 'Continue →'}
+              </span>
+            </button>
+          </div>
+
+          <p className="text-[11px] text-center text-slate-400 leading-relaxed px-2 pt-1">
+            Demo accounts are provided for platform exploration and do not represent verified real-world users.
+          </p>
+        </div>
+
+        <div className="text-center pt-1 border-t border-slate-100">
           <p className="text-xs text-[#64748B]">
             Don&apos;t have an account?{' '}
             <Link href="/signup" className="text-[#312E81] hover:text-[#F59E0B] font-semibold">

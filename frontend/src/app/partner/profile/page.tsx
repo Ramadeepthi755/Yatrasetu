@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 export default function PartnerProfilePage() {
-  const { user, partnerDetails, role, isAuthenticated, updatePartner, loginAsDemo } = useAuth();
+  const { user, partnerDetails, role, isAuthenticated, updatePartner, openAuthModal } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [businessName, setBusinessName] = useState(partnerDetails?.businessName || '');
   const [city, setCity] = useState(partnerDetails?.city || '');
@@ -30,17 +30,27 @@ export default function PartnerProfilePage() {
     return (
       <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">
         <div className="text-center space-y-4 max-w-md bg-white p-8 rounded-3xl border border-slate-200 shadow-lg">
-          <AlertTriangle className="w-10 h-10 text-amber-600 mx-auto" />
+          <div className="w-12 h-12 rounded-2xl bg-teal-50 text-[#0F766E] flex items-center justify-center mx-auto">
+            <Briefcase className="w-6 h-6" />
+          </div>
           <h2 className="text-xl font-bold text-[#171717]">Partner Account Required</h2>
           <p className="text-xs text-[#64748B]">
             Sign in as a verified partner to manage your services and business profile.
           </p>
-          <button
-            onClick={() => loginAsDemo('PARTNER')}
-            className="px-4 py-2 bg-[#0F766E] text-white text-xs font-semibold rounded-xl"
-          >
-            Switch to Demo Partner
-          </button>
+          <div className="flex flex-col gap-2 pt-2">
+            <button
+              onClick={() => openAuthModal('PARTNER')}
+              className="w-full py-2.5 px-4 bg-[#0F766E] hover:bg-[#0D9488] text-white text-xs font-bold rounded-xl shadow transition-colors"
+            >
+              Sign In as Local Partner
+            </button>
+            <Link
+              href="/explore"
+              className="w-full py-2 px-4 bg-slate-100 hover:bg-slate-200 text-[#171717] text-xs font-semibold rounded-xl transition-colors text-center"
+            >
+              Return to Public Portal
+            </Link>
+          </div>
         </div>
       </div>
     );

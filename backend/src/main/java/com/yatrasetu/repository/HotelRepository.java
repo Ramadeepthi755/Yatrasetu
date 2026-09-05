@@ -1,12 +1,14 @@
 package com.yatrasetu.repository;
 
 import com.yatrasetu.domain.Hotel;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Repository
@@ -14,7 +16,34 @@ public interface HotelRepository extends JpaRepository<Hotel, String> {
 
     List<Hotel> findByDestinationId(String destinationId);
 
+    @Query("SELECT h.destination.id, COUNT(h) FROM Hotel h WHERE h.destination IS NOT NULL GROUP BY h.destination.id")
+    List<Object[]> countHotelsByDestination();
+
     List<Hotel> findByCityId(String cityId);
+
+    @Query("SELECT DISTINCT h.category FROM Hotel h WHERE h.isActive = true AND h.category IS NOT NULL")
+    List<String> findDistinctCategories();
+
+    @Query("SELECT h FROM Hotel h WHERE h.isActive = true " +
+            "AND (CAST(:cityId AS string) IS NULL OR LOWER(h.city.id) = LOWER(CAST(:cityId AS string))) " +
+            "AND (CAST(:destinationId AS string) IS NULL OR LOWER(h.destination.id) = LOWER(CAST(:destinationId AS string)) OR LOWER(h.city.id) = LOWER(CAST(:destinationId AS string))) " +
+            "AND (CAST(:category AS string) IS NULL OR LOWER(h.category) = LOWER(CAST(:category AS string))) " +
+            "AND (:minRating IS NULL OR h.hotelRating >= :minRating) " +
+            "AND (:maxPrice IS NULL OR h.pricePerNight <= :maxPrice) " +
+            "AND (:isPartnerProperty IS NULL OR h.isPartnerProperty = :isPartnerProperty) " +
+            "AND (CAST(:searchQuery AS string) IS NULL OR " +
+            "LOWER(h.hotelName) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')) OR " +
+            "LOWER(h.address) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')) OR " +
+            "LOWER(h.category) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')))")
+    Page<Hotel> findWithFilters(
+            @Param("cityId") String cityId,
+            @Param("destinationId") String destinationId,
+            @Param("category") String category,
+            @Param("minRating") BigDecimal minRating,
+            @Param("maxPrice") BigDecimal maxPrice,
+            @Param("isPartnerProperty") Boolean isPartnerProperty,
+            @Param("searchQuery") String searchQuery,
+            Pageable pageable);
 
     @Query("SELECT h FROM Hotel h WHERE h.isActive = true AND " +
             "(LOWER(h.hotelName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +

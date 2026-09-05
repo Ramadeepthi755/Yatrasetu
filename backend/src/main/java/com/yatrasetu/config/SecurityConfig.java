@@ -52,8 +52,14 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/destinations/**").permitAll()
                 .requestMatchers("/api/v1/pois/**").permitAll()
                 .requestMatchers("/api/v1/hotels/**").permitAll()
+                .requestMatchers("/api/v1/local/**").permitAll()
+                .requestMatchers("/api/v1/experiences/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/travel-connect").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/travel-connect/destination/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/travel-connect/*").permitAll()
                 .requestMatchers("/api/v1/search/**").permitAll()
                 .requestMatchers("/api/v1/discovery/**").permitAll()
+                .requestMatchers("/api/v1/ai/**").permitAll()
                 .requestMatchers("/error").permitAll()
 
                 // Partner Protected Routes
@@ -61,6 +67,9 @@ public class SecurityConfig {
 
                 // Government Protected Routes
                 .requestMatchers("/api/v1/government/**").hasRole("GOVERNMENT")
+
+                // Traveler Protected Trip Routes
+                .requestMatchers("/api/v1/trips/**").hasRole("TRAVELER")
 
                 // Traveler / Generic Profile Routes
                 .requestMatchers("/api/v1/profile/**").authenticated()

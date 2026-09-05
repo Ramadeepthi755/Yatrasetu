@@ -45,12 +45,20 @@ class ExploreControllersTest {
     @Autowired
     private HotelRepository hotelRepository;
 
+    @Autowired
+    private TravelBuddyRepository travelBuddyRepository;
+
+    @Autowired
+    private TravelBuddyRequestRepository travelBuddyRequestRepository;
+
     private State kerala;
     private City munnarCity;
     private Destination munnarDest;
 
     @BeforeEach
     void setUp() {
+        travelBuddyRequestRepository.deleteAll();
+        travelBuddyRepository.deleteAll();
         poiRepository.deleteAll();
         hotelRepository.deleteAll();
         destinationRepository.deleteAll();

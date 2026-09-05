@@ -48,12 +48,44 @@ function getFallbackVisual(destination: DestinationSummary) {
   };
 }
 
+// Format factual and clean location label without raw administrative slashes
+function formatLocationLabel(destination: DestinationSummary): string {
+  const isCircuit = destination.destinationName.toLowerCase().includes('circuit') ||
+                    destination.destinationName.toLowerCase().includes('trail') ||
+                    destination.destinationName.toLowerCase().includes('belt') ||
+                    destination.destinationName.toLowerCase().includes('route');
+
+  const cleanDist = (destination.district || '').replace(/\s*\/\s*/g, ' & ').trim();
+  const cleanCity = (destination.cityName || '').replace(/\s*\/\s*/g, ' & ').trim();
+  const state = destination.stateName || '';
+
+  if (isCircuit) {
+    if (cleanDist && cleanDist.toLowerCase() !== 'multiple') {
+      return `${cleanDist}, ${state}`;
+    }
+    return `Regional Circuit • ${state || 'India'}`;
+  }
+
+  if (cleanDist && cleanCity && cleanDist.toLowerCase() !== cleanCity.toLowerCase()) {
+    return `${cleanCity}, ${cleanDist} District`;
+  }
+  if (cleanCity) {
+    return state ? `${cleanCity}, ${state}` : cleanCity;
+  }
+  if (cleanDist) {
+    return state ? `${cleanDist} District, ${state}` : `${cleanDist} District`;
+  }
+  return state || 'India';
+}
+
 export function DestinationCard({ destination, featured = false }: DestinationCardProps) {
   const [isSaved, setIsSaved] = useState(false);
   const [imageError, setImageError] = useState(false);
 
   const fallback = getFallbackVisual(destination);
   const hasImage = destination.heroImageUrl && destination.heroImageUrl.trim() !== '' && !imageError;
+  const locationLabel = formatLocationLabel(destination);
+  const accessibleAlt = `${destination.destinationName} landscape and cultural heritage, ${destination.stateName || 'India'}`;
 
   const toggleSave = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -73,7 +105,7 @@ export function DestinationCard({ destination, featured = false }: DestinationCa
         {hasImage ? (
           <img
             src={destination.heroImageUrl}
-            alt={destination.destinationName}
+            alt={accessibleAlt}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={() => setImageError(true)}
             loading="lazy"
@@ -118,16 +150,14 @@ export function DestinationCard({ destination, featured = false }: DestinationCa
 
         {/* Bottom overlay inside image: Name and Rating */}
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
-          <div>
-            <h3 className="text-xl font-bold text-white tracking-tight drop-shadow-sm group-hover:text-amber-300 transition-colors">
+          <div className="max-w-[75%]">
+            <h3 className="text-xl font-bold text-white tracking-tight drop-shadow-sm group-hover:text-amber-300 transition-colors line-clamp-1">
               {destination.destinationName}
             </h3>
-            {destination.cityName && (
-              <p className="flex items-center text-xs text-stone-200 mt-0.5">
-                <MapPin className="h-3 w-3 mr-1 text-amber-400" />
-                {destination.cityName}
-              </p>
-            )}
+            <p className="flex items-center text-xs text-stone-200 mt-0.5 truncate">
+              <MapPin className="h-3 w-3 mr-1 shrink-0 text-amber-400" />
+              <span className="truncate">{locationLabel}</span>
+            </p>
           </div>
           {destination.popularityScore && (
             <div className="flex items-center rounded-lg bg-amber-500/90 px-2 py-1 text-xs font-bold text-stone-950 backdrop-blur-md shadow-sm">

@@ -46,23 +46,25 @@ public class SupabaseAuthenticationFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7).trim();
             if (!token.isEmpty()) {
                 try {
-                    // Parse JWT Claims safely (standard payload part is token.split("\\.")[1])
-                    String[] parts = token.split("\\.");
-                    if (parts.length >= 2) {
-                        String payload = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
-                        JsonNode jsonNode = objectMapper.readTree(payload);
-                        if (jsonNode.has("sub")) {
-                            authUserId = jsonNode.get("sub").asText();
-                        }
-                        if (jsonNode.has("email")) {
-                            email = jsonNode.get("email").asText();
-                        }
-                    } else if (token.startsWith("mock-")) {
+                    if (token.startsWith("mock-")) {
                         // Support mock token format: mock-<role>-<email>
                         String[] mockParts = token.split("-", 3);
                         if (mockParts.length >= 3) {
                             email = mockParts[2];
                             authUserId = "auth-" + email;
+                        }
+                    } else {
+                        // Parse JWT Claims safely (standard payload part is token.split("\\.")[1])
+                        String[] parts = token.split("\\.");
+                        if (parts.length >= 2) {
+                            String payload = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
+                            JsonNode jsonNode = objectMapper.readTree(payload);
+                            if (jsonNode.has("sub")) {
+                                authUserId = jsonNode.get("sub").asText();
+                            }
+                            if (jsonNode.has("email")) {
+                                email = jsonNode.get("email").asText();
+                            }
                         }
                     }
                 } catch (Exception e) {

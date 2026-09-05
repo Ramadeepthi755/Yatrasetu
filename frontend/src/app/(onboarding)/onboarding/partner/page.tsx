@@ -1,13 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { Briefcase, ShieldCheck, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
+import {
+  Briefcase,
+  ShieldCheck,
+  ArrowRight,
+  Sparkles,
+  AlertTriangle,
+  UserCheck,
+  Compass,
+} from 'lucide-react';
 
 export default function PartnerOnboardingPage() {
   const router = useRouter();
-  const { user, partnerDetails, updatePartner } = useAuth();
+  const { user, role, isAuthenticated, partnerDetails, updatePartner, logout, openAuthModal } = useAuth();
+
   const [businessName, setBusinessName] = useState(partnerDetails?.businessName || '');
   const [partnerSubtype, setPartnerSubtype] = useState(partnerDetails?.partnerSubtype || 'GUIDE');
   const [city, setCity] = useState(partnerDetails?.city || '');
@@ -17,6 +27,98 @@ export default function PartnerOnboardingPage() {
   const [languages, setLanguages] = useState(partnerDetails?.languages?.join(', ') || 'English, Hindi');
   const [saving, setSaving] = useState(false);
 
+  // Sync state if partnerDetails change
+  useEffect(() => {
+    if (partnerDetails) {
+      if (partnerDetails.businessName) setBusinessName(partnerDetails.businessName);
+      if (partnerDetails.partnerSubtype) setPartnerSubtype(partnerDetails.partnerSubtype);
+      if (partnerDetails.city) setCity(partnerDetails.city);
+      if (partnerDetails.state) setState(partnerDetails.state);
+      if (partnerDetails.bio) setBio(partnerDetails.bio);
+      if (partnerDetails.partnerSkills && partnerDetails.partnerSkills.length > 0) {
+        setSkills(partnerDetails.partnerSkills.join(', '));
+      }
+      if (partnerDetails.languages && partnerDetails.languages.length > 0) {
+        setLanguages(partnerDetails.languages.join(', '));
+      }
+    }
+  }, [partnerDetails]);
+
+  // GUARD 1: Unauthenticated Guest
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center px-4 py-16">
+        <div className="text-center space-y-4 max-w-md bg-white p-8 sm:p-10 rounded-3xl border border-slate-200/90 shadow-xl">
+          <div className="w-14 h-14 rounded-2xl bg-teal-50 text-[#0F766E] flex items-center justify-center mx-auto shadow-sm">
+            <Briefcase className="w-7 h-7" />
+          </div>
+          <h2 className="text-2xl font-black text-[#171717]">Partner Sign In Required</h2>
+          <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
+            Local Tourism Partner Onboarding is reserved for registered tourism operators, local guides, community hosts, and homestay owners.
+          </p>
+          <div className="flex flex-col gap-2.5 pt-2">
+            <button
+              onClick={() => openAuthModal('PARTNER')}
+              className="w-full py-3 px-4 bg-[#0F766E] hover:bg-[#0D9488] text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+            >
+              <Briefcase className="w-4 h-4" />
+              Sign In as Local Partner
+            </button>
+            <Link
+              href="/explore"
+              className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-[#171717] text-xs font-semibold rounded-xl transition-colors text-center"
+            >
+              Return to Public Explore
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // GUARD 2: Authenticated as non-partner (e.g. Traveler or Government)
+  if (role !== 'PARTNER') {
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center px-4 py-16">
+        <div className="text-center space-y-4 max-w-md bg-white p-8 sm:p-10 rounded-3xl border border-amber-200 shadow-xl">
+          <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto shadow-sm">
+            <AlertTriangle className="w-7 h-7" />
+          </div>
+          <h2 className="text-2xl font-black text-[#171717]">Access Restricted</h2>
+          <div className="p-3 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900 text-left space-y-1">
+            <div className="font-bold flex items-center gap-1.5">
+              <UserCheck className="w-3.5 h-3.5 text-amber-700" />
+              Signed In: {user?.fullName || 'Traveler'}
+            </div>
+            <div>Current Account Role: <strong>{role || 'TRAVELER'}</strong></div>
+          </div>
+          <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
+            Partner Onboarding and hosting tools are exclusively available to Local Partner accounts. You cannot onboard as a partner while signed in with a Traveler account.
+          </p>
+          <div className="flex flex-col gap-2.5 pt-2">
+            <button
+              onClick={async () => {
+                await logout();
+                openAuthModal('PARTNER');
+              }}
+              className="w-full py-3 px-4 bg-[#0F766E] hover:bg-[#0D9488] text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+            >
+              <Briefcase className="w-4 h-4" />
+              Sign Out & Sign In as Partner
+            </button>
+            <Link
+              href="/explore"
+              className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-[#171717] text-xs font-semibold rounded-xl transition-colors text-center"
+            >
+              Return to Public Explore
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // VALID PARTNER ACCESS
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);

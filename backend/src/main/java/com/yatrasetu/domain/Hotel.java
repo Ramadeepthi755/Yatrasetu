@@ -62,6 +62,15 @@ public class Hotel {
     @Builder.Default
     private Boolean isPartnerProperty = false;
 
+    @Column(name = "inventory_type", length = 50)
+    @Builder.Default
+    private String inventoryType = "DATASET_PROPERTY";
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "source_type", length = 50)
+    @Builder.Default
+    private SourceType sourceType = SourceType.DATASET;
+
     @Column(name = "is_active")
     @Builder.Default
     private Boolean isActive = true;

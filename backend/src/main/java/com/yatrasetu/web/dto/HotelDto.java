@@ -17,6 +17,8 @@ public class HotelDto {
     private String hotelName;
     private String cityId;
     private String cityName;
+    private String stateId;
+    private String stateName;
     private String destinationId;
     private String destinationName;
     private BigDecimal hotelRating;
@@ -27,4 +29,7 @@ public class HotelDto {
     private BigDecimal latitude;
     private BigDecimal longitude;
     private Boolean isPartnerProperty;
+    private String inventoryType;
+    private String sourceType;
+    private String sourceLabel;
 }

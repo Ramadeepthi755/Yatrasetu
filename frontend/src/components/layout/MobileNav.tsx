@@ -1,7 +1,12 @@
+'use client';
+
 import Link from 'next/link';
-import { Home, Compass, Sparkles, Users, User } from 'lucide-react';
+import { Home, Compass, Sparkles, Users, User, Briefcase, Landmark } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function MobileNav() {
+  const { role, isAuthenticated, openAuthModal } = useAuth();
+
   return (
     <nav
       aria-label="Mobile Navigation"
@@ -36,13 +41,41 @@ export default function MobileNav() {
           <Users className="w-5 h-5 text-[#0F766E]" />
           <span className="text-[10px] mt-1 font-medium">Connect</span>
         </Link>
-        <Link
-          href="/profile"
-          className="flex flex-col items-center justify-center text-slate-300 hover:text-white py-1 px-2 rounded-lg transition-colors"
-        >
-          <User className="w-5 h-5" />
-          <span className="text-[10px] mt-1 font-medium">Profile</span>
-        </Link>
+
+        {/* Dynamic Profile / Portal / Sign In */}
+        {!isAuthenticated ? (
+          <button
+            onClick={() => openAuthModal()}
+            className="flex flex-col items-center justify-center text-amber-300 hover:text-amber-200 py-1 px-2 rounded-lg transition-colors"
+          >
+            <User className="w-5 h-5" />
+            <span className="text-[10px] mt-1 font-medium">Sign In</span>
+          </button>
+        ) : role === 'PARTNER' ? (
+          <Link
+            href="/partner/dashboard"
+            className="flex flex-col items-center justify-center text-teal-300 hover:text-teal-200 py-1 px-2 rounded-lg transition-colors"
+          >
+            <Briefcase className="w-5 h-5" />
+            <span className="text-[10px] mt-1 font-medium">Partner</span>
+          </Link>
+        ) : role === 'GOVERNMENT' ? (
+          <Link
+            href="/government/dashboard"
+            className="flex flex-col items-center justify-center text-rose-300 hover:text-rose-200 py-1 px-2 rounded-lg transition-colors"
+          >
+            <Landmark className="w-5 h-5" />
+            <span className="text-[10px] mt-1 font-medium">Gov Hub</span>
+          </Link>
+        ) : (
+          <Link
+            href="/profile"
+            className="flex flex-col items-center justify-center text-slate-300 hover:text-white py-1 px-2 rounded-lg transition-colors"
+          >
+            <User className="w-5 h-5" />
+            <span className="text-[10px] mt-1 font-medium">Profile</span>
+          </Link>
+        )}
       </div>
     </nav>
   );

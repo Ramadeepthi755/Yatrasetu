@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function ProfilePage() {
-  const { user, isAuthenticated, updateTravelerProfile } = useAuth();
+  const { user, isAuthenticated, updateTravelerProfile, openAuthModal } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState(user?.displayName || user?.fullName || '');
   const [city, setCity] = useState(user?.city || '');
@@ -36,12 +36,12 @@ export default function ProfilePage() {
           <p className="text-xs text-[#64748B]">
             You need to be signed in to manage your traveler profile and travel preferences.
           </p>
-          <Link
-            href="/login"
-            className="inline-block px-5 py-2.5 bg-[#312E81] text-white text-xs font-semibold rounded-xl"
+          <button
+            onClick={() => openAuthModal('TRAVELER')}
+            className="inline-block px-5 py-2.5 bg-[#312E81] hover:bg-[#1E1B4B] text-white text-xs font-bold rounded-xl shadow transition-colors"
           >
-            Sign In
-          </Link>
+            Sign In as Traveler
+          </button>
         </div>
       </div>
     );

@@ -33,10 +33,29 @@ import {
   Bot,
   ExternalLink,
 } from 'lucide-react';
-import { getDestinationDetail, DestinationDetail } from '@/lib/api';
+import {
+  getDestinationDetail,
+  getDestinationHosts,
+  getDestinationExperiences,
+  getDestinationTravelers,
+  DestinationDetail,
+  LocalHost,
+  ExperienceItem,
+  TravelerDiscovery,
+} from '@/lib/api';
 import { PoiCard } from '@/components/explore/PoiCard';
 import { HotelCard } from '@/components/explore/HotelCard';
+import TravelBuddyCard from '@/components/travel-connect/TravelBuddyCard';
+import { LocalHostCard } from '@/components/explore/LocalHostCard';
+import { ExperienceCard } from '@/components/explore/ExperienceCard';
 import { MapView, MapMarker } from '@/components/map/MapView';
+import { FamousFoodSection } from '@/components/destination/FamousFoodSection';
+import { RestaurantsSection } from '@/components/destination/RestaurantsSection';
+import { TransportSection } from '@/components/destination/TransportSection';
+import { RentalProvidersSection } from '@/components/destination/RentalProvidersSection';
+import { TravelAgenciesSection } from '@/components/destination/TravelAgenciesSection';
+import { WeatherSection } from '@/components/destination/WeatherSection';
+import { ProvenanceBadge } from '@/components/destination/ProvenanceBadge';
 
 export default function DestinationDetailPage() {
   const params = useParams();
@@ -44,6 +63,9 @@ export default function DestinationDetailPage() {
   const destinationId = params.destinationId as string;
 
   const [destination, setDestination] = useState<DestinationDetail | null>(null);
+  const [hosts, setHosts] = useState<LocalHost[]>([]);
+  const [experiences, setExperiences] = useState<ExperienceItem[]>([]);
+  const [travelers, setTravelers] = useState<TravelerDiscovery[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
@@ -56,13 +78,31 @@ export default function DestinationDetailPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await getDestinationDetail(destinationId);
-        if (res.success && res.data) {
-          setDestination(res.data);
+        const [destRes, hostsRes, expRes, travRes] = await Promise.allSettled([
+          getDestinationDetail(destinationId),
+          getDestinationHosts(destinationId),
+          getDestinationExperiences(destinationId),
+          getDestinationTravelers(destinationId, 6),
+        ]);
+
+        if (destRes.status === 'fulfilled' && destRes.value.success && destRes.value.data) {
+          setDestination(destRes.value.data);
         } else {
           setError('Destination not found.');
         }
-      } catch (err: any) {
+
+        if (hostsRes.status === 'fulfilled' && hostsRes.value.success && hostsRes.value.data) {
+          setHosts(hostsRes.value.data);
+        }
+
+        if (expRes.status === 'fulfilled' && expRes.value.success && expRes.value.data) {
+          setExperiences(expRes.value.data);
+        }
+
+        if (travRes.status === 'fulfilled' && travRes.value.success && travRes.value.data) {
+          setTravelers(travRes.value.data);
+        }
+      } catch (err: unknown) {
         console.error(err);
         setError('Unable to load destination details. Please verify the URL or try again.');
       } finally {
@@ -183,7 +223,7 @@ export default function DestinationDetailPage() {
           {hasImage ? (
             <img
               src={destination.heroImageUrl}
-              alt={destination.destinationName}
+              alt={`${destination.destinationName} landscape and cultural heritage, ${destination.stateName || 'India'}`}
               className="h-full w-full object-cover opacity-60"
               onError={() => setImageError(true)}
             />
@@ -224,6 +264,14 @@ export default function DestinationDetailPage() {
             </div>
 
             <div className="flex items-center space-x-2">
+              <Link
+                href={`/plan-trip?destinationId=${destination.id}`}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 text-xs font-bold rounded-full shadow-md backdrop-blur-md border border-white/20 transition-all hover:scale-105"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-stone-950" />
+                <span className="hidden sm:inline">Plan Trip with AI</span>
+                <span className="sm:hidden">Plan Trip</span>
+              </Link>
               <button
                 onClick={() => setIsSaved(!isSaved)}
                 className={`rounded-full p-2.5 backdrop-blur-md border border-white/10 transition-colors ${
@@ -263,8 +311,9 @@ export default function DestinationDetailPage() {
 
             <p className="mt-1 flex items-center text-xs md:text-sm text-stone-300 drop-shadow-sm">
               <MapPin className="h-4 w-4 mr-1 text-amber-400" />
-              {destination.district ? `${destination.district}, ` : ''}
-              {destination.stateName || 'India'}
+              {destination.cityName && destination.district && destination.cityName.toLowerCase() !== destination.district.toLowerCase()
+                ? `${destination.cityName}, ${destination.district.replace(/\s*\/\s*/g, ' & ')} District, ${destination.stateName || 'India'}`
+                : `${(destination.district || destination.cityName || '').replace(/\s*\/\s*/g, ' & ')}${destination.stateName ? `, ${destination.stateName}` : ''}`}
             </p>
           </div>
         </div>
@@ -285,29 +334,29 @@ export default function DestinationDetailPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => setModalFeature('AI Trip Planner (Phase 5)')}
+            <Link
+              href={`/experiences?destinationId=${destination.id}`}
               className="inline-flex items-center space-x-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-stone-950 shadow-sm hover:bg-amber-400 transition-colors"
             >
-              <Bot className="h-4 w-4" />
-              <span>Plan My Trip</span>
-            </button>
+              <Sparkles className="h-4 w-4" />
+              <span>Experiences ({experiences.length})</span>
+            </Link>
 
-            <button
-              onClick={() => setModalFeature('YatraSetu Local Hosts (Phase 6)')}
+            <Link
+              href={`/local?destinationId=${destination.id}`}
               className="inline-flex items-center space-x-1.5 rounded-xl bg-teal-800 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-teal-700 transition-colors"
             >
               <HeartHandshake className="h-4 w-4" />
-              <span>Find a Local</span>
-            </button>
+              <span>Local People ({hosts.length})</span>
+            </Link>
 
-            <button
-              onClick={() => setModalFeature('YatraSetu Travel Connect (Phase 7)')}
+            <Link
+              href={`/hotels?destinationId=${destination.id}`}
               className="inline-flex items-center space-x-1.5 rounded-xl bg-indigo-900 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-indigo-800 transition-colors"
             >
-              <Users className="h-4 w-4" />
-              <span>Find Travel Buddies</span>
-            </button>
+              <Bed className="h-4 w-4" />
+              <span>Hotels & Havelis</span>
+            </Link>
           </div>
         </div>
       </section>
@@ -350,6 +399,13 @@ export default function DestinationDetailPage() {
                 </div>
               )}
             </section>
+
+            {/* Live Weather & Forecast */}
+            <WeatherSection
+              latitude={destination.latitude}
+              longitude={destination.longitude}
+              destinationName={destination.destinationName}
+            />
 
             {/* 2. Top Attractions & Sights */}
             {destination.topPois && destination.topPois.length > 0 && (
@@ -412,6 +468,82 @@ export default function DestinationDetailPage() {
               </section>
             )}
 
+            {/* Famous Regional Food & Must-Try Dishes */}
+            <FamousFoodSection
+              destinationId={destination.id}
+              destinationName={destination.destinationName}
+            />
+
+            {/* Restaurants & Dining Partners */}
+            <RestaurantsSection
+              destinationId={destination.id}
+              destinationName={destination.destinationName}
+            />
+
+            {/* Connectivity & Logistics */}
+            <TransportSection
+              destinationId={destination.id}
+              destinationName={destination.destinationName}
+            />
+
+            {/* Curated Experiences Section */}
+            {experiences.length > 0 && (
+              <section id="experiences">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-stone-900 flex items-center">
+                      <Sparkles className="h-6 w-6 mr-2 text-amber-500" />
+                      Curated Experiences & Walks ({experiences.length})
+                    </h2>
+                    <p className="text-xs text-stone-500 mt-0.5">
+                      Hands-on workshops, heritage trails, and local culinary walks
+                    </p>
+                  </div>
+                  <Link
+                    href={`/experiences?destinationId=${destination.id}`}
+                    className="text-xs font-bold text-amber-700 hover:text-amber-800"
+                  >
+                    View All Experiences →
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  {experiences.map((exp) => (
+                    <ExperienceCard key={exp.id} experience={exp} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Local People & Guides Section */}
+            {hosts.length > 0 && (
+              <section id="local-people">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-stone-900 flex items-center">
+                      <HeartHandshake className="h-6 w-6 mr-2 text-teal-700" />
+                      Local People & Verified Hosts ({hosts.length})
+                    </h2>
+                    <p className="text-xs text-stone-500 mt-0.5">
+                      Connect directly with community storytelling guides and cultural hosts
+                    </p>
+                  </div>
+                  <Link
+                    href={`/local?destinationId=${destination.id}`}
+                    className="text-xs font-bold text-teal-800 hover:text-teal-900"
+                  >
+                    View All Local Guides →
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  {hosts.map((host) => (
+                    <LocalHostCard key={host.id} host={host} />
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* 5. Interactive Map View */}
             {mapMarkers.length > 0 && (
               <section className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
@@ -425,7 +557,7 @@ export default function DestinationDetailPage() {
 
             {/* 6. Hotels Nearby */}
             {destination.nearbyHotels && destination.nearbyHotels.length > 0 && (
-              <section>
+              <section id="hotels">
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-2xl font-bold text-stone-900 flex items-center">
@@ -433,9 +565,15 @@ export default function DestinationDetailPage() {
                       Hotels & Stays Nearby ({destination.nearbyHotels.length})
                     </h2>
                     <p className="text-xs text-stone-500 mt-0.5">
-                      Verified partner homestays and regional hotels
+                      Verified partner homestays and regional heritage properties
                     </p>
                   </div>
+                  <Link
+                    href={`/hotels?destinationId=${destination.id}`}
+                    className="text-xs font-bold text-indigo-900 hover:text-indigo-800"
+                  >
+                    Browse All Stays →
+                  </Link>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -446,7 +584,71 @@ export default function DestinationDetailPage() {
               </section>
             )}
 
-            {/* 7. Reviews & Community Feedback */}
+            {/* Bike & Car Rentals */}
+            <RentalProvidersSection
+              destinationId={destination.id}
+              destinationName={destination.destinationName}
+            />
+
+            {/* Authorized Travel Agencies */}
+            <TravelAgenciesSection
+              destinationId={destination.id}
+              destinationName={destination.destinationName}
+            />
+
+            {/* 7. Travelers Heading Here (Travel Connect) */}
+            <section id="travel-connect" className="rounded-3xl border border-amber-200/80 bg-gradient-to-br from-amber-50/50 via-white to-orange-50/30 p-6 md:p-8 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-bold uppercase tracking-wider mb-2">
+                    <Sparkles className="h-3 w-3 text-amber-700" />
+                    Travel Connect
+                  </div>
+                  <h2 className="text-2xl font-bold text-stone-900 flex items-center">
+                    <Users className="h-6 w-6 mr-2 text-amber-700" />
+                    Travelers Heading to {destination.destinationName}
+                  </h2>
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    Connect with fellow travelers visiting around the same time and share the journey
+                  </p>
+                </div>
+                <Link
+                  href={`/travel-connect?destinationId=${destination.id}`}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 px-4 py-2 rounded-xl transition shrink-0"
+                >
+                  <span>Find All Travelers</span>
+                  <span>→</span>
+                </Link>
+              </div>
+
+              {travelers && travelers.length > 0 ? (
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {travelers.map((traveler) => (
+                    <TravelBuddyCard key={traveler.id} traveler={traveler} />
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-amber-200 space-y-3">
+                  <div className="w-12 h-12 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto">
+                    <Users className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1 max-w-md mx-auto">
+                    <h3 className="text-sm font-bold text-stone-900">Be the first to connect here!</h3>
+                    <p className="text-xs text-stone-500">
+                      Explore our Travel Connect network to discover travelers planning trips to this region.
+                    </p>
+                  </div>
+                  <Link
+                    href={`/travel-connect?destinationId=${destination.id}`}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-600 text-white text-xs font-bold rounded-xl shadow-xs hover:bg-amber-700 transition"
+                  >
+                    Open Travel Connect
+                  </Link>
+                </div>
+              )}
+            </section>
+
+            {/* 8. Reviews & Community Feedback */}
             {destination.recentReviews && destination.recentReviews.length > 0 && (
               <section className="rounded-3xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
@@ -477,7 +679,7 @@ export default function DestinationDetailPage() {
                             <div className="flex items-center space-x-1.5 text-[10px] text-stone-500">
                               {rev.isImportedDataset && (
                                 <span className="rounded bg-stone-200/80 px-1.5 py-0.2 text-stone-600 font-medium">
-                                  Imported Historical
+                                  Imported Review
                                 </span>
                               )}
                               {rev.isVerifiedBooking && (

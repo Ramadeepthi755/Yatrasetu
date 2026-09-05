@@ -47,9 +47,9 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
     public ResponseEntity<ApiResponse<ErrorResponse>> handleIllegalArgument(
-            IllegalArgumentException ex, HttpServletRequest request) {
+            RuntimeException ex, HttpServletRequest request) {
         
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -63,6 +63,28 @@ public class GlobalExceptionHandler {
                 ApiResponse.<ErrorResponse>builder()
                         .success(false)
                         .message(ex.getMessage())
+                        .data(errorResponse)
+                        .timestamp(Instant.now())
+                        .build()
+        );
+    }
+
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleAccessDenied(
+            org.springframework.security.access.AccessDeniedException ex, HttpServletRequest request) {
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(HttpStatus.FORBIDDEN.value())
+                .error("Forbidden")
+                .message(ex.getMessage() != null ? ex.getMessage() : "Access denied")
+                .path(request.getRequestURI())
+                .timestamp(Instant.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                ApiResponse.<ErrorResponse>builder()
+                        .success(false)
+                        .message(ex.getMessage() != null ? ex.getMessage() : "Access denied")
                         .data(errorResponse)
                         .timestamp(Instant.now())
                         .build()

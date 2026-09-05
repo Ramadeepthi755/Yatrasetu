@@ -44,13 +44,37 @@ const LANGUAGES = [
 
 export default function TravelerOnboardingPage() {
   const router = useRouter();
-  const { user, updateTravelerProfile } = useAuth();
+  const { user, isAuthenticated, updateTravelerProfile, openAuthModal } = useAuth();
   const [selectedInterests, setSelectedInterests] = useState<string[]>(['Nature', 'Heritage']);
   const [selectedStyle, setSelectedStyle] = useState<string>('Comfortable Explorer');
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(['English', 'Hindi']);
   const [budgetPref, setBudgetPref] = useState<string>('Mid-Range');
   const [homeCity, setHomeCity] = useState<string>('');
   const [saving, setSaving] = useState(false);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center px-4 py-16">
+        <div className="text-center space-y-4 max-w-md bg-white p-8 sm:p-10 rounded-3xl border border-slate-200 shadow-xl">
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+            <Compass className="w-6 h-6 text-[#F59E0B]" />
+          </div>
+          <h2 className="text-2xl font-black text-[#171717]">Sign In to Personalize</h2>
+          <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
+            Please sign in to set your travel style, interests, and matching preferences.
+          </p>
+          <div className="pt-2">
+            <button
+              onClick={() => openAuthModal('TRAVELER')}
+              className="w-full py-3 px-4 bg-[#312E81] hover:bg-[#1E1B4B] text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all"
+            >
+              Sign In as Traveler
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const toggleInterest = (id: string) => {
     if (selectedInterests.includes(id)) {

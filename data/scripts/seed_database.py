@@ -53,6 +53,8 @@ STATE_REGIONS = {
     'Delhi': ('IN-DL', 'North India', 'New Delhi'),
     'Andhra Pradesh': ('IN-AP', 'South India', 'Amaravati'),
     'Telangana': ('IN-TG', 'South India', 'Hyderabad'),
+    'Chhattisgarh': ('IN-CG', 'Central India', 'Raipur'),
+    'Jammu and Kashmir': ('IN-JK', 'North India', 'Srinagar'),
     'Andaman & Nicobar Islands': ('IN-AN', 'South India', 'Port Blair'),
     'Chandigarh': ('IN-CH', 'North India', 'Chandigarh'),
     'Puducherry': ('IN-PY', 'South India', 'Puducherry'),
