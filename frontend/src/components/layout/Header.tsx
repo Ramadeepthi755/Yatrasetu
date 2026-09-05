@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
@@ -24,7 +24,9 @@ export default function Header() {
   const { user, role, isAuthenticated, logout, openAuthModal } = useAuth();
   const router = useRouter();
   const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const [showGetStarted, setShowGetStarted] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
+  const getStartedRef = useRef<HTMLDivElement>(null);
 
   // Close account menu when clicking outside
   useEffect(() => {
@@ -32,14 +34,17 @@ export default function Header() {
       if (accountMenuRef.current && !accountMenuRef.current.contains(event.target as Node)) {
         setShowAccountMenu(false);
       }
+      if (getStartedRef.current && !getStartedRef.current.contains(event.target as Node)) {
+        setShowGetStarted(false);
+      }
     };
-    if (showAccountMenu) {
+    if (showAccountMenu || showGetStarted) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showAccountMenu]);
+  }, [showAccountMenu, showGetStarted]);
 
   const handleLogout = async () => {
     setShowAccountMenu(false);
@@ -87,7 +92,7 @@ export default function Header() {
                 )}
               </span>
               <span className="text-[11px] text-slate-300 font-light tracking-wide hidden sm:inline">
-                Discover • Connect • Grow
+                Discover ΓÇó Connect ΓÇó Grow
               </span>
             </div>
           </Link>
@@ -174,22 +179,60 @@ export default function Header() {
           {/* Right Action: Clean Guest Sign In / Authenticated Account Menu */}
           <div className="flex items-center gap-3">
             {!isAuthenticated ? (
-              /* GUEST STATE: Clean Sign In button (no role switcher dropdown) */
+              /* GUEST STATE */
               <div className="flex items-center gap-2.5">
                 <button
                   onClick={() => openAuthModal()}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs sm:text-sm font-medium text-slate-200 hover:text-white border border-white/10 transition-all shadow-sm"
                 >
                   <UserCircle className="w-4 h-4 text-[#F59E0B]" />
-                  <span>Guest • Sign In</span>
+                  <span>Guest ΓÇó Sign In</span>
                 </button>
 
-                <button
-                  onClick={() => openAuthModal()}
-                  className="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-[#F59E0B] text-[#171717] hover:bg-[#D97706] transition-colors shadow-sm"
-                >
-                  Get Started
-                </button>
+                {/* Get Started dropdown */}
+                <div className="relative" ref={getStartedRef}>
+                  <button
+                    onClick={() => setShowGetStarted(!showGetStarted)}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-[#F59E0B] text-[#171717] hover:bg-[#D97706] transition-colors shadow-sm"
+                  >
+                    Get Started
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showGetStarted ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {showGetStarted && (
+                    <div className="absolute right-0 mt-2 w-52 bg-[#1E1B4B] border border-slate-700 rounded-2xl shadow-2xl py-2 z-50 animate-scale-up">
+                      <p className="px-4 pt-1 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        Join YatraSetu
+                      </p>
+                      <Link
+                        href="/login"
+                        onClick={() => setShowGetStarted(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/10 text-slate-200 hover:text-white transition-colors"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center">
+                          <UserCircle className="w-4 h-4 text-[#F59E0B]" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold">Sign In</div>
+                          <div className="text-[10px] text-slate-400">Already have an account</div>
+                        </div>
+                      </Link>
+                      <Link
+                        href="/signup"
+                        onClick={() => setShowGetStarted(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/10 text-slate-200 hover:text-white transition-colors"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-[#F59E0B]/20 flex items-center justify-center">
+                          <ExternalLink className="w-4 h-4 text-[#F59E0B]" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-[#F59E0B]">Sign Up</div>
+                          <div className="text-[10px] text-slate-400">Create a new account</div>
+                        </div>
+                      </Link>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               /* AUTHENTICATED STATE: Account Profile Menu (No arbitrary role switching) */
