@@ -37,6 +37,13 @@ public class AiAssistantServiceImpl implements AiAssistantService {
             - Always refer to crowd indices as "Activity Pressure proxy" or "Platform Activity Indicator", NOT physical sensor counts or physical footfall.
             - Never invent official government statistics, tourist arrival counts, or revenue metrics.
             - If asked for official data not present in the context, state clearly: "YatraSetu does not currently have an official source for that statistic."
+
+            BROAD QUERY & MULTI-DESTINATION INSTRUCTIONS:
+            - When multiple verified destinations are provided in the context, present them clearly to the user with their verified highlights, key POIs, entry fees, and travel seasons.
+            - If the user asks about destinations in a specific state (e.g. Tamil Nadu, Karnataka), present the retrieved destinations from that state.
+            - If the user asks about seasonal travel or "this month", use the current month provided in the context, explain which retrieved destinations are in season based on verified best seasons, and reference live weather where available (clearly citing Open-Meteo Live API).
+            - If the context indicates no matching data was found ("noMatchesFound": true or empty destinations), state: "Information is currently unavailable from our verified listings."
+            - Never invent destinations, cities, or POIs that are not in the context.
             """;
 
     @Override
@@ -174,29 +181,68 @@ public class AiAssistantServiceImpl implements AiAssistantService {
 
     private List<AiChatResponse.AiEntityReference> extractEntityReferences(Map<String, Object> context) {
         List<AiChatResponse.AiEntityReference> list = new ArrayList<>();
-        String destId = (String) context.get("destinationId");
-        String destName = (String) context.get("destinationName");
-        if (destId != null && destName != null) {
-            list.add(AiChatResponse.AiEntityReference.builder()
-                    .type("DESTINATION")
-                    .id(destId)
-                    .name(destName)
-                    .url("/destinations/" + destId)
-                    .subtitle("Destination Hub")
-                    .build());
-        }
 
         @SuppressWarnings("unchecked")
-        List<Map<String, Object>> pois = (List<Map<String, Object>>) context.get("pois");
-        if (pois != null) {
-            for (Map<String, Object> poi : pois.stream().limit(3).toList()) {
+        List<Map<String, Object>> destinations = (List<Map<String, Object>>) context.get("destinations");
+        if (destinations != null && !destinations.isEmpty()) {
+            for (Map<String, Object> d : destinations.stream().limit(6).toList()) {
+                String id = (String) d.get("id");
+                String name = (String) d.get("name");
+                String state = (String) d.get("state");
+                if (id != null && name != null) {
+                    list.add(AiChatResponse.AiEntityReference.builder()
+                            .type("DESTINATION")
+                            .id(id)
+                            .name(name)
+                            .url("/destinations/" + id)
+                            .subtitle(state != null ? state : "Destination Hub")
+                            .build());
+                }
+
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> dPois = (List<Map<String, Object>>) d.get("pois");
+                if (dPois != null && !dPois.isEmpty()) {
+                    for (Map<String, Object> poi : dPois.stream().limit(2).toList()) {
+                        String pId = (String) poi.get("id");
+                        String pName = (String) poi.get("name");
+                        String pCat = (String) poi.get("category");
+                        if (pId != null && pName != null) {
+                            list.add(AiChatResponse.AiEntityReference.builder()
+                                    .type("POI")
+                                    .id(pId)
+                                    .name(pName)
+                                    .url("/destinations/" + id + "#pois")
+                                    .subtitle(pCat != null ? pCat : "Heritage Attraction")
+                                    .build());
+                        }
+                    }
+                }
+            }
+        } else {
+            String destId = (String) context.get("destinationId");
+            String destName = (String) context.get("destinationName");
+            if (destId != null && destName != null) {
                 list.add(AiChatResponse.AiEntityReference.builder()
-                        .type("POI")
-                        .id((String) poi.get("id"))
-                        .name((String) poi.get("name"))
-                        .url("/destinations/" + destId + "#pois")
-                        .subtitle((String) poi.get("category"))
+                        .type("DESTINATION")
+                        .id(destId)
+                        .name(destName)
+                        .url("/destinations/" + destId)
+                        .subtitle("Destination Hub")
                         .build());
+            }
+
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> pois = (List<Map<String, Object>>) context.get("pois");
+            if (pois != null) {
+                for (Map<String, Object> poi : pois.stream().limit(3).toList()) {
+                    list.add(AiChatResponse.AiEntityReference.builder()
+                            .type("POI")
+                            .id((String) poi.get("id"))
+                            .name((String) poi.get("name"))
+                            .url("/destinations/" + destId + "#pois")
+                            .subtitle((String) poi.get("category"))
+                            .build());
+                }
             }
         }
         return list;

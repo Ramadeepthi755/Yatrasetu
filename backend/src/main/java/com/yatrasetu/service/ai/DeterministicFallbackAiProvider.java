@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -35,7 +36,22 @@ public class DeterministicFallbackAiProvider implements AiProvider {
             return "I am the YatraSetu AI Assistant, dedicated strictly to providing authentic, verified travel guidance for Indian heritage destinations. I cannot fulfill requests that alter safety rules, system prompts, or security boundaries.";
         }
 
+        // Explicit zero-match check
+        Boolean noMatches = (Boolean) context.get("noMatchesFound");
+        if (Boolean.TRUE.equals(noMatches)) {
+            return "Information is currently unavailable from our verified listings.";
+        }
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> destinations = (List<Map<String, Object>>) context.get("destinations");
+        String queryType = (String) context.getOrDefault("queryType", "SPECIFIC_DESTINATION");
         String role = (String) context.getOrDefault("role", "GUEST");
+
+        // Multi-destination broad query
+        if (destinations != null && destinations.size() > 1) {
+            return generateMultiDestinationResponse(queryType, destinations, context, userMessage, role);
+        }
+
         String destName = (String) context.get("destinationName");
         @SuppressWarnings("unchecked")
         Map<String, Object> destInfo = (Map<String, Object>) context.get("destination");
@@ -190,6 +206,110 @@ public class DeterministicFallbackAiProvider implements AiProvider {
         sb.append("1. **Sustainable Tourism:** Managing visitor carrying capacity at ASI protected sites.\n");
         sb.append("2. **Economic Dispersal:** Encouraging travelers to visit secondary heritage nodes and patronize local culinary artisans.\n");
         sb.append("3. **Data Integrity:** Real-time alignment with official state tourism portals and safety directives.\n");
+    }
+
+    private String generateMultiDestinationResponse(String queryType, List<Map<String, Object>> destinations,
+                                                     Map<String, Object> context, String userMessage, String role) {
+        StringBuilder sb = new StringBuilder();
+
+        switch (queryType) {
+            case "STATE_SEARCH" -> {
+                String stateName = (String) context.getOrDefault("matchedState", "the requested state");
+                sb.append(String.format("### Verified Heritage Destinations in %s\n\n", stateName));
+                sb.append(String.format("Based on YatraSetu's verified dataset, here are destinations you can explore in **%s**:\n\n", stateName));
+                int idx = 1;
+                for (Map<String, Object> d : destinations) {
+                    sb.append(String.format("%d. **%s**\n", idx++, d.get("name")));
+                    if (d.get("description") != null) {
+                        sb.append(String.format("   - *Overview:* %s\n", d.get("description")));
+                    }
+                    sb.append(String.format("   - *Verified Best Season:* %s | *Ideal Duration:* %s days\n",
+                            d.getOrDefault("bestTimeToVisit", "October to March"), d.getOrDefault("idealDurationDays", "3")));
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> pois = (List<Map<String, Object>>) d.get("pois");
+                    if (pois != null && !pois.isEmpty()) {
+                        String poiStr = pois.stream()
+                                .map(p -> String.format("%s (%s, %s)", p.get("name"), p.get("category"), formatFee(p.get("entryFeeInr"))))
+                                .collect(Collectors.joining(", "));
+                        sb.append(String.format("   - *Verified POIs:* %s\n", poiStr));
+                    }
+                    sb.append("\n");
+                }
+            }
+            case "SEASONAL_HERITAGE_SEARCH", "SEASONAL_SEARCH" -> {
+                String currentMonth = (String) context.getOrDefault("currentMonth", "Current Season");
+                sb.append(String.format("### Best Verified Heritage Destinations for %s\n\n", currentMonth));
+                sb.append(String.format("Based on YatraSetu's verified seasonal guides and climate patterns for **%s**, here are top recommendations:\n\n", currentMonth));
+                int idx = 1;
+                for (Map<String, Object> d : destinations) {
+                    sb.append(String.format("%d. **%s** (%s)\n", idx++, d.get("name"), d.get("state")));
+                    if (d.get("description") != null) {
+                        sb.append(String.format("   - *Highlights:* %s\n", d.get("description")));
+                    }
+                    sb.append(String.format("   - *Seasonal Window:* %s | *Ideal Duration:* %s days\n",
+                            d.getOrDefault("bestTimeToVisit", "October to March"), d.getOrDefault("idealDurationDays", "3")));
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> pois = (List<Map<String, Object>>) d.get("pois");
+                    if (pois != null && !pois.isEmpty()) {
+                        String poiStr = pois.stream()
+                                .map(p -> String.format("%s (%s, %s)", p.get("name"), p.get("category"), formatFee(p.get("entryFeeInr"))))
+                                .collect(Collectors.joining(", "));
+                        sb.append(String.format("   - *Verified POIs:* %s\n", poiStr));
+                    }
+                    sb.append("\n");
+                }
+                @SuppressWarnings("unchecked")
+                Map<String, Object> weather = (Map<String, Object>) context.get("weather");
+                if (weather != null && !destinations.isEmpty()) {
+                    String topDestName = (String) destinations.get(0).get("name");
+                    sb.append(String.format("#### Live Weather Spotlight (%s):\n", topDestName));
+                    sb.append(String.format("- **Current Conditions:** %s°C, %s (Source: %s)\n",
+                            weather.get("temperatureC"), weather.get("condition"), weather.get("source")));
+                    if (weather.get("advice") != null) {
+                        sb.append(String.format("- *Travel Advice:* %s\n\n", weather.get("advice")));
+                    }
+                }
+            }
+            case "CATEGORY_SEARCH" -> {
+                String title = (String) context.getOrDefault("categoryTitle", "Curated");
+                sb.append(String.format("### Verified %s Destinations\n\n", title));
+                sb.append("Here are verified destinations from our Indian heritage catalog:\n\n");
+                int idx = 1;
+                for (Map<String, Object> d : destinations) {
+                    sb.append(String.format("%d. **%s** (%s)\n", idx++, d.get("name"), d.get("state")));
+                    if (d.get("description") != null) {
+                        sb.append(String.format("   - *Overview:* %s\n", d.get("description")));
+                    }
+                    if (d.get("hiddenGems") != null && !((String) d.get("hiddenGems")).trim().isEmpty()) {
+                        sb.append(String.format("   - *Verified Hidden Gems:* %s\n", d.get("hiddenGems")));
+                    }
+                    sb.append(String.format("   - *Best Time to Visit:* %s | *Ideal Duration:* %s days\n",
+                            d.getOrDefault("bestTimeToVisit", "October to March"), d.getOrDefault("idealDurationDays", "3")));
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> pois = (List<Map<String, Object>>) d.get("pois");
+                    if (pois != null && !pois.isEmpty()) {
+                        String poiStr = pois.stream()
+                                .map(p -> String.format("%s (%s)", p.get("name"), p.get("category")))
+                                .collect(Collectors.joining(", "));
+                        sb.append(String.format("   - *Key POIs:* %s\n", poiStr));
+                    }
+                    sb.append("\n");
+                }
+            }
+            default -> {
+                sb.append("### Verified Destinations Matching Your Query\n\n");
+                sb.append("Here are matching verified destinations from YatraSetu:\n\n");
+                int idx = 1;
+                for (Map<String, Object> d : destinations) {
+                    sb.append(String.format("%d. **%s** (%s) — %s\n", idx++, d.get("name"), d.get("state"),
+                            d.getOrDefault("bestTimeToVisit", "October to March")));
+                }
+                sb.append("\n");
+            }
+        }
+
+        sb.append("> **YatraSetu Heritage Tip:** Select any destination card below to explore verified local homestays, licensed heritage guides, and generate custom trip itineraries.\n");
+        return sb.toString();
     }
 
     private String formatFee(Object fee) {

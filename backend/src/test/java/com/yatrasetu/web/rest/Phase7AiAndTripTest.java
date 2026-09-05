@@ -105,6 +105,8 @@ public class Phase7AiAndTripTest {
                         .longitude(BigDecimal.valueOf(76.4600))
                         .description("UNESCO World Heritage site of the Vijayanagara Empire")
                         .heroImageUrl("https://images.unsplash.com/photo-hampi")
+                        .tripTypes(List.of("Heritage", "Architecture", "Cultural"))
+                        .bestSeasons(List.of("September", "October", "November", "December", "January", "February"))
                         .build()));
 
         if (destinationPoiRepository.findByDestinationId("dest-hampi").isEmpty()) {
@@ -132,6 +134,144 @@ public class Phase7AiAndTripTest {
                     .characteristics("Iconic stone chariot shrine with musical pillars")
                     .build());
         }
+
+        // Seed Tamil Nadu state & destination
+        State tnState = stateRepository.findById("state-tamil-nadu").orElseGet(() ->
+                stateRepository.save(State.builder()
+                        .id("state-tamil-nadu")
+                        .stateName("Tamil Nadu")
+                        .region("South")
+                        .build()));
+
+        City tnCity = cityRepository.findById("city-thanjavur").orElseGet(() ->
+                cityRepository.save(City.builder()
+                        .id("city-thanjavur")
+                        .cityName("Thanjavur")
+                        .state(tnState)
+                        .latitude(BigDecimal.valueOf(10.7870))
+                        .longitude(BigDecimal.valueOf(79.1378))
+                        .build()));
+
+        Destination thanjavurDest = destinationRepository.findById("dest-thanjavur").orElseGet(() ->
+                destinationRepository.save(Destination.builder()
+                        .id("dest-thanjavur")
+                        .destinationName("Thanjavur")
+                        .city(tnCity)
+                        .state(tnState)
+                        .latitude(BigDecimal.valueOf(10.7870))
+                        .longitude(BigDecimal.valueOf(79.1378))
+                        .description("Cultural heart of Tamil Nadu famous for Brihadisvara Temple")
+                        .heroImageUrl("https://images.unsplash.com/photo-thanjavur")
+                        .tripTypes(List.of("Heritage", "Cultural"))
+                        .bestSeasons(List.of("September", "October", "November", "December", "January", "February"))
+                        .build()));
+
+        if (destinationPoiRepository.findByDestinationId("dest-thanjavur").isEmpty()) {
+            destinationPoiRepository.save(DestinationPoi.builder()
+                    .id("poi-brihadisvara")
+                    .poiName("Brihadisvara Temple")
+                    .destination(thanjavurDest)
+                    .category("Temple")
+                    .latitude(BigDecimal.valueOf(10.7870))
+                    .longitude(BigDecimal.valueOf(79.1378))
+                    .entryFeeInr(BigDecimal.ZERO)
+                    .typicalDurationHours(BigDecimal.valueOf(2.0))
+                    .characteristics("Great Living Chola Temple UNESCO site")
+                    .build());
+        }
+
+        // Seed Mysore in Karnataka
+        City mysoreCity = cityRepository.findById("city-mysore").orElseGet(() ->
+                cityRepository.save(City.builder()
+                        .id("city-mysore")
+                        .cityName("Mysore")
+                        .state(state)
+                        .latitude(BigDecimal.valueOf(12.2958))
+                        .longitude(BigDecimal.valueOf(76.6394))
+                        .build()));
+
+        Destination mysoreDest = destinationRepository.findById("dest-mysore").orElseGet(() ->
+                destinationRepository.save(Destination.builder()
+                        .id("dest-mysore")
+                        .destinationName("Mysore")
+                        .city(mysoreCity)
+                        .state(state)
+                        .latitude(BigDecimal.valueOf(12.2958))
+                        .longitude(BigDecimal.valueOf(76.6394))
+                        .description("City of Palaces and royal heritage in Karnataka")
+                        .tripTypes(List.of("Heritage", "Cultural"))
+                        .bestSeasons(List.of("September", "October", "November", "December"))
+                        .build()));
+
+        if (destinationPoiRepository.findByDestinationId("dest-mysore").isEmpty()) {
+            destinationPoiRepository.save(DestinationPoi.builder()
+                    .id("poi-mysore-palace")
+                    .poiName("Mysore Palace")
+                    .destination(mysoreDest)
+                    .category("Palace")
+                    .latitude(BigDecimal.valueOf(12.3051))
+                    .longitude(BigDecimal.valueOf(76.6551))
+                    .entryFeeInr(BigDecimal.valueOf(100))
+                    .typicalDurationHours(BigDecimal.valueOf(2.5))
+                    .characteristics("Indo-Saracenic royal palace with illuminated arches")
+                    .build());
+        }
+
+        // Seed Goa state & destination
+        State goaState = stateRepository.findById("state-goa").orElseGet(() ->
+                stateRepository.save(State.builder()
+                        .id("state-goa")
+                        .stateName("Goa")
+                        .region("West")
+                        .build()));
+
+        City goaCity = cityRepository.findById("city-panaji").orElseGet(() ->
+                cityRepository.save(City.builder()
+                        .id("city-panaji")
+                        .cityName("Panaji")
+                        .state(goaState)
+                        .latitude(BigDecimal.valueOf(15.4909))
+                        .longitude(BigDecimal.valueOf(73.8278))
+                        .build()));
+
+        Destination goaDest = destinationRepository.findById("dest-goa").orElseGet(() ->
+                destinationRepository.save(Destination.builder()
+                        .id("dest-goa")
+                        .destinationName("Goa")
+                        .city(goaCity)
+                        .state(goaState)
+                        .latitude(BigDecimal.valueOf(15.4909))
+                        .longitude(BigDecimal.valueOf(73.8278))
+                        .description("Coastal paradise of Portuguese churches and golden beaches")
+                        .tripTypes(List.of("Beach", "Heritage"))
+                        .build()));
+
+        if (destinationPoiRepository.findByDestinationId("dest-goa").isEmpty()) {
+            destinationPoiRepository.save(DestinationPoi.builder()
+                    .id("poi-bom-jesus")
+                    .poiName("Basilica of Bom Jesus")
+                    .destination(goaDest)
+                    .category("Church")
+                    .latitude(BigDecimal.valueOf(15.5008))
+                    .longitude(BigDecimal.valueOf(73.9116))
+                    .entryFeeInr(BigDecimal.ZERO)
+                    .typicalDurationHours(BigDecimal.valueOf(1.5))
+                    .characteristics("UNESCO world heritage baroque church in Old Goa")
+                    .build());
+        }
+
+        // Seed Coorg (peaceful / offbeat) in Karnataka
+        destinationRepository.findById("dest-coorg").orElseGet(() ->
+                destinationRepository.save(Destination.builder()
+                        .id("dest-coorg")
+                        .destinationName("Coorg")
+                        .state(state)
+                        .latitude(BigDecimal.valueOf(12.3375))
+                        .longitude(BigDecimal.valueOf(75.8069))
+                        .description("Serene coffee estates and peaceful misty hill station")
+                        .hiddenGems("Mandalpatti secret peak and hidden plantation trails")
+                        .tripTypes(List.of("Offbeat", "Nature", "Relaxation"))
+                        .build()));
     }
 
     @Test

@@ -17,6 +17,12 @@ public interface DestinationRepository extends JpaRepository<Destination, String
 
     List<Destination> findByStateIdOrderByPopularityScoreDesc(String stateId);
 
+    @Query("SELECT d FROM Destination d JOIN FETCH d.state LEFT JOIN FETCH d.city WHERE d.state.id = :stateId AND d.isActive = true ORDER BY d.popularityScore DESC")
+    List<Destination> findByStateIdWithDetails(@Param("stateId") String stateId);
+
+    @Query("SELECT d FROM Destination d JOIN FETCH d.state LEFT JOIN FETCH d.city WHERE d.isActive = true ORDER BY d.popularityScore DESC")
+    List<Destination> findAllActiveWithDetails();
+
     List<Destination> findByCityIdOrderByPopularityScoreDesc(String cityId);
 
     List<Destination> findByRegionIgnoreCaseOrderByPopularityScoreDesc(String region);
