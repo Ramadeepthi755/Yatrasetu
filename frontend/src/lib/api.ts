@@ -3349,5 +3349,111 @@ export async function cancelHotelBooking(
   return res.json();
 }
 
+export interface CreatePaymentOrderResponse {
+  bookingReference: string;
+  provider: string;
+  providerOrderId: string;
+  keyId: string;
+  amount: number;
+  amountInPaise: number;
+  currency: string;
+  hotelName: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  status: string;
+}
+
+export interface VerifyPaymentRequest {
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
+  razorpaySignature: string;
+}
+
+export interface PaymentTransactionDto {
+  id: string;
+  bookingReference: string;
+  provider: string;
+  providerOrderId: string;
+  providerPaymentId?: string;
+  amount: number;
+  currency: string;
+  status: string;
+  failureCode?: string;
+  failureDescription?: string;
+  verifiedAt?: string;
+  createdAt: string;
+}
+
+export interface PaymentStatusResponse {
+  bookingReference: string;
+  bookingStatus: string;
+  paymentStatus: string;
+  totalAmount: number;
+  currency: string;
+  paymentGatewayAvailable: boolean;
+  provider: string;
+  activeOrderId?: string;
+  transactions: PaymentTransactionDto[];
+}
+
+export async function createHotelPaymentOrder(
+  bookingReference: string,
+  token: string
+): Promise<ApiResponse<CreatePaymentOrderResponse>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/${encodeURIComponent(bookingReference)}/payment/order`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to create payment order: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function verifyHotelPayment(
+  bookingReference: string,
+  data: VerifyPaymentRequest,
+  token: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/${encodeURIComponent(bookingReference)}/payment/verify`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to verify payment: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getHotelPaymentStatus(
+  bookingReference: string,
+  token: string
+): Promise<ApiResponse<PaymentStatusResponse>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/${encodeURIComponent(bookingReference)}/payment`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch payment status: ${res.status}`);
+  }
+  return res.json();
+}
+
+
 
 

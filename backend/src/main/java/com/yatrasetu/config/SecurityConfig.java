@@ -66,6 +66,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/search/**").permitAll()
                 .requestMatchers("/api/v1/discovery/**").permitAll()
                 .requestMatchers("/api/v1/ai/**").permitAll()
+                .requestMatchers("/api/v1/payments/razorpay/webhook").permitAll()
                 .requestMatchers("/error").permitAll()
 
                 // Partner Protected Routes

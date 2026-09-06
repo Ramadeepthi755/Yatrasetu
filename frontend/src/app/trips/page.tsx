@@ -8,6 +8,8 @@ import {
   deleteTrip,
   getMyHotelBookings,
   cancelHotelBooking,
+  createHotelPaymentOrder,
+  verifyHotelPayment,
   TripDto,
   HotelBookingDto,
 } from '@/lib/api';
@@ -32,6 +34,8 @@ import {
   XCircle,
   AlertTriangle,
   FileText,
+  CreditCard,
+  CheckCircle,
 } from 'lucide-react';
 
 export default function MyTripsPage() {
@@ -43,6 +47,9 @@ export default function MyTripsPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedTrip, setSelectedTrip] = useState<TripDto | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Payment Processing State
+  const [payingBookingRef, setPayingBookingRef] = useState<string | null>(null);
 
   // Cancellation Modal State
   const [cancelModalBooking, setCancelModalBooking] = useState<HotelBookingDto | null>(null);
@@ -133,6 +140,118 @@ export default function MyTripsPage() {
       alert(err instanceof Error ? err.message : 'Failed to cancel reservation');
     } finally {
       setIsSubmittingCancel(false);
+    }
+  };
+
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (typeof window !== 'undefined' && (window as unknown as { Razorpay: unknown }).Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePayNow = async (booking: HotelBookingDto) => {
+    if (!token) {
+      openAuthModal('TRAVELER');
+      return;
+    }
+
+    setPayingBookingRef(booking.bookingReference);
+    try {
+      // 1. Generate/Retrieve server-authoritative Razorpay Order
+      const orderRes = await createHotelPaymentOrder(booking.bookingReference, token);
+      if (!orderRes.success || !orderRes.data) {
+        throw new Error(orderRes.message || 'Payment initiation failed. Please try again.');
+      }
+
+      const orderData = orderRes.data;
+
+      // 2. Ensure Razorpay Checkout SDK is loaded
+      const isScriptLoaded = await loadRazorpayScript();
+      if (!isScriptLoaded) {
+        throw new Error('Unable to connect to Razorpay payment gateway script. Please check your network connection.');
+      }
+
+      // 3. Open Razorpay Checkout (Test Mode)
+      const options = {
+        key: orderData.keyId,
+        amount: orderData.amountInPaise,
+        currency: orderData.currency,
+        name: 'YatraSetu Tourism Ecosystem',
+        description: `Hotel Reservation: ${booking.hotelName} (${booking.roomTypeName})`,
+        order_id: orderData.providerOrderId,
+        prefill: {
+          name: orderData.guestName,
+          email: orderData.guestEmail,
+          contact: orderData.guestPhone,
+        },
+        theme: {
+          color: '#312E81', // Indigo-900 brand color
+        },
+        handler: async function (response: {
+          razorpay_order_id: string;
+          razorpay_payment_id: string;
+          razorpay_signature: string;
+        }) {
+          try {
+            // 4. Server-Side Cryptographic Signature Verification
+            const verifyRes = await verifyHotelPayment(
+              booking.bookingReference,
+              {
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              },
+              token
+            );
+
+            if (verifyRes.success && verifyRes.data) {
+              setHotelBookings((prev) =>
+                prev.map((b) =>
+                  b.bookingReference === booking.bookingReference ? verifyRes.data! : b
+                )
+              );
+              alert('Payment verified successfully! Your booking is now CONFIRMED.');
+            } else {
+              alert(verifyRes.message || 'Payment verification failed on server.');
+            }
+          } catch (verifyErr: unknown) {
+            alert(verifyErr instanceof Error ? verifyErr.message : 'Server signature verification error.');
+          } finally {
+            setPayingBookingRef(null);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setPayingBookingRef(null);
+          },
+        },
+      };
+
+      const RazorpayConstructor = (window as unknown as {
+        Razorpay: new (opts: typeof options) => {
+          on: (evt: string, cb: (resp: { error?: { description?: string } }) => void) => void;
+          open: () => void;
+        };
+      }).Razorpay;
+
+      const rzp = new RazorpayConstructor(options);
+      rzp.on('payment.failed', function (resp: { error?: { description?: string } }) {
+        alert(`Payment failed: ${resp.error?.description || 'Transaction unsuccessful'}`);
+        setPayingBookingRef(null);
+      });
+      rzp.open();
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to start payment checkout');
+      setPayingBookingRef(null);
     }
   };
 
@@ -328,14 +447,26 @@ export default function MyTripsPage() {
                     </div>
 
                     {/* Status & Lifecycle Explanations */}
+                    {b.bookingStatus === 'CONFIRMED' && b.paymentStatus === 'PAID' && (
+                      <div className="rounded-xl bg-emerald-50/70 border border-emerald-200 p-2.5 text-[11px] text-emerald-900 space-y-1">
+                        <div className="font-bold flex items-center gap-1 text-emerald-800">
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                          <span>Booking Confirmed · Payment Verified</span>
+                        </div>
+                        <p className="text-[10px] text-emerald-700 leading-tight">
+                          Payment verified securely via Razorpay. Your room is confirmed with the property.
+                        </p>
+                      </div>
+                    )}
+
                     {b.bookingStatus === 'PENDING_PAYMENT' && (
                       <div className="rounded-xl bg-amber-50/70 border border-amber-200 p-2.5 text-[11px] text-amber-900 space-y-1">
                         <div className="font-bold flex items-center gap-1">
                           <Clock className="w-3 h-3 text-amber-700 shrink-0" />
-                          <span>Payment Not Completed (Unpaid)</span>
+                          <span>Payment Pending · Unpaid Reservation</span>
                         </div>
                         <p className="text-[10px] text-amber-800 leading-tight">
-                          Inventory is temporarily reserved. Please note this is not a paid confirmation.
+                          Inventory is temporarily held. Complete payment via Razorpay Sandbox to confirm your stay.
                         </p>
                       </div>
                     )}
@@ -364,7 +495,7 @@ export default function MyTripsPage() {
                           </p>
                         )}
                         <p className="text-[9px] text-rose-600 leading-tight">
-                          * Refund status unavailable until payment processing is implemented (Phase 22.8).
+                          * Note: Automated refund processing is recorded as UNPROCESSED pending financial reconciliation.
                         </p>
                       </div>
                     )}
@@ -385,7 +516,7 @@ export default function MyTripsPage() {
                   </div>
 
                   {/* Card Actions */}
-                  <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-100 dark:border-gray-800">
+                  <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-100 dark:border-gray-800 flex-wrap">
                     <Link
                       href={`/hotels/${b.hotelId}`}
                       className="text-xs font-bold text-primary hover:text-primary/80 transition"
@@ -393,23 +524,45 @@ export default function MyTripsPage() {
                       View Hotel →
                     </Link>
 
-                    {(b.bookingStatus === 'PENDING_PAYMENT' || b.bookingStatus === 'CONFIRMED') && (
-                      <button
-                        onClick={() => handleOpenCancelModal(b)}
-                        className="text-xs font-semibold text-rose-600 hover:text-rose-800 transition"
-                      >
-                        Cancel Reservation
-                      </button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {b.bookingStatus === 'PENDING_PAYMENT' && b.paymentStatus !== 'PAID' && (
+                        <button
+                          onClick={() => handlePayNow(b)}
+                          disabled={payingBookingRef === b.bookingReference}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-900 hover:bg-indigo-950 text-white text-xs font-bold rounded-lg shadow-xs transition disabled:opacity-50"
+                        >
+                          {payingBookingRef === b.bookingReference ? (
+                            <>
+                              <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              <span>Opening...</span>
+                            </>
+                          ) : (
+                            <>
+                              <CreditCard className="w-3.5 h-3.5" />
+                              <span>{b.paymentStatus === 'FAILED' ? 'Retry Payment' : 'Pay Now'}</span>
+                            </>
+                          )}
+                        </button>
+                      )}
 
-                    {b.bookingStatus === 'EXPIRED' && (
-                      <Link
-                        href="/hotels"
-                        className="text-xs font-semibold text-indigo-900 hover:underline"
-                      >
-                        Search Again
-                      </Link>
-                    )}
+                      {(b.bookingStatus === 'PENDING_PAYMENT' || b.bookingStatus === 'CONFIRMED') && (
+                        <button
+                          onClick={() => handleOpenCancelModal(b)}
+                          className="text-xs font-semibold text-rose-600 hover:text-rose-800 transition"
+                        >
+                          Cancel Reservation
+                        </button>
+                      )}
+
+                      {b.bookingStatus === 'EXPIRED' && (
+                        <Link
+                          href="/hotels"
+                          className="text-xs font-semibold text-indigo-900 hover:underline"
+                        >
+                          Search Again
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
