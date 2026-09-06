@@ -57,6 +57,7 @@ import {
   updatePartnerHotelRoom,
   deletePartnerHotelRoom,
   updatePartnerRoomInventory,
+  updatePartnerBulkRoomInventory,
   getPartnerRatePlans,
   createPartnerRatePlan,
   updatePartnerRatePlan,
@@ -72,6 +73,7 @@ import {
   CreateRoomTypeRequest,
   UpdateRoomTypeRequest,
   UpdateInventoryRequest,
+  BulkInventoryUpdateRequest,
   HotelRatePlanItem,
   CreateRatePlanRequest,
   UpdateRatePlanRequest,
@@ -159,10 +161,13 @@ export default function PartnerDashboardPage() {
   });
 
   // Inventory Form State
+  const [inventoryMode, setInventoryMode] = useState<'baseline' | 'single' | 'range'>('baseline');
   const [inventoryFormData, setInventoryFormData] = useState({
     totalUnits: 5,
     blockedUnits: 0,
     inventoryDate: '',
+    startDate: '',
+    endDate: '',
   });
 
   // Rate Plans State
@@ -573,10 +578,13 @@ export default function PartnerDashboardPage() {
 
   const handleOpenManageInventory = (room: HotelRoomTypeItem) => {
     setEditingInventoryRoom(room);
+    setInventoryMode('baseline');
     setInventoryFormData({
       totalUnits: room.baseInventoryUnits,
       blockedUnits: 0,
       inventoryDate: '',
+      startDate: '',
+      endDate: '',
     });
     setActionError(null);
     setInventoryModalOpen(true);
@@ -607,28 +615,63 @@ export default function PartnerDashboardPage() {
       return;
     }
 
-    const payload: UpdateInventoryRequest = {
-      totalUnits: total,
-      blockedUnits: blocked,
-      inventoryDate: inventoryFormData.inventoryDate.trim() || undefined,
-    };
-
     try {
-      const res = await updatePartnerRoomInventory(
-        selectedHotelForRooms.id,
-        editingInventoryRoom.id,
-        payload,
-        token
-      );
-      if (res.success) {
-        // Also update room list's baseInventoryUnits if baseline was edited
-        if (!inventoryFormData.inventoryDate.trim()) {
-          setHotelRooms((prev) =>
-            prev.map((r) => (r.id === editingInventoryRoom.id ? { ...r, baseInventoryUnits: total } : r))
-          );
+      if (inventoryMode === 'range') {
+        if (!inventoryFormData.startDate || !inventoryFormData.endDate) {
+          setActionError('Start date and end date are required for date range update.');
+          setSubmittingInventoryForm(false);
+          return;
         }
-        setActionSuccess('Physical inventory capacity updated successfully.');
-        setInventoryModalOpen(false);
+        if (inventoryFormData.startDate > inventoryFormData.endDate) {
+          setActionError('Start date must be before or equal to end date.');
+          setSubmittingInventoryForm(false);
+          return;
+        }
+
+        const payload: BulkInventoryUpdateRequest = {
+          startDate: inventoryFormData.startDate,
+          endDate: inventoryFormData.endDate,
+          totalUnits: total,
+          blockedUnits: blocked,
+        };
+
+        const res = await updatePartnerBulkRoomInventory(
+          selectedHotelForRooms.id,
+          editingInventoryRoom.id,
+          payload,
+          token
+        );
+        if (res.success) {
+          setActionSuccess(`Date-range physical inventory updated across ${res.data?.length || 0} dates.`);
+          setInventoryModalOpen(false);
+        }
+      } else {
+        const payload: UpdateInventoryRequest = {
+          totalUnits: total,
+          blockedUnits: blocked,
+          inventoryDate: inventoryMode === 'single' ? (inventoryFormData.inventoryDate.trim() || undefined) : undefined,
+        };
+
+        const res = await updatePartnerRoomInventory(
+          selectedHotelForRooms.id,
+          editingInventoryRoom.id,
+          payload,
+          token
+        );
+        if (res.success) {
+          // Also update room list's baseInventoryUnits if baseline was edited
+          if (inventoryMode === 'baseline') {
+            setHotelRooms((prev) =>
+              prev.map((r) => (r.id === editingInventoryRoom.id ? { ...r, baseInventoryUnits: total } : r))
+            );
+          }
+          setActionSuccess(
+            inventoryMode === 'single'
+              ? `Date-specific physical inventory override set for ${inventoryFormData.inventoryDate}.`
+              : 'Baseline physical inventory capacity updated successfully.'
+          );
+          setInventoryModalOpen(false);
+        }
       }
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to update physical inventory';
@@ -2637,7 +2680,78 @@ export default function PartnerDashboardPage() {
               </div>
             )}
 
+            <div className="flex rounded-xl bg-slate-100 p-1 mb-4 text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setInventoryMode('baseline')}
+                className={`flex-1 py-1.5 rounded-lg text-center transition ${
+                  inventoryMode === 'baseline' ? 'bg-white text-indigo-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Baseline
+              </button>
+              <button
+                type="button"
+                onClick={() => setInventoryMode('single')}
+                className={`flex-1 py-1.5 rounded-lg text-center transition ${
+                  inventoryMode === 'single' ? 'bg-white text-indigo-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Single Date
+              </button>
+              <button
+                type="button"
+                onClick={() => setInventoryMode('range')}
+                className={`flex-1 py-1.5 rounded-lg text-center transition ${
+                  inventoryMode === 'range' ? 'bg-white text-indigo-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Date Range
+              </button>
+            </div>
+
             <form onSubmit={handleSubmitInventory} className="space-y-4 text-xs">
+              {inventoryMode === 'single' && (
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Target Override Date *</label>
+                  <input
+                    type="date"
+                    required
+                    value={inventoryFormData.inventoryDate}
+                    onChange={(e) => setInventoryFormData({ ...inventoryFormData, inventoryDate: e.target.value })}
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-stone-900 focus:border-indigo-500 focus:outline-none"
+                  />
+                  <span className="text-[10px] text-stone-400 mt-1 block">
+                    Overrides baseline capacity specifically for this selected date.
+                  </span>
+                </div>
+              )}
+
+              {inventoryMode === 'range' && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-stone-700 block mb-1">Start Date *</label>
+                    <input
+                      type="date"
+                      required
+                      value={inventoryFormData.startDate}
+                      onChange={(e) => setInventoryFormData({ ...inventoryFormData, startDate: e.target.value })}
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-stone-900 focus:border-indigo-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-stone-700 block mb-1">End Date *</label>
+                    <input
+                      type="date"
+                      required
+                      value={inventoryFormData.endDate}
+                      onChange={(e) => setInventoryFormData({ ...inventoryFormData, endDate: e.target.value })}
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-stone-900 focus:border-indigo-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="font-bold text-stone-700 block mb-1">Total Physical Units *</label>
                 <input
@@ -2698,7 +2812,7 @@ export default function PartnerDashboardPage() {
                   disabled={submittingInventoryForm}
                   className="px-5 py-2 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow disabled:opacity-50"
                 >
-                  {submittingInventoryForm ? 'Updating...' : 'Save Capacity'}
+                  {submittingInventoryForm ? 'Saving...' : 'Save Capacity'}
                 </button>
               </div>
             </form>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
@@ -24,14 +24,20 @@ import {
   Users,
   Maximize2,
   Shield,
+  Layers,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import {
   getHotelById,
   getPublicHotelRooms,
   getPublicHotelRatePlans,
+  getHotelAvailability,
   HotelItem,
   HotelRoomTypeItem,
   HotelRatePlanItem,
+  HotelAvailabilityDto,
+  HotelAvailabilityStatus,
 } from '@/lib/api';
 import { MapView, MapMarker } from '@/components/map/MapView';
 
@@ -45,10 +51,53 @@ export default function HotelDetailPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Availability query state
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const dayAfterTomorrow = new Date();
+  dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 3);
+
+  const formatDate = (d: Date) => d.toISOString().split('T')[0];
+
+  const [checkInDate, setCheckInDate] = useState<string>(formatDate(tomorrow));
+  const [checkOutDate, setCheckOutDate] = useState<string>(formatDate(dayAfterTomorrow));
+  const [guestCount, setGuestCount] = useState<number>(2);
+
+  const [availabilityData, setAvailabilityData] = useState<HotelAvailabilityDto | null>(null);
+  const [loadingAvailability, setLoadingAvailability] = useState<boolean>(false);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
+  const [expandedNightlyRoomId, setExpandedNightlyRoomId] = useState<string | null>(null);
+
   // Inquiry form state
-  const [nights, setNights] = useState<number>(2);
-  const [rooms, setRooms] = useState<number>(1);
   const [inquirySubmitted, setInquirySubmitted] = useState<boolean>(false);
+
+  const fetchAvailability = useCallback(async () => {
+    if (!hotelId || !checkInDate || !checkOutDate) return;
+    if (checkInDate >= checkOutDate) {
+      setAvailabilityError('Check-out date must be strictly after check-in date.');
+      return;
+    }
+    setLoadingAvailability(true);
+    setAvailabilityError(null);
+
+    try {
+      const res = await getHotelAvailability(hotelId, {
+        checkIn: checkInDate,
+        checkOut: checkOutDate,
+        guests: guestCount,
+      });
+      if (res.success && res.data) {
+        setAvailabilityData(res.data);
+      } else {
+        setAvailabilityError(res.message || 'Unable to retrieve availability data');
+      }
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to query availability';
+      setAvailabilityError(errorMsg);
+    } finally {
+      setLoadingAvailability(false);
+    }
+  }, [hotelId, checkInDate, checkOutDate, guestCount]);
 
   useEffect(() => {
     if (!hotelId) return;
@@ -79,6 +128,13 @@ export default function HotelDetailPage() {
 
     loadHotel();
   }, [hotelId]);
+
+  // Load availability once hotel metadata is ready
+  useEffect(() => {
+    if (hotel) {
+      fetchAvailability();
+    }
+  }, [hotel, fetchAvailability]);
 
   if (loading) {
     return (
@@ -129,7 +185,8 @@ export default function HotelDetailPage() {
         ]
       : [];
 
-  const estimatedTotal = Number(hotel.pricePerNight) * nights * rooms;
+  const stayNights = availabilityData?.nights || Math.max(1, Math.round((new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / (1000 * 3600 * 24)));
+  const estimatedTotal = Number(hotel.pricePerNight) * stayNights;
 
   return (
     <div className="min-h-screen bg-stone-50 pb-24">
@@ -204,18 +261,116 @@ export default function HotelDetailPage() {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* 2-Column Layout: Amenities + Map on left, Reservation/Inquiry on right */}
+        </div>        {/* 2-Column Layout: Amenities + Map on left, Reservation/Inquiry on right */}
         <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {/* Left 2 Cols: Amenities & Interactive Map */}
+          {/* Left 2 Cols: Availability Search & Room Types & Interactive Map */}
           <div className="lg:col-span-2 space-y-8">
+
+            {/* Date-Specific Availability Bar */}
+            <div className="rounded-3xl border border-indigo-100 bg-white p-6 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-100 pb-4 mb-4">
+                <div>
+                  <h2 className="text-base font-bold text-stone-900 flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-indigo-900" />
+                    <span>Real-Time Stay Availability</span>
+                  </h2>
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    Select your stay dates to check physical room capacity and date overrides.
+                  </p>
+                </div>
+                {availabilityData && (
+                  <div className="flex items-center gap-2">
+                    {availabilityData.status === 'AVAILABLE' && (
+                      <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 border border-emerald-200">
+                        <CheckCircle className="h-3.5 w-3.5 mr-1.5 text-emerald-600" /> Available for Stay
+                      </span>
+                    )}
+                    {availabilityData.status === 'LIMITED' && (
+                      <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800 border border-amber-200">
+                        <AlertCircle className="h-3.5 w-3.5 mr-1.5 text-amber-600" /> Limited Capacity
+                      </span>
+                    )}
+                    {availabilityData.status === 'SOLD_OUT' && (
+                      <span className="inline-flex items-center rounded-full bg-rose-50 px-3 py-1 text-xs font-bold text-rose-800 border border-rose-200">
+                        <AlertCircle className="h-3.5 w-3.5 mr-1.5 text-rose-600" /> Sold Out on Dates
+                      </span>
+                    )}
+                    {availabilityData.status === 'UNAVAILABLE_DATA' && (
+                      <span className="inline-flex items-center rounded-full bg-stone-100 px-3 py-1 text-xs font-bold text-stone-700 border border-stone-200">
+                        <Database className="h-3.5 w-3.5 mr-1.5 text-stone-500" /> Dataset Catalog
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Date Filters */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-stone-700 block mb-1">Check-in Date</label>
+                  <input
+                    type="date"
+                    value={checkInDate}
+                    onChange={(e) => setCheckInDate(e.target.value)}
+                    className="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs font-medium text-stone-900 focus:bg-white focus:border-indigo-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-stone-700 block mb-1">Check-out Date</label>
+                  <input
+                    type="date"
+                    value={checkOutDate}
+                    onChange={(e) => setCheckOutDate(e.target.value)}
+                    className="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs font-medium text-stone-900 focus:bg-white focus:border-indigo-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-stone-700 block mb-1">Guests</label>
+                  <div className="flex items-center space-x-2">
+                    <select
+                      value={guestCount}
+                      onChange={(e) => setGuestCount(Number(e.target.value))}
+                      className="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs font-medium text-stone-900 focus:bg-white focus:border-indigo-500 focus:outline-none"
+                    >
+                      {[1, 2, 3, 4, 5, 6, 8, 10].map((num) => (
+                        <option key={num} value={num}>
+                          {num} {num === 1 ? 'Guest' : 'Guests'}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={fetchAvailability}
+                      disabled={loadingAvailability}
+                      className="rounded-xl bg-indigo-900 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-800 disabled:opacity-50 flex-shrink-0"
+                    >
+                      {loadingAvailability ? 'Checking...' : 'Check'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {availabilityError && (
+                <div className="mt-3 rounded-xl bg-rose-50 border border-rose-200 p-2.5 text-xs text-rose-800 flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                  <span>{availabilityError}</span>
+                </div>
+              )}
+
+              {availabilityData?.note && (
+                <div className="mt-3 rounded-xl bg-stone-50 border border-stone-200/80 p-2.5 text-xs text-stone-600 flex items-center gap-1.5">
+                  <Info className="w-4 h-4 text-stone-400 flex-shrink-0" />
+                  <span>{availabilityData.note}</span>
+                </div>
+              )}
+            </div>
+
             {/* Room Types & Physical Inventory Section */}
             <div className="rounded-3xl border border-stone-200 bg-white p-6 sm:p-8 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-stone-900 flex items-center">
                   <BedDouble className="h-5 w-5 mr-2 text-indigo-900" />
-                  Room Types & Configurations
+                  Room Configurations & Live Availability
                 </h2>
                 <span className="text-xs text-stone-500 font-medium">
                   {roomsList.length} {roomsList.length === 1 ? 'Room Configuration' : 'Room Configurations'}
@@ -223,86 +378,185 @@ export default function HotelDetailPage() {
               </div>
 
               {roomsList.length > 0 ? (
-                <div className="space-y-4">
-                  {roomsList.map((room) => (
-                    <div
-                      key={room.id}
-                      className="rounded-2xl border border-stone-200 bg-stone-50/50 p-5 transition hover:border-indigo-200 hover:bg-white"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-base font-bold text-stone-900">{room.roomTypeName}</h3>
-                            {room.isAccessible && (
-                              <span className="rounded-md bg-teal-100 px-2 py-0.5 text-[10px] font-bold text-teal-800">
-                                Accessible
+                <div className="space-y-5">
+                  {roomsList.map((room) => {
+                    const availRoom = availabilityData?.rooms?.find((r) => r.roomTypeId === room.id);
+                    const roomRatePlans = ratePlansList.filter((p) => p.roomTypeId === room.id);
+
+                    return (
+                      <div
+                        key={room.id}
+                        className="rounded-2xl border border-stone-200 bg-stone-50/50 p-5 transition hover:border-indigo-200 hover:bg-white"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-base font-bold text-stone-900">{room.roomTypeName}</h3>
+                              {room.isAccessible && (
+                                <span className="rounded-md bg-teal-100 px-2 py-0.5 text-[10px] font-bold text-teal-800">
+                                  Accessible
+                                </span>
+                              )}
+                              <span className="rounded-md bg-stone-100 px-2 py-0.5 text-[10px] font-semibold text-stone-600 border border-stone-200">
+                                {room.sourceType === 'PARTNER_SUBMITTED' ? 'Partner Listed' : room.sourceType}
                               </span>
+                            </div>
+                            {room.description && (
+                              <p className="mt-1 text-xs text-stone-600 leading-relaxed">{room.description}</p>
                             )}
-                            <span className="rounded-md bg-stone-100 px-2 py-0.5 text-[10px] font-semibold text-stone-600 border border-stone-200">
-                              {room.sourceType === 'PARTNER_SUBMITTED' ? 'Partner Listed' : room.sourceType}
+                          </div>
+
+                          <div className="flex sm:flex-col items-end gap-1.5 flex-shrink-0">
+                            {availRoom ? (
+                              <>
+                                {availRoom.status === 'AVAILABLE' && (
+                                  <span className="inline-flex items-center rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800 border border-emerald-200">
+                                    <CheckCircle className="w-3.5 h-3.5 mr-1 text-emerald-600" />
+                                    {availRoom.availableUnits} {availRoom.availableUnits === 1 ? 'Unit' : 'Units'} Available
+                                  </span>
+                                )}
+                                {availRoom.status === 'LIMITED' && (
+                                  <span className="inline-flex items-center rounded-lg bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800 border border-amber-200">
+                                    <AlertCircle className="w-3.5 h-3.5 mr-1 text-amber-600" />
+                                    Only {availRoom.availableUnits} {availRoom.availableUnits === 1 ? 'Unit' : 'Units'} Left
+                                  </span>
+                                )}
+                                {availRoom.status === 'SOLD_OUT' && (
+                                  <span className="inline-flex items-center rounded-lg bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-800 border border-rose-200">
+                                    <AlertCircle className="w-3.5 h-3.5 mr-1 text-rose-600" />
+                                    Sold Out on Selected Dates
+                                  </span>
+                                )}
+                                {availRoom.status === 'UNAVAILABLE_DATA' && (
+                                  <span className="inline-flex items-center rounded-lg bg-stone-100 px-2.5 py-1 text-xs font-semibold text-stone-600 border border-stone-200">
+                                    Data Unavailable
+                                  </span>
+                                )}
+                                <span className="text-[10px] text-stone-400">
+                                  Physical Base: {room.baseInventoryUnits} units
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="inline-flex items-center rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-900 border border-indigo-100">
+                                  Capacity: {room.baseInventoryUnits} {room.baseInventoryUnits === 1 ? 'Unit' : 'Units'}
+                                </span>
+                                <span className="text-[10px] text-stone-400">Total physical capacity</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Specs */}
+                        <div className="mt-3.5 flex flex-wrap items-center gap-4 text-xs text-stone-600 border-t border-stone-200/60 pt-3">
+                          <div className="flex items-center gap-1.5">
+                            <Users className="h-3.5 w-3.5 text-stone-400" />
+                            <span>Max {room.maxOccupancy} {room.maxOccupancy === 1 ? 'Guest' : 'Guests'}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <BedDouble className="h-3.5 w-3.5 text-stone-400" />
+                            <span>{room.bedConfiguration || 'Bed config not specified'}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Maximize2 className="h-3.5 w-3.5 text-stone-400" />
+                            <span>{room.roomSizeSqft ? `${room.roomSizeSqft} sq ft` : 'Size not provided'}</span>
+                          </div>
+                        </div>
+
+                        {/* Amenities */}
+                        {room.amenities && room.amenities.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-1.5">
+                            {room.amenities.map((amenity, idx) => (
+                              <span
+                                key={idx}
+                                className="rounded-md bg-white px-2 py-0.5 text-[11px] font-medium text-stone-600 border border-stone-200"
+                              >
+                                {amenity}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Nightly Capacity Breakdown Toggle */}
+                        {availRoom && availRoom.nightly && availRoom.nightly.length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-stone-200/60">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setExpandedNightlyRoomId(
+                                  expandedNightlyRoomId === room.id ? null : room.id
+                                )
+                              }
+                              className="text-xs font-bold text-indigo-900 hover:text-indigo-800 flex items-center gap-1"
+                            >
+                              <Layers className="w-3.5 h-3.5" />
+                              <span>
+                                {expandedNightlyRoomId === room.id
+                                  ? 'Hide Nightly Capacity Details'
+                                  : `View Nightly Capacity Breakdown (${availRoom.nightly.length} Nights)`}
+                              </span>
+                              {expandedNightlyRoomId === room.id ? (
+                                <ChevronUp className="w-3.5 h-3.5" />
+                              ) : (
+                                <ChevronDown className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+
+                            {expandedNightlyRoomId === room.id && (
+                              <div className="mt-2.5 rounded-xl border border-stone-200 bg-white p-3 space-y-2">
+                                <div className="grid grid-cols-4 gap-2 text-[11px] font-bold text-stone-500 border-b border-stone-100 pb-1.5">
+                                  <span>Night Date</span>
+                                  <span className="text-center">Total Capacity</span>
+                                  <span className="text-center">Blocked / Maint.</span>
+                                  <span className="text-right">Available</span>
+                                </div>
+                                {availRoom.nightly.map((night, nIdx) => (
+                                  <div
+                                    key={nIdx}
+                                    className="grid grid-cols-4 gap-2 text-xs py-1 items-center border-b border-stone-50 last:border-0"
+                                  >
+                                    <div className="font-semibold text-stone-800 flex items-center gap-1">
+                                      <span>{new Date(night.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}</span>
+                                      {night.isDateOverride && (
+                                        <span className="rounded bg-indigo-50 text-[9px] font-bold text-indigo-800 px-1 py-0.2 border border-indigo-100">
+                                          Date Override
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="text-center text-stone-600">{night.totalUnits}</span>
+                                    <span className="text-center text-amber-700">{night.blockedUnits}</span>
+                                    <span
+                                      className={`text-right font-bold ${
+                                        night.availableUnits > 0 ? 'text-emerald-700' : 'text-rose-600'
+                                      }`}
+                                    >
+                                      {night.availableUnits > 0 ? `${night.availableUnits} units` : '0 (Sold Out)'}
+                                    </span>
+                                  </div>
+                                ))}
+                                <div className="text-[10px] text-stone-400 pt-1 italic">
+                                  * Overall availability across entire stay is the minimum available capacity ({availRoom.availableUnits} units). Checkout date is excluded from evaluation.
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Configured Rate Plans */}
+                        <div className="mt-4 pt-4 border-t border-stone-200/80">
+                          <div className="flex items-center justify-between mb-2.5">
+                            <h4 className="text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
+                              <Tag className="w-3.5 h-3.5 text-emerald-700" />
+                              <span>Tariff & Rate Plans</span>
+                            </h4>
+                            <span className="text-[11px] text-stone-500">
+                              {roomRatePlans.length} {roomRatePlans.length === 1 ? 'Rate Option' : 'Rate Options'}
                             </span>
                           </div>
-                          {room.description && (
-                            <p className="mt-1 text-xs text-stone-600 leading-relaxed">{room.description}</p>
-                          )}
-                        </div>
 
-                        <div className="flex sm:flex-col items-end gap-1 flex-shrink-0">
-                          <span className="inline-flex items-center rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-900 border border-indigo-100">
-                            Capacity: {room.baseInventoryUnits} {room.baseInventoryUnits === 1 ? 'Unit' : 'Units'}
-                          </span>
-                          <span className="text-[10px] text-stone-400">Total physical capacity</span>
-                        </div>
-                      </div>
-
-                      {/* Specs */}
-                      <div className="mt-3.5 flex flex-wrap items-center gap-4 text-xs text-stone-600 border-t border-stone-200/60 pt-3">
-                        <div className="flex items-center gap-1.5">
-                          <Users className="h-3.5 w-3.5 text-stone-400" />
-                          <span>Max {room.maxOccupancy} {room.maxOccupancy === 1 ? 'Guest' : 'Guests'}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <BedDouble className="h-3.5 w-3.5 text-stone-400" />
-                          <span>{room.bedConfiguration || 'Bed config not specified'}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Maximize2 className="h-3.5 w-3.5 text-stone-400" />
-                          <span>{room.roomSizeSqft ? `${room.roomSizeSqft} sq ft` : 'Size not provided'}</span>
-                        </div>
-                      </div>
-
-                      {/* Amenities */}
-                      {room.amenities && room.amenities.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-1.5">
-                          {room.amenities.map((amenity, idx) => (
-                            <span
-                              key={idx}
-                              className="rounded-md bg-white px-2 py-0.5 text-[11px] font-medium text-stone-600 border border-stone-200"
-                            >
-                              {amenity}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Configured Rate Plans */}
-                      <div className="mt-4 pt-4 border-t border-stone-200/80">
-                        <div className="flex items-center justify-between mb-2.5">
-                          <h4 className="text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
-                            <Tag className="w-3.5 h-3.5 text-emerald-700" />
-                            <span>Available Rate Plans</span>
-                          </h4>
-                          <span className="text-[11px] text-stone-500">
-                            {ratePlansList.filter((p) => p.roomTypeId === room.id).length}{' '}
-                            {ratePlansList.filter((p) => p.roomTypeId === room.id).length === 1 ? 'Rate Option' : 'Rate Options'}
-                          </span>
-                        </div>
-
-                        {ratePlansList.filter((p) => p.roomTypeId === room.id).length > 0 ? (
-                          <div className="space-y-2">
-                            {ratePlansList
-                              .filter((p) => p.roomTypeId === room.id)
-                              .map((plan) => (
+                          {roomRatePlans.length > 0 ? (
+                            <div className="space-y-2">
+                              {roomRatePlans.map((plan) => (
                                 <div
                                   key={plan.id}
                                   className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition hover:bg-emerald-50/70"
@@ -372,20 +626,21 @@ export default function HotelDetailPage() {
                                   </div>
                                 </div>
                               ))}
-                          </div>
-                        ) : (
-                          <div className="rounded-xl bg-stone-100/60 p-3 text-[11px] text-stone-500 italic">
-                            Rate plan details not yet configured by property. Indicative property rates apply.
-                          </div>
-                        )}
+                            </div>
+                          ) : (
+                            <div className="rounded-xl bg-stone-100/60 p-3 text-[11px] text-stone-500 italic">
+                              Rate plan details not yet configured by property. Indicative property rates apply.
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                   <div className="rounded-xl bg-stone-100 p-3 text-[11px] text-stone-500 flex items-start gap-2">
                     <Info className="h-4 w-4 text-stone-400 flex-shrink-0 mt-0.5" />
                     <span>
-                      <strong>Rate Transparency:</strong> Rate information is supplied directly by verified hotel partners. Live room availability and final booking totals are confirmed directly during reservation processing.
+                      <strong>Physical Capacity Transparency:</strong> Availability is computed strictly on physical room units. All rate plans for a room type draw from the same physical unit capacity. Phase 22.5 availability calculation; direct bookings and reservations are handled in Phase 22.6.
                     </span>
                   </div>
                 </div>
@@ -394,7 +649,7 @@ export default function HotelDetailPage() {
                   <BedDouble className="mx-auto h-8 w-8 text-stone-300 mb-2" />
                   <p className="text-xs font-semibold text-stone-700">Room Configurations Unavailable</p>
                   <p className="mt-1 text-[11px] text-stone-500 max-w-sm mx-auto">
-                    Room-level configurations are currently not listed for this property catalog entry. Contact the property directly for room enquiries.
+                    Live room availability is not currently provided for this dataset property. Contact the property directly for room enquiries.
                   </p>
                 </div>
               )}
@@ -431,7 +686,9 @@ export default function HotelDetailPage() {
                 Data Provenance & Live Inventory Status
               </h3>
               <p className="text-xs text-indigo-900/80 leading-relaxed">
-                This accommodation record originates from YatraSetu&apos;s verified dataset registry. Listed ratings, amenities, and pricing are baseline indicators. Direct online booking and real-time room availability are in onboarding for hotel PMS integration.
+                {isPartner
+                  ? 'This property is managed by a verified YatraSetu partner. Room configurations and physical inventory are updated in real-time.'
+                  : 'Live availability is not currently provided for this dataset property. Listed ratings, amenities, and pricing are baseline indicators from the curated catalog.'}
               </p>
             </div>
 
@@ -470,12 +727,14 @@ export default function HotelDetailPage() {
             )}
           </div>
 
-          {/* Right Column: Property Information / Inquiry Card */}
+          {/* Right Column: Property Information / Stay Calculation Card */}
           <div>
             <div className="sticky top-20 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm space-y-5">
               <div className="flex items-baseline justify-between border-b border-stone-100 pb-4">
                 <div>
-                  <span className="text-xs text-stone-400">Indicative Rate</span>
+                  <span className="text-xs text-stone-400">
+                    {isPartner ? 'Partner Base Tariff' : 'Indicative Dataset Rate'}
+                  </span>
                   <div className="text-2xl font-black text-stone-900 flex items-center mt-0.5">
                     <IndianRupee className="h-5 w-5" />
                     {Number(hotel.pricePerNight).toLocaleString('en-IN')}
@@ -490,9 +749,9 @@ export default function HotelDetailPage() {
               {inquirySubmitted ? (
                 <div className="rounded-2xl bg-teal-50 border border-teal-200 p-5 text-center">
                   <CheckCircle className="mx-auto h-8 w-8 text-teal-600 mb-2" />
-                  <h4 className="text-sm font-bold text-teal-900">Inquiry Logged</h4>
+                  <h4 className="text-sm font-bold text-teal-900">Stay Evaluated</h4>
                   <p className="mt-1 text-xs text-teal-700">
-                    Your estimated request ({rooms} room(s), {nights} night(s)) has been logged. Live direct booking integration will launch with partner PMS onboarding.
+                    Stay window ({checkInDate} → {checkOutDate}, {guestCount} guest(s)) evaluated. Direct online booking and payment integration will launch in Phase 22.6.
                   </p>
                   <button
                     onClick={() => setInquirySubmitted(false)}
@@ -503,78 +762,59 @@ export default function HotelDetailPage() {
                 </div>
               ) : (
                 <div className="space-y-4 text-xs">
-                  {/* Nights selector */}
-                  <div>
-                    <label className="font-bold text-stone-700 block mb-1.5">Number of Nights</label>
-                    <div className="flex items-center justify-between rounded-xl border border-stone-200 bg-stone-50 px-4 py-2">
-                      <span className="font-semibold text-stone-800">{nights} Night{nights > 1 ? 's' : ''}</span>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          type="button"
-                          onClick={() => setNights((n) => Math.max(1, n - 1))}
-                          className="h-7 w-7 rounded-lg bg-white border border-stone-200 font-bold text-stone-700 hover:bg-stone-100"
-                        >
-                          -
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setNights((n) => n + 1)}
-                          className="h-7 w-7 rounded-lg bg-white border border-stone-200 font-bold text-stone-700 hover:bg-stone-100"
-                        >
-                          +
-                        </button>
-                      </div>
+                  {/* Check-in / Check-out Display */}
+                  <div className="rounded-xl border border-stone-200 bg-stone-50 p-3 space-y-2">
+                    <div className="flex justify-between items-center text-stone-700">
+                      <span className="font-semibold">Check-in:</span>
+                      <span className="font-bold text-stone-900">{checkInDate}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-stone-700">
+                      <span className="font-semibold">Check-out:</span>
+                      <span className="font-bold text-stone-900">{checkOutDate}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-stone-700 pt-1.5 border-t border-stone-200">
+                      <span className="font-semibold">Nights:</span>
+                      <span className="font-bold text-indigo-950">
+                        {availabilityData?.nights || Math.max(1, Math.round((new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / (1000 * 3600 * 24)))} Night(s)
+                      </span>
                     </div>
                   </div>
 
-                  {/* Rooms selector */}
-                  <div>
-                    <label className="font-bold text-stone-700 block mb-1.5">Number of Rooms</label>
-                    <div className="flex items-center justify-between rounded-xl border border-stone-200 bg-stone-50 px-4 py-2">
-                      <span className="font-semibold text-stone-800">{rooms} Room{rooms > 1 ? 's' : ''}</span>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          type="button"
-                          onClick={() => setRooms((r) => Math.max(1, r - 1))}
-                          className="h-7 w-7 rounded-lg bg-white border border-stone-200 font-bold text-stone-700 hover:bg-stone-100"
-                        >
-                          -
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setRooms((r) => r + 1)}
-                          className="h-7 w-7 rounded-lg bg-white border border-stone-200 font-bold text-stone-700 hover:bg-stone-100"
-                        >
-                          +
-                        </button>
+                  {/* Availability Summary */}
+                  {availabilityData && (
+                    <div className="rounded-xl p-3.5 border space-y-1.5 bg-stone-50 border-stone-200">
+                      <div className="flex justify-between text-stone-600">
+                        <span>Availability Status:</span>
+                        <span className="font-bold">
+                          {availabilityData.status === 'AVAILABLE' && <span className="text-emerald-700">AVAILABLE</span>}
+                          {availabilityData.status === 'LIMITED' && <span className="text-amber-700">LIMITED</span>}
+                          {availabilityData.status === 'SOLD_OUT' && <span className="text-rose-700">SOLD OUT</span>}
+                          {availabilityData.status === 'UNAVAILABLE_DATA' && <span className="text-stone-600">UNAVAILABLE (DATASET)</span>}
+                        </span>
                       </div>
+                      {availabilityData.rooms && availabilityData.rooms.length > 0 && (
+                        <div className="flex justify-between text-stone-600 pt-1 border-t border-stone-200">
+                          <span>Total Available Units:</span>
+                          <span className="font-bold text-stone-900">
+                            {availabilityData.rooms.reduce((sum, r) => sum + r.availableUnits, 0)} Units across {availabilityData.rooms.length} configurations
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  </div>
-
-                  {/* Estimated Total */}
-                  <div className="rounded-xl bg-stone-50 p-3.5 border border-stone-100 space-y-1.5">
-                    <div className="flex justify-between text-stone-500">
-                      <span>₹{Number(hotel.pricePerNight).toLocaleString('en-IN')} × {nights}n × {rooms}r</span>
-                      <span>₹{estimatedTotal.toLocaleString('en-IN')}</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-stone-900 pt-1.5 border-t border-stone-200">
-                      <span>Indicative Estimate</span>
-                      <span>₹{estimatedTotal.toLocaleString('en-IN')}</span>
-                    </div>
-                  </div>
+                  )}
 
                   <button
                     onClick={() => setInquirySubmitted(true)}
                     className="w-full rounded-xl bg-indigo-900 py-3 text-xs font-bold text-white transition-colors hover:bg-indigo-800 shadow-md flex items-center justify-center space-x-1.5"
                   >
                     <Calendar className="h-4 w-4" />
-                    <span>Calculate Estimated Stay</span>
+                    <span>Evaluate Stay Parameters</span>
                   </button>
 
                   <div className="rounded-xl bg-amber-50 p-3 border border-amber-200 text-[11px] text-amber-900 leading-snug">
-                    <p className="font-semibold">Live Availability Notice:</p>
+                    <p className="font-semibold">Phase 22.5 Architectural Boundary:</p>
                     <p className="mt-0.5 text-amber-800">
-                      Live real-time availability is not currently provided. Contact the property directly for live booking confirmation.
+                      Physical capacity and blocked maintenance calculations are active. Booking, payment, and reservation locks will launch in Phase 22.6.
                     </p>
                   </div>
                 </div>

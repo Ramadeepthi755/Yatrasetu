@@ -17,5 +17,11 @@ public interface HotelInventoryRepository extends JpaRepository<HotelInventory, 
 
     Optional<HotelInventory> findByRoomTypeIdAndInventoryDateIsNull(String roomTypeId);
 
+    List<HotelInventory> findByRoomTypeIdInAndInventoryDateBetween(List<String> roomTypeIds, LocalDate startDate, LocalDate endDate);
+
+    List<HotelInventory> findByRoomTypeIdInAndInventoryDateIsNull(List<String> roomTypeIds);
+
+    List<HotelInventory> findByRoomTypeIdAndInventoryDateBetween(String roomTypeId, LocalDate startDate, LocalDate endDate);
+
     void deleteByRoomTypeId(String roomTypeId);
 }

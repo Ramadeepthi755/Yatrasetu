@@ -24,6 +24,7 @@ public class HotelController {
     private final HotelService hotelService;
     private final com.yatrasetu.service.HotelRoomService hotelRoomService;
     private final com.yatrasetu.service.HotelRatePlanService hotelRatePlanService;
+    private final com.yatrasetu.service.HotelAvailabilityService hotelAvailabilityService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<HotelDto>>> getAllHotels(
@@ -102,6 +103,23 @@ public class HotelController {
                 .success(true)
                 .message("Retrieved room rate plans successfully")
                 .data(ratePlans)
+                .timestamp(Instant.now())
+                .build());
+    }
+
+    @GetMapping("/{id}/availability")
+    public ResponseEntity<ApiResponse<com.yatrasetu.web.dto.HotelAvailabilityDto>> getHotelAvailability(
+            @PathVariable("id") String id,
+            @RequestParam(name = "roomTypeId", required = false) String roomTypeId,
+            @RequestParam(name = "checkIn") @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate checkIn,
+            @RequestParam(name = "checkOut") @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate checkOut,
+            @RequestParam(name = "guests", required = false) Integer guests) {
+
+        com.yatrasetu.web.dto.HotelAvailabilityDto availability = hotelAvailabilityService.getHotelAvailability(id, roomTypeId, checkIn, checkOut, guests);
+        return ResponseEntity.ok(ApiResponse.<com.yatrasetu.web.dto.HotelAvailabilityDto>builder()
+                .success(true)
+                .message("Retrieved hotel availability successfully")
+                .data(availability)
                 .timestamp(Instant.now())
                 .build());
     }

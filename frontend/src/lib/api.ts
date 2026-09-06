@@ -3070,4 +3070,103 @@ export async function deletePartnerRatePlan(
   return res.json();
 }
 
+// ----------------------------------------------------------------------------
+// PHASE 22.5 — DATE-SPECIFIC REAL HOTEL AVAILABILITY ENGINE API
+// ----------------------------------------------------------------------------
+
+export type HotelAvailabilityStatus = 'AVAILABLE' | 'LIMITED' | 'SOLD_OUT' | 'UNAVAILABLE_DATA';
+
+export interface BulkInventoryUpdateRequest {
+  startDate: string; // YYYY-MM-DD
+  endDate: string;   // YYYY-MM-DD
+  totalUnits: number;
+  blockedUnits?: number;
+}
+
+export interface NightlyAvailabilityDto {
+  date: string;
+  totalUnits: number;
+  blockedUnits: number;
+  reservedUnits: number;
+  availableUnits: number;
+  status: HotelAvailabilityStatus;
+  isDateOverride: boolean;
+}
+
+export interface RoomTypeAvailabilityDto {
+  roomTypeId: string;
+  roomTypeName: string;
+  maxOccupancy: number;
+  totalUnits: number;
+  blockedUnits: number;
+  reservedUnits: number;
+  availableUnits: number;
+  status: HotelAvailabilityStatus;
+  isAvailable: boolean;
+  nightly: NightlyAvailabilityDto[];
+  ratePlans: HotelRatePlanItem[];
+}
+
+export interface HotelAvailabilityDto {
+  hotelId: string;
+  hotelName: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  guests?: number;
+  status: HotelAvailabilityStatus;
+  isLiveAvailability: boolean;
+  provenance: string;
+  note: string;
+  rooms: RoomTypeAvailabilityDto[];
+}
+
+export async function getHotelAvailability(
+  hotelId: string,
+  params: {
+    checkIn: string;
+    checkOut: string;
+    roomTypeId?: string;
+    guests?: number;
+  }
+): Promise<ApiResponse<HotelAvailabilityDto>> {
+  const query = new URLSearchParams();
+  query.set('checkIn', params.checkIn);
+  query.set('checkOut', params.checkOut);
+  if (params.roomTypeId) query.set('roomTypeId', params.roomTypeId);
+  if (params.guests) query.set('guests', params.guests.toString());
+
+  const res = await fetch(`${API_BASE_URL}/hotels/${encodeURIComponent(hotelId)}/availability?${query.toString()}`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch availability: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function updatePartnerBulkRoomInventory(
+  hotelId: string,
+  roomId: string,
+  data: BulkInventoryUpdateRequest,
+  token: string
+): Promise<ApiResponse<HotelInventoryItem[]>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/inventory/bulk`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to bulk update room inventory: ${res.status}`);
+  }
+  return res.json();
+}
+
+
 

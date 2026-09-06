@@ -14,8 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -323,6 +324,85 @@ public class HotelRoomService {
                 userEmailOrAuthId, roomTypeId, saved.getTotalUnits(), saved.getBlockedUnits());
 
         return mapToInventoryDto(saved);
+    }
+
+    /**
+     * Partner-facing: Bulk Update/Set date-specific inventory across a date range.
+     */
+    @Transactional
+    public List<HotelInventoryDto> updateBulkRoomInventory(
+            String hotelId,
+            String roomTypeId,
+            BulkInventoryUpdateRequest request,
+            String userEmailOrAuthId) {
+
+        validateHotelOwnership(hotelId, userEmailOrAuthId);
+
+        HotelRoomType roomType = roomTypeRepository.findById(roomTypeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room type not found: " + roomTypeId));
+
+        if (!roomType.getHotel().getId().equals(hotelId)) {
+            throw new IllegalArgumentException("Room type " + roomTypeId + " does not belong to hotel " + hotelId);
+        }
+
+        if (request.getStartDate() == null || request.getEndDate() == null) {
+            throw new IllegalArgumentException("Start date and end date are required for bulk inventory update");
+        }
+
+        if (request.getEndDate().isBefore(request.getStartDate())) {
+            throw new IllegalArgumentException("End date (" + request.getEndDate() + ") cannot be before start date (" + request.getStartDate() + ")");
+        }
+
+        long daysCount = ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate()) + 1;
+        if (daysCount > 90) {
+            throw new IllegalArgumentException("Bulk inventory update range cannot exceed 90 days (requested " + daysCount + " days)");
+        }
+
+        if (request.getTotalUnits() == null || request.getTotalUnits() < 0) {
+            throw new IllegalArgumentException("Total units cannot be negative");
+        }
+
+        int blocked = request.getBlockedUnits() != null ? request.getBlockedUnits() : 0;
+        if (blocked < 0) {
+            throw new IllegalArgumentException("Blocked units cannot be negative");
+        }
+        if (blocked > request.getTotalUnits()) {
+            throw new IllegalArgumentException("Blocked units (" + blocked + ") cannot exceed total units (" + request.getTotalUnits() + ")");
+        }
+
+        // Fetch existing date-specific records in range
+        List<HotelInventory> existingList = inventoryRepository.findByRoomTypeIdAndInventoryDateBetween(
+                roomTypeId, request.getStartDate(), request.getEndDate());
+        Map<LocalDate, HotelInventory> existingMap = new HashMap<>();
+        for (HotelInventory inv : existingList) {
+            if (inv.getInventoryDate() != null) {
+                existingMap.put(inv.getInventoryDate(), inv);
+            }
+        }
+
+        List<HotelInventory> toSave = new ArrayList<>();
+        for (LocalDate d = request.getStartDate(); !d.isAfter(request.getEndDate()); d = d.plusDays(1)) {
+            HotelInventory inv = existingMap.get(d);
+            if (inv == null) {
+                inv = HotelInventory.builder()
+                        .id("inv-" + UUID.randomUUID().toString().substring(0, 8))
+                        .roomType(roomType)
+                        .inventoryDate(d)
+                        .sourceType(SourceType.PARTNER_SUBMITTED)
+                        .createdAt(Instant.now())
+                        .build();
+            }
+            inv.setTotalUnits(request.getTotalUnits());
+            inv.setBlockedUnits(blocked);
+            inv.setUpdatedAt(Instant.now());
+            toSave.add(inv);
+        }
+
+        List<HotelInventory> savedList = inventoryRepository.saveAll(toSave);
+        log.info("Partner {} bulk-updated {} days inventory for room {} [total={}, blocked={}]",
+                userEmailOrAuthId, savedList.size(), roomTypeId, request.getTotalUnits(), blocked);
+
+        return savedList.stream().map(this::mapToInventoryDto).collect(Collectors.toList());
     }
 
     /**

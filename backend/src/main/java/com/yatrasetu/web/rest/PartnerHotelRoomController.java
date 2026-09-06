@@ -184,4 +184,28 @@ public class PartnerHotelRoomController {
                 .timestamp(Instant.now())
                 .build());
     }
+
+    @PostMapping("/{roomId}/inventory/bulk")
+    public ResponseEntity<ApiResponse<List<HotelInventoryDto>>> updateBulkInventory(
+            @PathVariable("hotelId") String hotelId,
+            @PathVariable("roomId") String roomId,
+            @AuthenticationPrincipal UserPrincipal principal,
+            @Valid @RequestBody BulkInventoryUpdateRequest request) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.<List<HotelInventoryDto>>builder()
+                            .success(false)
+                            .message("Authentication required")
+                            .timestamp(Instant.now())
+                            .build());
+        }
+
+        List<HotelInventoryDto> updated = hotelRoomService.updateBulkRoomInventory(hotelId, roomId, request, principal.getUserId());
+        return ResponseEntity.ok(ApiResponse.<List<HotelInventoryDto>>builder()
+                .success(true)
+                .message("Bulk room inventory updated successfully")
+                .data(updated)
+                .timestamp(Instant.now())
+                .build());
+    }
 }
