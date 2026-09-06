@@ -38,6 +38,7 @@ public class HotelBookingService {
     private final HotelRatePlanRepository ratePlanRepository;
     private final UserRepository userRepository;
     private final NotificationRepository notificationRepository;
+    private final com.yatrasetu.service.document.HotelBookingVoucherService voucherService;
 
     @Value("${app.hotel.booking.pending-expiry-minutes:30}")
     private long pendingExpiryMinutes = 30;
@@ -335,6 +336,124 @@ public class HotelBookingService {
         }
 
         return mapToDto(booking, isTraveler);
+    }
+
+    /**
+     * Retrieve authoritative booking confirmation summary with status timeline and voucher availability.
+     */
+    @Transactional
+    public com.yatrasetu.web.dto.BookingConfirmationDto getBookingConfirmation(String bookingReference, String userIdOrEmail) {
+        User user = resolveUser(userIdOrEmail);
+
+        HotelBooking booking = bookingRepository.findByBookingReference(bookingReference)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found: " + bookingReference));
+
+        booking = checkAndExpireIfStale(booking);
+
+        boolean isTraveler = booking.getTraveler().getId().equals(user.getId());
+        boolean isOwner = booking.getHotel().getOwner() != null && booking.getHotel().getOwner().getId().equals(user.getId());
+        boolean isGovernment = user.getRole() == Role.GOVERNMENT;
+
+        if (!isTraveler && !isOwner && !isGovernment) {
+            throw new AccessDeniedException("You do not have permission to view confirmation for booking " + bookingReference);
+        }
+
+        List<HotelBookingStatusHistory> histories = statusHistoryRepository.findByBookingIdOrderByCreatedAtAsc(booking.getId());
+        List<HotelBookingDto.BookingStatusHistoryDto> timeline = histories.stream()
+                .map(h -> HotelBookingDto.BookingStatusHistoryDto.builder()
+                        .id(h.getId())
+                        .previousStatus(h.getPreviousStatus() != null ? h.getPreviousStatus().name() : null)
+                        .newStatus(h.getNewStatus().name())
+                        .reason(h.getReason())
+                        .actorUserId(h.getActorUser() != null ? h.getActorUser().getId() : null)
+                        .createdAt(h.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+
+        boolean voucherAvailable = booking.getBookingStatus() == HotelBookingStatus.CONFIRMED &&
+                booking.getPaymentStatus() == HotelPaymentStatus.PAID;
+
+        Instant confirmedAt = histories.stream()
+                .filter(h -> h.getNewStatus() == HotelBookingStatus.CONFIRMED)
+                .map(HotelBookingStatusHistory::getCreatedAt)
+                .findFirst()
+                .orElse(null);
+
+        String pricingDisclosure;
+        if (booking.getTaxesAmount().compareTo(BigDecimal.ZERO) == 0 && booking.getFeesAmount().compareTo(BigDecimal.ZERO) == 0) {
+            pricingDisclosure = "Taxes and service fees are not currently configured/included in this baseline tariff.";
+        } else {
+            pricingDisclosure = "Taxes and fees are calculated according to partner pricing policy.";
+        }
+
+        return com.yatrasetu.web.dto.BookingConfirmationDto.builder()
+                .bookingReference(booking.getBookingReference())
+                .confirmationNumber(booking.getBookingReference())
+                .bookingStatus(booking.getBookingStatus().name())
+                .paymentStatus(booking.getPaymentStatus().name())
+                .confirmationDate(confirmedAt)
+                .createdAt(booking.getCreatedAt())
+                .hotelId(booking.getHotel().getId())
+                .hotelName(booking.getHotel().getHotelName())
+                .hotelCity(booking.getHotel().getCity() != null ? booking.getHotel().getCity().getCityName() : null)
+                .hotelState(booking.getHotel().getCity() != null && booking.getHotel().getCity().getState() != null
+                        ? booking.getHotel().getCity().getState().getStateName() : null)
+                .hotelAddress(booking.getHotel().getAddress())
+                .isPartnerProperty(Boolean.TRUE.equals(booking.getHotel().getIsPartnerProperty()))
+                .roomTypeId(booking.getRoomType().getId())
+                .roomTypeName(booking.getRoomType().getRoomTypeName())
+                .ratePlanId(booking.getRatePlan().getId())
+                .ratePlanName(booking.getRatePlan().getPlanName())
+                .mealPlan(booking.getRatePlan().getMealPlan() != null ? booking.getRatePlan().getMealPlan().name() : "EP")
+                .checkIn(booking.getCheckIn())
+                .checkOut(booking.getCheckOut())
+                .numberOfNights(booking.getNumberOfNights())
+                .numberOfRooms(booking.getNumberOfRooms())
+                .adults(booking.getAdults())
+                .children(booking.getChildren())
+                .guestName(booking.getGuestName())
+                .guestEmail(isTraveler ? booking.getGuestEmail() : maskEmail(booking.getGuestEmail()))
+                .guestPhone(isTraveler ? booking.getGuestPhone() : maskPhone(booking.getGuestPhone()))
+                .specialRequests(booking.getSpecialRequests())
+                .currency(booking.getCurrency())
+                .pricePerNight(booking.getPricePerNight())
+                .subtotal(booking.getSubtotal())
+                .taxesAmount(booking.getTaxesAmount())
+                .feesAmount(booking.getFeesAmount())
+                .totalAmount(booking.getTotalAmount())
+                .pricingDisclosure(pricingDisclosure)
+                .cancellationPolicySnapshot(booking.getCancellationPolicySnapshot())
+                .cancellationDeadlineHours(booking.getCancellationDeadlineHours())
+                .statusTimeline(timeline)
+                .voucherAvailable(voucherAvailable)
+                .voucherDownloadUrl(voucherAvailable ? "/api/v1/bookings/" + booking.getBookingReference() + "/voucher" : null)
+                .dataProvenance("Authoritative YatraSetu Hotel Platform Record")
+                .build();
+    }
+
+    /**
+     * Generate authoritative PDF booking voucher (Traveler or Property Owner only).
+     */
+    @Transactional
+    public byte[] generateBookingVoucher(String bookingReference, String userIdOrEmail) {
+        User user = resolveUser(userIdOrEmail);
+
+        HotelBooking booking = bookingRepository.findByBookingReference(bookingReference)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found: " + bookingReference));
+
+        boolean isTraveler = booking.getTraveler().getId().equals(user.getId());
+        boolean isOwner = booking.getHotel().getOwner() != null && booking.getHotel().getOwner().getId().equals(user.getId());
+
+        if (!isTraveler && !isOwner) {
+            throw new AccessDeniedException("Only the booking traveler or hotel property owner can download this voucher.");
+        }
+
+        if (booking.getBookingStatus() != HotelBookingStatus.CONFIRMED ||
+                booking.getPaymentStatus() != HotelPaymentStatus.PAID) {
+            throw new ConflictException("Confirmation voucher is available only for CONFIRMED and PAID bookings.");
+        }
+
+        return voucherService.generateBookingVoucherPdf(booking);
     }
 
     /**

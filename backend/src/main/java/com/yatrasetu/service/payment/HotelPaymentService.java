@@ -7,6 +7,7 @@ import com.yatrasetu.config.ResourceNotFoundException;
 import com.yatrasetu.domain.*;
 import com.yatrasetu.repository.*;
 import com.yatrasetu.service.HotelBookingService;
+import com.yatrasetu.service.NotificationService;
 import com.yatrasetu.web.dto.HotelBookingDto;
 import com.yatrasetu.web.dto.payment.*;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class HotelPaymentService {
     private final HotelBookingStatusHistoryRepository statusHistoryRepository;
     private final UserRepository userRepository;
     private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
     private final PaymentProvider paymentProvider;
     private final HotelBookingService hotelBookingService;
     private final ObjectMapper objectMapper;
@@ -242,21 +244,8 @@ public class HotelPaymentService {
                 .createdAt(now)
                 .build());
 
-        // In-App Notification
-        try {
-            notificationRepository.save(Notification.builder()
-                    .id("notif-" + UUID.randomUUID().toString().substring(0, 12))
-                    .user(traveler)
-                    .title("Booking Confirmed!")
-                    .message("Payment verified for booking " + bookingReference + " at " + booking.getHotel().getHotelName() + ". We look forward to hosting you!")
-                    .category("BOOKING_CONFIRMED")
-                    .referenceLink("/trips")
-                    .read(false)
-                    .createdAt(now)
-                    .build());
-        } catch (Exception e) {
-            log.warn("Failed to create in-app notification for confirmed booking {}: {}", bookingReference, e.getMessage());
-        }
+        // Multi-Party In-App Notifications (Traveler + Property Owner)
+        notificationService.emitBookingConfirmationNotifications(savedBooking);
 
         log.info("Successfully verified payment {} and confirmed booking {}", request.getRazorpayPaymentId(), bookingReference);
         return hotelBookingService.mapToDto(savedBooking, true);
@@ -376,6 +365,8 @@ public class HotelPaymentService {
                                     .actorUser(null)
                                     .createdAt(now)
                                     .build());
+
+                            notificationService.emitBookingConfirmationNotifications(booking);
                             log.info("Booking {} confirmed via webhook event {}", booking.getBookingReference(), eventType);
                         }
                     } else if ("payment.failed".equals(eventType)) {

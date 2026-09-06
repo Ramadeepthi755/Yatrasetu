@@ -151,4 +151,54 @@ public class HotelBookingController {
                 .timestamp(Instant.now())
                 .build());
     }
+
+    /**
+     * Get booking confirmation snapshot and timeline.
+     * Enforces RBAC: traveler owner, partner owner, or authorized admin/gov.
+     */
+    @GetMapping("/api/v1/bookings/{bookingReference}/confirmation")
+    public ResponseEntity<ApiResponse<com.yatrasetu.web.dto.BookingConfirmationDto>> getBookingConfirmation(
+            @PathVariable("bookingReference") String bookingReference,
+            @AuthenticationPrincipal UserPrincipal principal) {
+
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.<com.yatrasetu.web.dto.BookingConfirmationDto>builder()
+                            .success(false)
+                            .message("Authentication required")
+                            .timestamp(Instant.now())
+                            .build());
+        }
+
+        com.yatrasetu.web.dto.BookingConfirmationDto confirmation = bookingService.getBookingConfirmation(
+                bookingReference, principal.getUserId());
+
+        return ResponseEntity.ok(ApiResponse.<com.yatrasetu.web.dto.BookingConfirmationDto>builder()
+                .success(true)
+                .message("Booking confirmation retrieved successfully")
+                .data(confirmation)
+                .timestamp(Instant.now())
+                .build());
+    }
+
+    /**
+     * Download authoritative PDF booking voucher.
+     * Enforces RBAC: strictly traveler owner and partner hotel owner.
+     */
+    @GetMapping("/api/v1/bookings/{bookingReference}/voucher")
+    public ResponseEntity<byte[]> downloadBookingVoucher(
+            @PathVariable("bookingReference") String bookingReference,
+            @AuthenticationPrincipal UserPrincipal principal) {
+
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        byte[] pdfBytes = bookingService.generateBookingVoucher(bookingReference, principal.getUserId());
+
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"YatraSetu-Voucher-" + bookingReference + ".pdf\"")
+                .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
+    }
 }

@@ -3454,6 +3454,170 @@ export async function getHotelPaymentStatus(
   return res.json();
 }
 
+// --------------------------------------------------------------------------
+// Phase 22.9 — Confirmation, Voucher & Notification Engine
+// --------------------------------------------------------------------------
 
+export interface BookingTimelineEntryDto {
+  status: string;
+  paymentStatus?: string;
+  notes?: string;
+  reasonCode?: string;
+  timestamp: string;
+}
 
+export interface BookingConfirmationDto {
+  bookingReference: string;
+  bookingStatus: string;
+  paymentStatus: string;
+  createdAt: string;
+  confirmedAt?: string;
+  hotelId: string;
+  hotelName: string;
+  hotelAddress?: string;
+  hotelCity?: string;
+  hotelState?: string;
+  hotelStars?: number;
+  hotelSourceType?: string;
+  roomTypeId: string;
+  roomTypeName: string;
+  roomCapacity?: number;
+  checkInDate: string;
+  checkOutDate: string;
+  nights: number;
+  numberOfRooms: number;
+  numberOfGuests: number;
+  guestFullName: string;
+  guestEmail: string;
+  guestPhone: string;
+  specialRequests?: string;
+  basePriceSnapshot: number;
+  taxesAmount: number;
+  totalAmount: number;
+  currency: string;
+  taxDisclosure: string;
+  pricingProvenance: string;
+  cancellationPolicySnapshot?: string;
+  cancellationDeadline?: string;
+  cancellationRefundState?: string;
+  cancellationDisclosure?: string;
+  timeline: BookingTimelineEntryDto[];
+  voucherAvailable: boolean;
+}
 
+export interface NotificationDto {
+  id: string;
+  userId: string;
+  type: string;
+  category: string;
+  title: string;
+  message: string;
+  link?: string;
+  metadata?: Record<string, unknown>;
+  isRead: boolean;
+  createdAt: string;
+  readAt?: string;
+}
+
+export async function getBookingConfirmation(
+  bookingReference: string,
+  token: string
+): Promise<ApiResponse<BookingConfirmationDto>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/${encodeURIComponent(bookingReference)}/confirmation`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch booking confirmation: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function downloadBookingVoucher(
+  bookingReference: string,
+  token: string
+): Promise<Blob> {
+  const res = await fetch(`${API_BASE_URL}/bookings/${encodeURIComponent(bookingReference)}/voucher`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to download voucher: ${res.status}`);
+  }
+  return res.blob();
+}
+
+export async function getMyNotifications(
+  token: string,
+  limit: number = 20,
+  offset: number = 0
+): Promise<ApiResponse<NotificationDto[]>> {
+  const res = await fetch(`${API_BASE_URL}/notifications?limit=${limit}&offset=${offset}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch notifications: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getUnreadNotificationCount(
+  token: string
+): Promise<ApiResponse<{ unreadCount: number }>> {
+  const res = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch unread count: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function markNotificationAsRead(
+  notificationId: string,
+  token: string
+): Promise<ApiResponse<void>> {
+  const res = await fetch(`${API_BASE_URL}/notifications/${encodeURIComponent(notificationId)}/read`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to mark notification as read: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function markAllNotificationsAsRead(
+  token: string
+): Promise<ApiResponse<void>> {
+  const res = await fetch(`${API_BASE_URL}/notifications/read-all`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to mark all notifications as read: ${res.status}`);
+  }
+  return res.json();
+}

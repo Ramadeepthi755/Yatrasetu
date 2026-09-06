@@ -10,6 +10,7 @@ import {
   cancelHotelBooking,
   createHotelPaymentOrder,
   verifyHotelPayment,
+  downloadBookingVoucher,
   TripDto,
   HotelBookingDto,
 } from '@/lib/api';
@@ -36,6 +37,7 @@ import {
   FileText,
   CreditCard,
   CheckCircle,
+  Download,
 } from 'lucide-react';
 
 export default function MyTripsPage() {
@@ -50,6 +52,29 @@ export default function MyTripsPage() {
 
   // Payment Processing State
   const [payingBookingRef, setPayingBookingRef] = useState<string | null>(null);
+
+  // Voucher Download State
+  const [downloadingVoucherRef, setDownloadingVoucherRef] = useState<string | null>(null);
+
+  const handleDownloadVoucher = async (bookingRef: string) => {
+    if (!token) return;
+    setDownloadingVoucherRef(bookingRef);
+    try {
+      const blob = await downloadBookingVoucher(bookingRef, token);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `YatraSetu-Voucher-${bookingRef}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to download PDF voucher');
+    } finally {
+      setDownloadingVoucherRef(null);
+    }
+  };
 
   // Cancellation Modal State
   const [cancelModalBooking, setCancelModalBooking] = useState<HotelBookingDto | null>(null);
@@ -517,14 +542,45 @@ export default function MyTripsPage() {
 
                   {/* Card Actions */}
                   <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-100 dark:border-gray-800 flex-wrap">
-                    <Link
-                      href={`/hotels/${b.hotelId}`}
-                      className="text-xs font-bold text-primary hover:text-primary/80 transition"
-                    >
-                      View Hotel →
-                    </Link>
+                    <div className="flex items-center gap-3">
+                      <Link
+                        href={`/hotels/${b.hotelId}`}
+                        className="text-xs font-bold text-primary hover:text-primary/80 transition"
+                      >
+                        View Hotel →
+                      </Link>
+
+                      {b.bookingStatus === 'CONFIRMED' && b.paymentStatus === 'PAID' && (
+                        <Link
+                          href={`/bookings/${b.bookingReference}/confirmation`}
+                          className="text-xs font-bold text-indigo-700 dark:text-indigo-400 hover:underline"
+                        >
+                          View Confirmation
+                        </Link>
+                      )}
+                    </div>
 
                     <div className="flex items-center gap-2">
+                      {b.bookingStatus === 'CONFIRMED' && b.paymentStatus === 'PAID' && (
+                        <button
+                          onClick={() => handleDownloadVoucher(b.bookingReference)}
+                          disabled={downloadingVoucherRef === b.bookingReference}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg shadow-xs transition disabled:opacity-50"
+                        >
+                          {downloadingVoucherRef === b.bookingReference ? (
+                            <>
+                              <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              <span>Generating...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Download className="w-3.5 h-3.5" />
+                              <span>Download Voucher</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+
                       {b.bookingStatus === 'PENDING_PAYMENT' && b.paymentStatus !== 'PAID' && (
                         <button
                           onClick={() => handlePayNow(b)}
