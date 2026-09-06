@@ -46,4 +46,7 @@ public interface HotelBookingAllocationRepository extends JpaRepository<HotelBoo
             @Param("bookingId") String bookingId,
             @Param("oldStatus") BookingAllocationStatus oldStatus,
             @Param("newStatus") BookingAllocationStatus newStatus);
+
+    @Query("SELECT COUNT(a) FROM HotelBookingAllocation a WHERE a.roomType.id = :roomTypeId AND a.status = :status")
+    long countByRoomTypeIdAndStatus(@Param("roomTypeId") String roomTypeId, @Param("status") BookingAllocationStatus status);
 }

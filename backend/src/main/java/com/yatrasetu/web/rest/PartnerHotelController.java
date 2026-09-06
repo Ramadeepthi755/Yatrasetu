@@ -157,4 +157,26 @@ public class PartnerHotelController {
                 .timestamp(Instant.now())
                 .build());
     }
+
+    @GetMapping("/{id}/analytics")
+    public ResponseEntity<ApiResponse<com.yatrasetu.web.dto.PartnerHotelAnalyticsDto>> getHotelAnalytics(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("id") String id) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.<com.yatrasetu.web.dto.PartnerHotelAnalyticsDto>builder()
+                            .success(false)
+                            .message("Authentication required")
+                            .timestamp(Instant.now())
+                            .build());
+        }
+
+        com.yatrasetu.web.dto.PartnerHotelAnalyticsDto analytics = hotelService.getPartnerHotelAnalytics(principal.getUserId(), id);
+        return ResponseEntity.ok(ApiResponse.<com.yatrasetu.web.dto.PartnerHotelAnalyticsDto>builder()
+                .success(true)
+                .message("Retrieved partner hotel performance analytics successfully")
+                .data(analytics)
+                .timestamp(Instant.now())
+                .build());
+    }
 }

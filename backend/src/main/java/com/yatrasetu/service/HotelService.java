@@ -1,10 +1,7 @@
 package com.yatrasetu.service;
 
 import com.yatrasetu.domain.*;
-import com.yatrasetu.repository.CityRepository;
-import com.yatrasetu.repository.DestinationRepository;
-import com.yatrasetu.repository.HotelRepository;
-import com.yatrasetu.repository.UserRepository;
+import com.yatrasetu.repository.*;
 import com.yatrasetu.web.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,6 +26,11 @@ public class HotelService {
     private final DestinationRepository destinationRepository;
     private final CityRepository cityRepository;
     private final UserRepository userRepository;
+    private final HotelRoomTypeRepository roomTypeRepository;
+    private final HotelRatePlanRepository ratePlanRepository;
+    private final HotelInventoryRepository inventoryRepository;
+    private final HotelBookingRepository bookingRepository;
+    private final HotelBookingAllocationRepository bookingAllocationRepository;
 
     // ==========================================
     // PUBLIC HOTEL DISCOVERY
@@ -348,6 +351,159 @@ public class HotelService {
         return toDto(saved);
     }
 
+    @Transactional(readOnly = true)
+    public PartnerHotelAnalyticsDto getPartnerHotelAnalytics(String userId, String hotelId) {
+        User user = resolvePartnerUser(userId);
+        Hotel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new NoSuchElementException("Hotel not found with id: " + hotelId));
+
+        if (hotel.getOwner() == null || !hotel.getOwner().getId().equals(user.getId())) {
+            throw new AccessDeniedException("You do not own this hotel property");
+        }
+
+        List<HotelBooking> bookings = bookingRepository.findByHotelIdOrderByCreatedAtDesc(hotelId);
+
+        long totalBookings = bookings.size();
+        long confirmedBookings = bookings.stream()
+                .filter(b -> b.getBookingStatus() == HotelBookingStatus.CONFIRMED)
+                .count();
+        long pendingPaymentBookings = bookings.stream()
+                .filter(b -> b.getBookingStatus() == HotelBookingStatus.PENDING_PAYMENT)
+                .count();
+        long cancelledBookings = bookings.stream()
+                .filter(b -> b.getBookingStatus() == HotelBookingStatus.CANCELLED)
+                .count();
+        long expiredBookings = bookings.stream()
+                .filter(b -> b.getBookingStatus() == HotelBookingStatus.EXPIRED)
+                .count();
+
+        // Calculate paid booking value strictly from PAID transactions / confirmed bookings
+        BigDecimal paidBookingValue = bookings.stream()
+                .filter(b -> b.getPaymentStatus() == HotelPaymentStatus.PAID && b.getTotalAmount() != null)
+                .map(HotelBooking::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Sum reserved room nights across active allocations
+        long reservedRoomNights = 0;
+        for (HotelBooking b : bookings) {
+            if (b.getBookingStatus() == HotelBookingStatus.CONFIRMED || b.getBookingStatus() == HotelBookingStatus.PENDING_PAYMENT) {
+                List<HotelBookingAllocation> allocs = bookingAllocationRepository.findByBookingId(b.getId());
+                reservedRoomNights += allocs.stream()
+                        .filter(a -> a.getStatus() == BookingAllocationStatus.ACTIVE)
+                        .mapToInt(HotelBookingAllocation::getAllocatedUnits)
+                        .sum();
+            }
+        }
+
+        List<HotelRoomType> roomTypes = roomTypeRepository.findByHotelIdOrderByCreatedAtAsc(hotelId);
+        long totalRoomTypes = roomTypes.size();
+        long activeRoomTypes = roomTypes.stream()
+                .filter(r -> Boolean.TRUE.equals(r.getIsActive()))
+                .count();
+
+        List<String> roomTypeIds = roomTypes.stream().map(HotelRoomType::getId).collect(Collectors.toList());
+        long activeRatePlans = 0;
+        if (!roomTypeIds.isEmpty()) {
+            activeRatePlans = ratePlanRepository.findByRoomTypeIdInAndStatus(roomTypeIds, RatePlanStatus.ACTIVE).size();
+        }
+
+        // Calculate inventory coverage for next 30 days
+        LocalDate today = LocalDate.now();
+        LocalDate next30Days = today.plusDays(29);
+        long inventoryDaysCovered = 0;
+        long inventoryDaysBlocked = 0;
+
+        if (!roomTypeIds.isEmpty()) {
+            List<HotelInventory> dateInvs = inventoryRepository.findByRoomTypeIdInAndInventoryDateBetween(roomTypeIds, today, next30Days);
+            Set<LocalDate> coveredDates = new HashSet<>();
+            Set<LocalDate> fullyBlockedDates = new HashSet<>();
+            Map<LocalDate, List<HotelInventory>> dateMap = dateInvs.stream()
+                    .filter(i -> i.getInventoryDate() != null)
+                    .collect(Collectors.groupingBy(HotelInventory::getInventoryDate));
+
+            for (Map.Entry<LocalDate, List<HotelInventory>> entry : dateMap.entrySet()) {
+                coveredDates.add(entry.getKey());
+                boolean allBlocked = entry.getValue().stream().allMatch(i -> i.getBlockedUnits() != null && i.getTotalUnits() != null && i.getBlockedUnits() >= i.getTotalUnits());
+                if (allBlocked) {
+                    fullyBlockedDates.add(entry.getKey());
+                }
+            }
+            inventoryDaysCovered = coveredDates.size();
+            inventoryDaysBlocked = fullyBlockedDates.size();
+        }
+
+        String bookabilityStatus = deriveBookabilityStatus(hotel);
+        boolean isBookable = "BOOKABLE".equalsIgnoreCase(bookabilityStatus);
+
+        List<String> missingSteps = new ArrayList<>();
+        if (hotel.getVerificationStatus() != HotelVerificationStatus.VERIFIED) {
+            missingSteps.add("Government Verification Required");
+        }
+        if (activeRoomTypes == 0) {
+            missingSteps.add("Add at least one active room type");
+        }
+        if (activeRatePlans == 0) {
+            missingSteps.add("Create at least one active rate plan");
+        }
+        if (inventoryDaysCovered == 0) {
+            missingSteps.add("Configure physical room inventory");
+        }
+
+        return PartnerHotelAnalyticsDto.builder()
+                .hotelId(hotel.getId())
+                .hotelName(hotel.getHotelName())
+                .verificationStatus(hotel.getVerificationStatus() != null ? hotel.getVerificationStatus().name() : "UNVERIFIED")
+                .bookabilityStatus(bookabilityStatus)
+                .isBookable(isBookable)
+                .totalBookingsCount(totalBookings)
+                .confirmedBookingsCount(confirmedBookings)
+                .pendingPaymentCount(pendingPaymentBookings)
+                .cancelledBookingsCount(cancelledBookings)
+                .expiredBookingsCount(expiredBookings)
+                .paidBookingValue(paidBookingValue)
+                .currency("INR")
+                .totalRoomTypesCount((int) totalRoomTypes)
+                .activeRoomTypesCount((int) activeRoomTypes)
+                .activeRatePlansCount((int) activeRatePlans)
+                .inventoryCoverageDays((int) inventoryDaysCovered)
+                .inventoryBlockedDays((int) inventoryDaysBlocked)
+                .reservedRoomNights(reservedRoomNights)
+                .platformValueDisclosure("Paid booking value represents gross settled booking transactions through YatraSetu platform.")
+                .missingSetupSteps(missingSteps)
+                .build();
+    }
+
+    public String deriveBookabilityStatus(Hotel hotel) {
+        if (hotel.getVerificationStatus() == HotelVerificationStatus.SUSPENDED) {
+            return "SUSPENDED";
+        }
+        if (hotel.getVerificationStatus() == HotelVerificationStatus.REJECTED) {
+            return "REJECTED";
+        }
+        if (hotel.getVerificationStatus() == HotelVerificationStatus.UNVERIFIED || hotel.getVerificationStatus() == null) {
+            return "UNVERIFIED";
+        }
+        if (hotel.getVerificationStatus() == HotelVerificationStatus.PENDING_REVIEW) {
+            return "PENDING_VERIFICATION";
+        }
+        if (hotel.getVerificationStatus() == HotelVerificationStatus.VERIFIED) {
+            if (!Boolean.TRUE.equals(hotel.getIsActive())) {
+                return "VERIFIED_BUT_INACTIVE";
+            }
+            List<HotelRoomType> activeRooms = roomTypeRepository.findByHotelIdAndIsActiveTrueOrderByCreatedAtAsc(hotel.getId());
+            if (activeRooms.isEmpty()) {
+                return "VERIFIED_BUT_INCOMPLETE";
+            }
+            List<String> roomIds = activeRooms.stream().map(HotelRoomType::getId).collect(Collectors.toList());
+            List<HotelRatePlan> activePlans = ratePlanRepository.findByRoomTypeIdInAndStatus(roomIds, RatePlanStatus.ACTIVE);
+            if (activePlans.isEmpty()) {
+                return "VERIFIED_BUT_INCOMPLETE";
+            }
+            return "BOOKABLE";
+        }
+        return "NOT_READY";
+    }
+
     // ==========================================
     // HELPERS & DTO CONVERTER
     // ==========================================
@@ -408,6 +564,7 @@ public class HotelService {
                 .sourceType(h.getSourceType() != null ? h.getSourceType().name() : "DATASET")
                 .sourceLabel(ProvenanceUtil.getLabel(h.getSourceType(), h.getIsPartnerProperty()))
                 .verificationStatus(h.getVerificationStatus() != null ? h.getVerificationStatus().name() : HotelVerificationStatus.UNVERIFIED.name())
+                .bookabilityStatus(deriveBookabilityStatus(h))
                 .verificationNotes(h.getVerificationNotes())
                 .verifiedBy(h.getVerifiedBy())
                 .verifiedAt(h.getVerifiedAt())

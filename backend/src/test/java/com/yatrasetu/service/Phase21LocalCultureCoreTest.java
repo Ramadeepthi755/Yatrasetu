@@ -5,6 +5,7 @@ import com.yatrasetu.repository.*;
 import com.yatrasetu.web.dto.ApiResponse;
 import com.yatrasetu.web.dto.CulturalTraditionDto;
 import com.yatrasetu.web.dto.ExperienceDto;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -129,6 +130,13 @@ public class Phase21LocalCultureCoreTest {
                     .build();
             return localHostRepository.save(h);
         });
+    }
+
+    @AfterEach
+    void tearDown() {
+        culturalTraditionRepository.deleteAll();
+        localHostRepository.deleteAll();
+        userRepository.findById("user-artisan-test").ifPresent(userRepository::delete);
     }
 
     @Test

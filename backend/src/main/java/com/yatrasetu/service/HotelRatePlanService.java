@@ -325,7 +325,8 @@ public class HotelRatePlanService {
      * Helper: Validates ownership of the room type through its parent hotel.
      */
     public HotelRoomType validateRoomTypeOwnership(String hotelId, String roomTypeId, String userEmailOrAuthId) {
-        User partner = userRepository.findByEmail(userEmailOrAuthId)
+        User partner = userRepository.findById(userEmailOrAuthId)
+                .or(() -> userRepository.findByEmail(userEmailOrAuthId))
                 .or(() -> userRepository.findByAuthUserId(userEmailOrAuthId))
                 .orElseThrow(() -> new AccessDeniedException("User not authenticated or registered"));
 

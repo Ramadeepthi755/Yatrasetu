@@ -38,7 +38,10 @@ import {
   Tag,
   Utensils,
   Calendar,
+  CalendarDays,
   Percent,
+  BarChart3,
+  TrendingUp,
 } from 'lucide-react';
 import {
   getPartnerExperiences,
@@ -65,6 +68,8 @@ import {
   deactivatePartnerRatePlan,
   deletePartnerRatePlan,
   getPartnerHotelBookings,
+  getPartnerHotelAnalytics,
+  getPartnerHotelInventoryCalendar,
   ExperienceItem,
   CulturalTraditionDto,
   HotelItem,
@@ -79,6 +84,8 @@ import {
   CreateRatePlanRequest,
   UpdateRatePlanRequest,
   HotelBookingDto,
+  PartnerHotelAnalyticsDto,
+  HotelInventoryCalendarDto,
 } from '@/lib/api';
 
 const CULTURAL_CATEGORIES = [
@@ -187,6 +194,18 @@ export default function PartnerDashboardPage() {
   const [partnerBookingsList, setPartnerBookingsList] = useState<HotelBookingDto[]>([]);
   const [loadingPartnerBookings, setLoadingPartnerBookings] = useState<boolean>(false);
 
+  // Partner Hotel Analytics State (Phase 22.10)
+  const [analyticsModalOpen, setAnalyticsModalOpen] = useState<boolean>(false);
+  const [selectedHotelForAnalytics, setSelectedHotelForAnalytics] = useState<HotelItem | null>(null);
+  const [hotelAnalytics, setHotelAnalytics] = useState<PartnerHotelAnalyticsDto | null>(null);
+  const [loadingAnalytics, setLoadingAnalytics] = useState<boolean>(false);
+
+  // Partner Inventory Calendar State (Phase 22.10)
+  const [inventoryCalendarModalOpen, setInventoryCalendarModalOpen] = useState<boolean>(false);
+  const [selectedRoomForCalendar, setSelectedRoomForCalendar] = useState<HotelRoomTypeItem | null>(null);
+  const [calendarData, setCalendarData] = useState<HotelInventoryCalendarDto[]>([]);
+  const [loadingCalendar, setLoadingCalendar] = useState<boolean>(false);
+
   const handleOpenPartnerBookings = async (h: HotelItem) => {
     if (!token) return;
     setSelectedHotelForBookings(h);
@@ -201,6 +220,40 @@ export default function PartnerDashboardPage() {
       console.error('Failed to load partner hotel bookings:', err);
     } finally {
       setLoadingPartnerBookings(false);
+    }
+  };
+
+  const handleOpenAnalytics = async (h: HotelItem) => {
+    if (!token) return;
+    setSelectedHotelForAnalytics(h);
+    setAnalyticsModalOpen(true);
+    setLoadingAnalytics(true);
+    try {
+      const res = await getPartnerHotelAnalytics(h.id, token);
+      if (res.success && res.data) {
+        setHotelAnalytics(res.data);
+      }
+    } catch (err: unknown) {
+      console.error('Failed to load partner hotel analytics:', err);
+    } finally {
+      setLoadingAnalytics(false);
+    }
+  };
+
+  const handleOpenInventoryCalendar = async (room: HotelRoomTypeItem) => {
+    if (!token || !selectedHotelForRooms) return;
+    setSelectedRoomForCalendar(room);
+    setInventoryCalendarModalOpen(true);
+    setLoadingCalendar(true);
+    try {
+      const res = await getPartnerHotelInventoryCalendar(selectedHotelForRooms.id, room.id, undefined, undefined, token);
+      if (res.success && res.data) {
+        setCalendarData(res.data);
+      }
+    } catch (err: unknown) {
+      console.error('Failed to load inventory calendar:', err);
+    } finally {
+      setLoadingCalendar(false);
     }
   };
 
@@ -1493,58 +1546,71 @@ export default function PartnerDashboardPage() {
                               Draft Property
                             </span>
                           )}
+
+                          {/* Derived Bookability Status */}
+                          {h.bookabilityStatus === 'BOOKABLE' && (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-950 border border-emerald-300">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-700" />
+                              Publicly Bookable
+                            </span>
+                          )}
+                          {h.bookabilityStatus === 'VERIFIED_BUT_INCOMPLETE' && (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold text-amber-950 border border-amber-300">
+                              <AlertCircle className="w-3 h-3 text-amber-700" />
+                              Setup Incomplete
+                            </span>
+                          )}
                         </div>
 
                         {/* Edit / Delete actions */}
-                        <div className="flex items-center space-x-1">
+                        <div className="flex items-center gap-1">
                           <button
                             onClick={() => handleOpenEditHotel(h)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
                             title="Edit Property"
                           >
-                            <Edit2 className="w-4 h-4" />
+                            <Edit2 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeleteHotel(h.id)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            className="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                             title="Delete Property"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
 
-                      <h3 className="font-bold text-stone-900 mt-2.5 text-base leading-snug">
-                        {h.hotelName}
-                      </h3>
-
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1">
-                        <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                        <span>{h.address ? `${h.address}, ` : ''}{h.cityName}, {h.stateName}</span>
+                      {/* Hotel Name & Destination */}
+                      <div className="mt-2">
+                        <h4 className="text-base font-extrabold text-slate-900 leading-snug">
+                          {h.hotelName}
+                        </h4>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1">
+                          <MapPin className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />
+                          <span>
+                            {h.cityName}, {h.stateName || 'India'}
+                            {h.destinationName && ` · Near ${h.destinationName}`}
+                          </span>
+                        </div>
                       </div>
 
-                      {/* Verification Notes / Rejection Feedback if present */}
-                      {h.rejectionReason && (
-                        <div className="mt-2.5 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-[11px] text-rose-900 space-y-1">
-                          <span className="font-bold flex items-center gap-1 text-rose-800">
-                            <AlertCircle className="w-3 h-3 text-rose-600" /> Reviewer Feedback:
-                          </span>
-                          <p>{h.rejectionReason}</p>
-                        </div>
-                      )}
-
-                      {h.verificationNotes && isVerified && (
-                        <div className="mt-2 p-2 rounded-lg bg-emerald-50/70 border border-emerald-100 text-[11px] text-emerald-900">
-                          <span className="font-bold text-emerald-800">Verification Audit: </span>
-                          <span>{h.verificationNotes}</span>
-                        </div>
-                      )}
-
-                      {/* Sensitive Edit Notice for Verified Stays */}
-                      {isVerified && (
-                        <div className="mt-2 p-2 rounded-lg bg-amber-50/70 border border-amber-200/80 text-[10px] text-amber-900 flex items-center gap-1.5">
-                          <Info className="w-3.5 h-3.5 text-amber-700 flex-shrink-0" />
-                          <span>Editing core details (Name, Address, City, State) will reset status to Pending Review.</span>
+                      {/* Amenities Pills */}
+                      {h.amenities && h.amenities.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {h.amenities.slice(0, 5).map((amenity, idx) => (
+                            <span
+                              key={idx}
+                              className="rounded-md bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600 border border-slate-200"
+                            >
+                              {amenity}
+                            </span>
+                          ))}
+                          {h.amenities.length > 5 && (
+                            <span className="rounded-md bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-500 border border-slate-200">
+                              +{h.amenities.length - 5} more
+                            </span>
+                          )}
                         </div>
                       )}
 
@@ -1597,6 +1663,14 @@ export default function PartnerDashboardPage() {
                         >
                           <Calendar className="w-3.5 h-3.5 text-teal-700" />
                           <span>Bookings</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleOpenAnalytics(h)}
+                          className="px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-950 font-bold text-[11px] flex items-center gap-1.5 border border-amber-200 transition-colors"
+                        >
+                          <BarChart3 className="w-3.5 h-3.5 text-amber-700" />
+                          <span>Analytics &amp; Occupancy</span>
                         </button>
 
                         {(isDraft || isRejected) && (
@@ -2468,7 +2542,14 @@ export default function PartnerDashboardPage() {
                           {room.createdAt ? `Created: ${new Date(room.createdAt).toLocaleDateString('en-IN')}` : 'Configured'}
                         </div>
 
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <button
+                            onClick={() => handleOpenInventoryCalendar(room)}
+                            className="px-2.5 py-1 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-950 font-bold text-[11px] border border-teal-200 transition-colors flex items-center gap-1"
+                          >
+                            <CalendarDays className="w-3 h-3 text-teal-700" />
+                            <span>Inventory Calendar</span>
+                          </button>
                           <button
                             onClick={() => handleOpenRatePlans(room)}
                             className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-950 font-bold text-[11px] border border-emerald-200 transition-colors flex items-center gap-1"
@@ -3331,6 +3412,360 @@ export default function PartnerDashboardPage() {
             <div className="flex justify-end pt-4 border-t border-slate-100">
               <button
                 onClick={() => setPartnerBookingsModalOpen(false)}
+                className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Hotel Performance & Occupancy Analytics Overlay (Phase 22.10) */}
+      {analyticsModalOpen && selectedHotelForAnalytics && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-4xl w-full p-6 sm:p-8 shadow-2xl relative my-8 max-h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-start justify-between border-b border-slate-100 pb-4 mb-5 flex-shrink-0">
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="rounded-md px-2 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-900 border border-amber-200">
+                    Operations &amp; Performance
+                  </span>
+                  <span className="text-xs font-semibold text-slate-500">
+                    {selectedHotelForAnalytics.cityName}, {selectedHotelForAnalytics.stateName}
+                  </span>
+                  {selectedHotelForAnalytics.verificationStatus === 'VERIFIED' && (
+                    <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800 border border-emerald-200">
+                      <ShieldCheck className="w-3 h-3 text-emerald-600" /> Verified Property
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-xl font-black text-slate-900 mt-1">
+                  {selectedHotelForAnalytics.hotelName} — Property Performance Analytics
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Authoritative booking metrics, capacity occupancy, and live bookability status.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setAnalyticsModalOpen(false)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content Area */}
+            {loadingAnalytics ? (
+              <div className="flex-1 p-12 text-center text-xs text-slate-400 animate-pulse space-y-3">
+                <BarChart3 className="mx-auto w-10 h-10 text-slate-300 animate-bounce" />
+                <p>Computing authoritative platform analytics &amp; occupancy metrics...</p>
+              </div>
+            ) : !hotelAnalytics ? (
+              <div className="flex-1 p-10 text-center space-y-3">
+                <AlertCircle className="mx-auto w-10 h-10 text-amber-500" />
+                <h4 className="text-sm font-bold text-slate-800">Information Currently Unavailable</h4>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  Unable to load property performance at this time. Please check your network connection and try again.
+                </p>
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto space-y-6 pr-1">
+                {/* Bookability Banner */}
+                <div className={`rounded-2xl p-4 border flex items-start gap-3.5 ${
+                  hotelAnalytics.isBookable
+                    ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
+                    : 'bg-amber-50/80 border-amber-200 text-amber-950'
+                }`}>
+                  {hotelAnalytics.isBookable ? (
+                    <CheckCircle2 className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertCircle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
+                  )}
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-extrabold text-sm">
+                        Bookability Status: {hotelAnalytics.bookabilityStatus?.replace(/_/g, ' ')}
+                      </span>
+                      <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border ${
+                        hotelAnalytics.isBookable
+                          ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                          : 'bg-amber-100 text-amber-900 border-amber-300'
+                      }`}>
+                        {hotelAnalytics.isBookable ? 'PUBLICLY BOOKABLE' : 'SETUP REQUIRED'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600">
+                      {hotelAnalytics.isBookable
+                        ? 'Your property meets all government verification, active room type, rate plan, and physical inventory requirements. Travelers can reserve rooms seamlessly.'
+                        : 'Your property is currently not accepting new public reservations until all setup requirements are satisfied.'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Key Metrics Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Platform Booking Value</span>
+                    <div className="text-xl font-black text-slate-900 flex items-center">
+                      <IndianRupee className="w-4 h-4 text-emerald-600 mr-0.5" />
+                      {Number(hotelAnalytics.paidBookingValue || 0).toLocaleString('en-IN')}
+                    </div>
+                    <p className="text-[10px] text-slate-400">Gross settled payments</p>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Confirmed Bookings</span>
+                    <div className="text-xl font-black text-slate-900">
+                      {hotelAnalytics.confirmedBookingsCount}
+                    </div>
+                    <p className="text-[10px] text-slate-400">of {hotelAnalytics.totalBookingsCount} total reservations</p>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Reserved Room Nights</span>
+                    <div className="text-xl font-black text-slate-900">
+                      {hotelAnalytics.reservedRoomNights}
+                    </div>
+                    <p className="text-[10px] text-slate-400">Allocated nights reserved</p>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Inventory Coverage</span>
+                    <div className="text-xl font-black text-slate-900">
+                      {hotelAnalytics.inventoryCoverageDays} / 30
+                    </div>
+                    <p className="text-[10px] text-slate-400">Next 30 days configured</p>
+                  </div>
+                </div>
+
+                {/* Booking Lifecycle Breakdown & Setup Stepper */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Left: Bookings Breakdown */}
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4.5 space-y-3">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-indigo-600" />
+                      Reservation Lifecycle Breakdown
+                    </h4>
+
+                    <div className="space-y-2 text-xs">
+                      <div className="flex items-center justify-between p-2 rounded-xl bg-emerald-50/60 border border-emerald-100">
+                        <span className="font-semibold text-emerald-950">Confirmed &amp; Paid Stays:</span>
+                        <span className="font-black text-emerald-900">{hotelAnalytics.confirmedBookingsCount}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded-xl bg-amber-50/60 border border-amber-100">
+                        <span className="font-semibold text-amber-950">Pending Payment Holds:</span>
+                        <span className="font-black text-amber-900">{hotelAnalytics.pendingPaymentCount}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200">
+                        <span className="font-semibold text-slate-700">Expired Unpaid Holds:</span>
+                        <span className="font-black text-slate-800">{hotelAnalytics.expiredBookingsCount}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded-xl bg-rose-50/60 border border-rose-100">
+                        <span className="font-semibold text-rose-950">Cancelled Bookings:</span>
+                        <span className="font-black text-rose-900">{hotelAnalytics.cancelledBookingsCount}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: Property Setup Readiness Checklist */}
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4.5 space-y-3">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                      Property Readiness Checklist
+                    </h4>
+
+                    <div className="space-y-2 text-xs">
+                      <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
+                        <span className="text-slate-700">1. Verification Status:</span>
+                        <span className="font-bold text-slate-900">{hotelAnalytics.verificationStatus}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
+                        <span className="text-slate-700">2. Active Room Types:</span>
+                        <span className="font-bold text-slate-900">{hotelAnalytics.activeRoomTypesCount} / {hotelAnalytics.totalRoomTypesCount}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
+                        <span className="text-slate-700">3. Active Rate Plans:</span>
+                        <span className="font-bold text-slate-900">{hotelAnalytics.activeRatePlansCount} configured</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
+                        <span className="text-slate-700">4. Inventory Coverage:</span>
+                        <span className="font-bold text-slate-900">{hotelAnalytics.inventoryCoverageDays > 0 ? `${hotelAnalytics.inventoryCoverageDays} Days` : 'Missing'}</span>
+                      </div>
+                    </div>
+
+                    {hotelAnalytics.missingSetupSteps && hotelAnalytics.missingSetupSteps.length > 0 && (
+                      <div className="rounded-xl bg-amber-50/80 p-3 border border-amber-200 text-[11px] text-amber-950 space-y-1">
+                        <span className="font-bold">Next Steps to Enable Public Booking:</span>
+                        <ul className="list-disc list-inside space-y-0.5 text-amber-900">
+                          {hotelAnalytics.missingSetupSteps.map((step, idx) => (
+                            <li key={idx}>{step}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Honest Disclosure */}
+                <div className="rounded-xl bg-slate-50 p-3 border border-slate-200 text-[11px] text-slate-500 flex items-start gap-2">
+                  <Info className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
+                  <p>
+                    <span className="font-bold text-slate-700">YatraSetu Platform Metrics Notice: </span>
+                    {hotelAnalytics.platformValueDisclosure || 'Metrics are derived strictly from authoritative database booking snapshots and payment transactions.'}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end pt-4 border-t border-slate-100">
+              <button
+                onClick={() => setAnalyticsModalOpen(false)}
+                className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Interactive Authoritative Inventory Calendar Overlay (Phase 22.10) */}
+      {inventoryCalendarModalOpen && selectedRoomForCalendar && selectedHotelForRooms && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-5xl w-full p-6 sm:p-8 shadow-2xl relative my-8 max-h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-start justify-between border-b border-slate-100 pb-4 mb-5 flex-shrink-0">
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="rounded-md px-2 py-0.5 text-[10px] font-bold bg-teal-50 text-teal-900 border border-teal-200">
+                    Physical Inventory &amp; Availability Calendar
+                  </span>
+                  <span className="text-xs font-semibold text-slate-500">
+                    {selectedHotelForRooms.hotelName}
+                  </span>
+                </div>
+                <h3 className="text-xl font-black text-slate-900 mt-1">
+                  {selectedRoomForCalendar.roomTypeName} — 30-Day Capacity Matrix
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Authoritative availability calculated as: Total Physical Units − Blocked Units − Active Reservations.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setInventoryCalendarModalOpen(false)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Legend */}
+            <div className="flex flex-wrap items-center gap-4 text-xs font-semibold pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-slate-300" />
+                <span className="text-slate-700">Total Physical Units</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-amber-400" />
+                <span className="text-amber-900">Blocked by Partner</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-blue-500" />
+                <span className="text-blue-900">Active Reserved Units</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-emerald-500" />
+                <span className="text-emerald-900">Authoritative Available</span>
+              </div>
+            </div>
+
+            {/* Content Area */}
+            {loadingCalendar ? (
+              <div className="flex-1 p-12 text-center text-xs text-slate-400 animate-pulse space-y-3">
+                <CalendarDays className="mx-auto w-10 h-10 text-slate-300 animate-bounce" />
+                <p>Loading 30-day inventory allocations from authoritative database records...</p>
+              </div>
+            ) : calendarData.length === 0 ? (
+              <div className="flex-1 p-10 text-center space-y-3">
+                <AlertCircle className="mx-auto w-10 h-10 text-amber-500" />
+                <h4 className="text-sm font-bold text-slate-800">No Inventory Calendar Data</h4>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  Please configure physical inventory capacity units for this room type.
+                </p>
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+                {/* 30-Day Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 pt-2">
+                  {calendarData.map((item, idx) => {
+                    const d = new Date(item.date);
+                    const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+                    const dateFormatted = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`rounded-2xl border p-3.5 space-y-2 transition shadow-2xs ${
+                          item.availableUnits > 0
+                            ? 'bg-white border-slate-200 hover:border-emerald-300'
+                            : 'bg-rose-50/40 border-rose-200 hover:border-rose-300'
+                        }`}
+                      >
+                        <div className="flex items-baseline justify-between border-b border-slate-100 pb-1.5">
+                          <span className="font-extrabold text-xs text-slate-900">{dateFormatted}</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase">{dayName}</span>
+                        </div>
+
+                        <div className="text-[11px] space-y-1">
+                          <div className="flex justify-between text-slate-600">
+                            <span>Total:</span>
+                            <span className="font-bold text-slate-800">{item.totalUnits}</span>
+                          </div>
+                          <div className="flex justify-between text-amber-700">
+                            <span>Blocked:</span>
+                            <span className="font-bold">{item.blockedUnits}</span>
+                          </div>
+                          <div className="flex justify-between text-blue-700">
+                            <span>Reserved:</span>
+                            <span className="font-bold">{item.reservedUnits}</span>
+                          </div>
+                        </div>
+
+                        <div className={`pt-2 border-t flex justify-between items-center text-xs ${
+                          item.availableUnits > 0 ? 'border-emerald-100 text-emerald-950' : 'border-rose-100 text-rose-950'
+                        }`}>
+                          <span className="text-[10px] font-semibold text-slate-500">Available:</span>
+                          <span className={`font-black text-sm px-1.5 py-0.5 rounded ${
+                            item.availableUnits > 0 ? 'bg-emerald-100 text-emerald-950' : 'bg-rose-100 text-rose-900'
+                          }`}>
+                            {item.availableUnits}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Safety invariant banner */}
+                <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-200 text-[11px] text-slate-600 leading-relaxed flex items-start gap-2">
+                  <ShieldCheck className="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-slate-800">Inventory Safety Guarantee:</p>
+                    <p className="text-slate-600">
+                      Active reservations are protected at the database transaction layer. Physical total capacity cannot be reduced below current confirmed &amp; pending holds.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end pt-4 border-t border-slate-100">
+              <button
+                onClick={() => setInventoryCalendarModalOpen(false)}
                 className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition"
               >
                 Close

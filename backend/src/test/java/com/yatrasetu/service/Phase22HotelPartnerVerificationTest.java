@@ -1,10 +1,7 @@
 package com.yatrasetu.service;
 
 import com.yatrasetu.domain.*;
-import com.yatrasetu.repository.CityRepository;
-import com.yatrasetu.repository.DestinationRepository;
-import com.yatrasetu.repository.HotelRepository;
-import com.yatrasetu.repository.UserRepository;
+import com.yatrasetu.repository.*;
 import com.yatrasetu.web.dto.CreateHotelRequest;
 import com.yatrasetu.web.dto.HotelDto;
 import com.yatrasetu.web.dto.HotelVerificationRequest;
@@ -41,6 +38,21 @@ class Phase22HotelPartnerVerificationTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private HotelRoomTypeRepository roomTypeRepository;
+
+    @Mock
+    private HotelRatePlanRepository ratePlanRepository;
+
+    @Mock
+    private HotelInventoryRepository inventoryRepository;
+
+    @Mock
+    private HotelBookingRepository bookingRepository;
+
+    @Mock
+    private HotelBookingAllocationRepository bookingAllocationRepository;
 
     @InjectMocks
     private HotelService hotelService;

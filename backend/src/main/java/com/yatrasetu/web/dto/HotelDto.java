@@ -36,6 +36,7 @@ public class HotelDto {
     private String sourceType;
     private String sourceLabel;
     private String verificationStatus;
+    private String bookabilityStatus;
     private String verificationNotes;
     private String verifiedBy;
     private Instant verifiedAt;

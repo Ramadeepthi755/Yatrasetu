@@ -28,6 +28,7 @@ public class HotelRoomService {
     private final HotelInventoryRepository inventoryRepository;
     private final HotelRepository hotelRepository;
     private final UserRepository userRepository;
+    private final com.yatrasetu.repository.HotelBookingAllocationRepository allocationRepository;
 
     /**
      * Traveler-facing: Get active room types for a publicly visible hotel.
@@ -241,6 +242,11 @@ public class HotelRoomService {
             throw new IllegalArgumentException("Room type " + roomTypeId + " does not belong to hotel " + hotelId);
         }
 
+        long activeCount = allocationRepository.countByRoomTypeIdAndStatus(roomTypeId, BookingAllocationStatus.ACTIVE);
+        if (activeCount > 0) {
+            throw new IllegalStateException("Cannot delete room type with active reservations (" + activeCount + " active reservations found). Please deactivate the room type instead.");
+        }
+
         inventoryRepository.deleteByRoomTypeId(roomTypeId);
         roomTypeRepository.delete(roomType);
         log.info("Partner {} deleted room type {} from hotel {}", userEmailOrAuthId, roomTypeId, hotelId);
@@ -289,6 +295,21 @@ public class HotelRoomService {
         }
         if (blocked > request.getTotalUnits()) {
             throw new IllegalArgumentException("Blocked units (" + blocked + ") cannot exceed total units (" + request.getTotalUnits() + ")");
+        }
+
+        // Safety: ensure physical inventory is not reduced below current active reservations
+        if (request.getInventoryDate() != null) {
+            List<Object[]> activeAllocs = allocationRepository.findActiveReservedUnitsByRoomTypeIdAndDateRange(
+                    roomTypeId, request.getInventoryDate(), request.getInventoryDate(), BookingAllocationStatus.ACTIVE);
+            int reserved = 0;
+            if (!activeAllocs.isEmpty()) {
+                Number sum = (Number) activeAllocs.get(0)[1];
+                reserved = sum != null ? sum.intValue() : 0;
+            }
+            if (request.getTotalUnits() < reserved) {
+                throw new IllegalArgumentException("Total units (" + request.getTotalUnits() +
+                        ") cannot be reduced below active reservations (" + reserved + ") for date " + request.getInventoryDate());
+            }
         }
 
         HotelInventory inventory;
@@ -370,6 +391,24 @@ public class HotelRoomService {
             throw new IllegalArgumentException("Blocked units (" + blocked + ") cannot exceed total units (" + request.getTotalUnits() + ")");
         }
 
+        // Safety: verify total units against active reservations on each date in the range
+        List<Object[]> activeAllocs = allocationRepository.findActiveReservedUnitsByRoomTypeIdAndDateRange(
+                roomTypeId, request.getStartDate(), request.getEndDate(), BookingAllocationStatus.ACTIVE);
+        Map<LocalDate, Integer> reservedMap = new HashMap<>();
+        for (Object[] row : activeAllocs) {
+            LocalDate date = (LocalDate) row[0];
+            Number sum = (Number) row[1];
+            reservedMap.put(date, sum != null ? sum.intValue() : 0);
+        }
+
+        for (LocalDate d = request.getStartDate(); !d.isAfter(request.getEndDate()); d = d.plusDays(1)) {
+            int reserved = reservedMap.getOrDefault(d, 0);
+            if (request.getTotalUnits() < reserved) {
+                throw new IllegalArgumentException("Total units (" + request.getTotalUnits() +
+                        ") cannot be reduced below active reservations (" + reserved + ") on " + d);
+            }
+        }
+
         // Fetch existing date-specific records in range
         List<HotelInventory> existingList = inventoryRepository.findByRoomTypeIdAndInventoryDateBetween(
                 roomTypeId, request.getStartDate(), request.getEndDate());
@@ -403,6 +442,86 @@ public class HotelRoomService {
                 userEmailOrAuthId, savedList.size(), roomTypeId, request.getTotalUnits(), blocked);
 
         return savedList.stream().map(this::mapToInventoryDto).collect(Collectors.toList());
+    }
+
+    /**
+     * Partner-facing: Get authoritative inventory calendar with total, blocked, reserved, and available units.
+     */
+    @Transactional(readOnly = true)
+    public List<HotelInventoryCalendarDto> getPartnerHotelInventoryCalendar(
+            String hotelId,
+            String roomTypeId,
+            LocalDate startDate,
+            LocalDate endDate,
+            String userEmailOrAuthId) {
+
+        validateHotelOwnership(hotelId, userEmailOrAuthId);
+
+        HotelRoomType roomType = roomTypeRepository.findById(roomTypeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room type not found: " + roomTypeId));
+
+        if (!roomType.getHotel().getId().equals(hotelId)) {
+            throw new IllegalArgumentException("Room type " + roomTypeId + " does not belong to hotel " + hotelId);
+        }
+
+        LocalDate start = (startDate != null) ? startDate : LocalDate.now();
+        LocalDate end = (endDate != null) ? endDate : start.plusDays(29);
+
+        if (end.isBefore(start)) {
+            throw new IllegalArgumentException("End date (" + end + ") cannot be before start date (" + start + ")");
+        }
+
+        long daysCount = ChronoUnit.DAYS.between(start, end) + 1;
+        if (daysCount > 90) {
+            throw new IllegalArgumentException("Calendar range cannot exceed 90 days (requested " + daysCount + " days)");
+        }
+
+        // Fetch date-specific records
+        List<HotelInventory> dateRecords = inventoryRepository.findByRoomTypeIdAndInventoryDateBetween(roomTypeId, start, end);
+        Map<LocalDate, HotelInventory> dateMap = new HashMap<>();
+        for (HotelInventory inv : dateRecords) {
+            if (inv.getInventoryDate() != null) {
+                dateMap.put(inv.getInventoryDate(), inv);
+            }
+        }
+
+        // Fetch baseline inventory record
+        Optional<HotelInventory> baselineOpt = inventoryRepository.findByRoomTypeIdAndInventoryDateIsNull(roomTypeId);
+        int defaultTotalUnits = baselineOpt.map(HotelInventory::getTotalUnits)
+                .orElseGet(() -> roomType.getBaseInventoryUnits() != null ? roomType.getBaseInventoryUnits() : 0);
+        int defaultBlockedUnits = baselineOpt.map(HotelInventory::getBlockedUnits).orElse(0);
+
+        // Fetch active allocations
+        List<Object[]> activeAllocs = allocationRepository.findActiveReservedUnitsByRoomTypeIdAndDateRange(
+                roomTypeId, start, end, BookingAllocationStatus.ACTIVE);
+        Map<LocalDate, Integer> reservedMap = new HashMap<>();
+        for (Object[] row : activeAllocs) {
+            LocalDate date = (LocalDate) row[0];
+            Number sum = (Number) row[1];
+            reservedMap.put(date, sum != null ? sum.intValue() : 0);
+        }
+
+        List<HotelInventoryCalendarDto> calendarList = new ArrayList<>();
+        for (LocalDate d = start; !d.isAfter(end); d = d.plusDays(1)) {
+            HotelInventory inv = dateMap.get(d);
+            int total = (inv != null && inv.getTotalUnits() != null) ? inv.getTotalUnits() : defaultTotalUnits;
+            int blocked = (inv != null && inv.getBlockedUnits() != null) ? inv.getBlockedUnits() : defaultBlockedUnits;
+            int reserved = reservedMap.getOrDefault(d, 0);
+            int available = Math.max(0, total - blocked - reserved);
+
+            calendarList.add(HotelInventoryCalendarDto.builder()
+                    .date(d)
+                    .roomTypeId(roomTypeId)
+                    .roomTypeName(roomType.getRoomTypeName())
+                    .totalUnits(total)
+                    .blockedUnits(blocked)
+                    .reservedUnits(reserved)
+                    .availableUnits(available)
+                    .isDateSpecific(inv != null)
+                    .build());
+        }
+
+        return calendarList;
     }
 
     /**

@@ -426,6 +426,7 @@ export interface HotelItem {
   sourceType?: string;
   sourceLabel?: string;
   verificationStatus?: 'UNVERIFIED' | 'PENDING_REVIEW' | 'VERIFIED' | 'REJECTED' | 'SUSPENDED';
+  bookabilityStatus?: 'BOOKABLE' | 'PENDING_VERIFICATION' | 'VERIFIED_BUT_INCOMPLETE' | 'VERIFIED_BUT_INACTIVE' | 'UNVERIFIED' | 'REJECTED' | 'SUSPENDED' | 'NOT_READY';
   verificationNotes?: string;
   verifiedBy?: string;
   verifiedAt?: string;
@@ -439,6 +440,40 @@ export interface HotelItem {
   isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface PartnerHotelAnalyticsDto {
+  hotelId: string;
+  hotelName: string;
+  verificationStatus: string;
+  bookabilityStatus: string;
+  isBookable: boolean;
+  totalBookingsCount: number;
+  confirmedBookingsCount: number;
+  pendingPaymentCount: number;
+  cancelledBookingsCount: number;
+  expiredBookingsCount: number;
+  reservedRoomNights: number;
+  paidBookingValue: number;
+  currency: string;
+  totalRoomTypesCount: number;
+  activeRoomTypesCount: number;
+  activeRatePlansCount: number;
+  inventoryCoverageDays: number;
+  inventoryBlockedDays: number;
+  platformValueDisclosure: string;
+  missingSetupSteps: string[];
+}
+
+export interface HotelInventoryCalendarDto {
+  date: string;
+  roomTypeId: string;
+  roomTypeName: string;
+  totalUnits: number;
+  blockedUnits: number;
+  reservedUnits: number;
+  availableUnits: number;
+  isDateSpecific?: boolean;
 }
 
 export interface CreateHotelRequest {
@@ -3164,6 +3199,50 @@ export async function updatePartnerBulkRoomInventory(
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.message || `Failed to bulk update room inventory: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPartnerHotelInventoryCalendar(
+  hotelId: string,
+  roomId: string,
+  startDate?: string,
+  endDate?: string,
+  token?: string
+): Promise<ApiResponse<HotelInventoryCalendarDto[]>> {
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate);
+  if (endDate) params.set('endDate', endDate);
+  const query = params.toString() ? `?${params.toString()}` : '';
+
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/inventory/calendar${query}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch inventory calendar: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPartnerHotelAnalytics(
+  hotelId: string,
+  token?: string
+): Promise<ApiResponse<PartnerHotelAnalyticsDto>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/analytics`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch partner hotel analytics: ${res.status}`);
   }
   return res.json();
 }

@@ -208,4 +208,30 @@ public class PartnerHotelRoomController {
                 .timestamp(Instant.now())
                 .build());
     }
+
+    @GetMapping("/{roomId}/inventory/calendar")
+    public ResponseEntity<ApiResponse<List<HotelInventoryCalendarDto>>> getInventoryCalendar(
+            @PathVariable("hotelId") String hotelId,
+            @PathVariable("roomId") String roomId,
+            @RequestParam(value = "startDate", required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,
+            @RequestParam(value = "endDate", required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate endDate,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.<List<HotelInventoryCalendarDto>>builder()
+                            .success(false)
+                            .message("Authentication required")
+                            .timestamp(Instant.now())
+                            .build());
+        }
+
+        List<HotelInventoryCalendarDto> calendar = hotelRoomService.getPartnerHotelInventoryCalendar(
+                hotelId, roomId, startDate, endDate, principal.getUserId());
+        return ResponseEntity.ok(ApiResponse.<List<HotelInventoryCalendarDto>>builder()
+                .success(true)
+                .message("Retrieved room inventory calendar successfully")
+                .data(calendar)
+                .timestamp(Instant.now())
+                .build());
+    }
 }
