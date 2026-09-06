@@ -41,6 +41,9 @@ public class Phase22HotelBookingTest {
     private HotelBookingAllocationRepository allocationRepository;
 
     @Autowired
+    private HotelBookingStatusHistoryRepository statusHistoryRepository;
+
+    @Autowired
     private HotelRepository hotelRepository;
 
     @Autowired
@@ -307,6 +310,7 @@ public class Phase22HotelBookingTest {
     }
 
     private void cleanup() {
+        statusHistoryRepository.deleteAll();
         allocationRepository.deleteAll();
         bookingRepository.deleteAll();
         inventoryRepository.deleteAll();

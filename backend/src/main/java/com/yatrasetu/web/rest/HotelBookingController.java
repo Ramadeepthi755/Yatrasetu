@@ -4,6 +4,7 @@ import com.yatrasetu.config.UserPrincipal;
 import com.yatrasetu.domain.Role;
 import com.yatrasetu.service.HotelBookingService;
 import com.yatrasetu.web.dto.ApiResponse;
+import com.yatrasetu.web.dto.CancelHotelBookingRequest;
 import com.yatrasetu.web.dto.CreateHotelBookingRequest;
 import com.yatrasetu.web.dto.HotelBookingDto;
 import jakarta.validation.Valid;
@@ -128,6 +129,7 @@ public class HotelBookingController {
     @PreAuthorize("hasRole('TRAVELER')")
     public ResponseEntity<ApiResponse<HotelBookingDto>> cancelBooking(
             @PathVariable("bookingReference") String bookingReference,
+            @RequestBody(required = false) CancelHotelBookingRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
 
         if (principal == null) {
@@ -139,7 +141,8 @@ public class HotelBookingController {
                             .build());
         }
 
-        HotelBookingDto cancelled = bookingService.cancelBooking(bookingReference, principal.getUserId());
+        HotelBookingDto cancelled = bookingService.cancelBooking(
+                bookingReference, request, principal.getUserId());
 
         return ResponseEntity.ok(ApiResponse.<HotelBookingDto>builder()
                 .success(true)

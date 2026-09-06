@@ -3260,15 +3260,22 @@ export default function PartnerDashboardPage() {
                             b.bookingStatus === 'CONFIRMED' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
                             b.bookingStatus === 'PENDING_PAYMENT' ? 'bg-amber-50 text-amber-800 border-amber-200' :
                             b.bookingStatus === 'CANCELLED' ? 'bg-rose-50 text-rose-800 border-rose-200' :
+                            b.bookingStatus === 'EXPIRED' ? 'bg-slate-100 text-slate-700 border-slate-300' :
                             'bg-stone-100 text-stone-700 border-stone-200'
                           }`}>
-                            {b.bookingStatus}
+                            {b.bookingStatus === 'PENDING_PAYMENT' ? 'PENDING PAYMENT' : b.bookingStatus}
                           </span>
                           <span className="text-[10px] font-semibold text-slate-500 bg-white px-1.5 py-0.5 rounded border border-slate-200">
                             {b.paymentStatus}
                           </span>
                         </div>
                       </div>
+
+                      {b.bookingStatus === 'CANCELLED' && b.cancellationReason && (
+                        <div className="text-[10px] bg-rose-50 border border-rose-100 text-rose-800 p-2 rounded-lg">
+                          <span className="font-bold">Cancellation Reason:</span> {b.cancellationReason}
+                        </div>
+                      )}
 
                       {/* Guest Info (Masked PII) */}
                       <div className="text-xs space-y-1">

@@ -121,6 +121,16 @@ public class HotelBooking {
     @Column(name = "expires_at")
     private Instant expiresAt;
 
+    @Column(name = "cancellation_policy_snapshot", length = 50)
+    private String cancellationPolicySnapshot;
+
+    @Column(name = "cancellation_deadline_hours")
+    private Integer cancellationDeadlineHours;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cancellation_reason_code", length = 50)
+    private CancellationReasonCode cancellationReasonCode;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private Instant createdAt = Instant.now();
@@ -128,4 +138,32 @@ public class HotelBooking {
     @Column(name = "updated_at", nullable = false)
     @Builder.Default
     private Instant updatedAt = Instant.now();
+
+    /**
+     * Validates state machine transitions:
+     * PENDING_PAYMENT -> CONFIRMED, EXPIRED, CANCELLED
+     * CONFIRMED -> CANCELLED
+     * CANCELLED -> none (terminal)
+     * EXPIRED -> none (terminal)
+     */
+    public boolean canTransitionTo(HotelBookingStatus targetStatus) {
+        if (this.bookingStatus == targetStatus) {
+            return true; // Idempotent same-state check
+        }
+        if (this.bookingStatus == HotelBookingStatus.PENDING_PAYMENT) {
+            return targetStatus == HotelBookingStatus.CONFIRMED ||
+                   targetStatus == HotelBookingStatus.CANCELLED ||
+                   targetStatus == HotelBookingStatus.EXPIRED;
+        }
+        if (this.bookingStatus == HotelBookingStatus.CONFIRMED) {
+            return targetStatus == HotelBookingStatus.CANCELLED;
+        }
+        return false;
+    }
+
+    public void validateTransition(HotelBookingStatus targetStatus) {
+        if (!canTransitionTo(targetStatus)) {
+            throw new IllegalStateException("Invalid booking state transition from " + this.bookingStatus + " to " + targetStatus);
+        }
+    }
 }

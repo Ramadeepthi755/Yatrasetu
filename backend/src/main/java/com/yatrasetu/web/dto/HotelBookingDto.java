@@ -64,15 +64,21 @@ public class HotelBookingDto {
     private String sourceType;
     private String idempotencyKey;
 
-    // Lifecycle timestamps
+    // Lifecycle timestamps & Policy Snapshots
     private Instant expiresAt;
     private Instant cancelledAt;
     private String cancellationReason;
+    private String cancellationReasonCode;
+    private String cancellationPolicySnapshot;
+    private Integer cancellationDeadlineHours;
     private Instant createdAt;
     private Instant updatedAt;
 
     // Allocation breakdown
     private List<BookingAllocationDto> allocations;
+
+    // Status audit history
+    private List<BookingStatusHistoryDto> statusHistory;
 
     @Data
     @Builder
@@ -83,5 +89,18 @@ public class HotelBookingDto {
         private LocalDate allocationDate;
         private Integer allocatedUnits;
         private String status;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BookingStatusHistoryDto {
+        private String id;
+        private String previousStatus;
+        private String newStatus;
+        private String reason;
+        private String actorUserId;
+        private Instant createdAt;
     }
 }

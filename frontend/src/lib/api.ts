@@ -3178,6 +3178,15 @@ export interface HotelBookingAllocationDto {
   status: string;
 }
 
+export interface BookingStatusHistoryDto {
+  id: string;
+  previousStatus?: string;
+  newStatus: string;
+  reason?: string;
+  actorUserId?: string;
+  createdAt: string;
+}
+
 export interface HotelBookingDto {
   id: string;
   bookingReference: string;
@@ -3216,9 +3225,13 @@ export interface HotelBookingDto {
   expiresAt?: string;
   cancelledAt?: string;
   cancellationReason?: string;
+  cancellationReasonCode?: string;
+  cancellationPolicySnapshot?: string;
+  cancellationDeadlineHours?: number;
   createdAt: string;
   updatedAt: string;
   allocations?: HotelBookingAllocationDto[];
+  statusHistory?: BookingStatusHistoryDto[];
 }
 
 export interface CreateHotelBookingRequest {
@@ -3234,6 +3247,11 @@ export interface CreateHotelBookingRequest {
   guestPhone: string;
   specialRequests?: string;
   idempotencyKey?: string;
+}
+
+export interface CancelHotelBookingRequest {
+  reason?: string;
+  reasonCode?: string;
 }
 
 export async function createHotelBooking(
@@ -3309,16 +3327,19 @@ export async function getPartnerHotelBookings(
 
 export async function cancelHotelBooking(
   bookingReference: string,
-  reason: string | undefined,
-  token: string
+  options?: { reason?: string; reasonCode?: string },
+  token?: string
 ): Promise<ApiResponse<HotelBookingDto>> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
   const res = await fetch(`${API_BASE_URL}/bookings/${encodeURIComponent(bookingReference)}/cancel`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify({ reason }),
+    headers,
+    body: JSON.stringify(options || {}),
     cache: 'no-store',
   });
   if (!res.ok) {
