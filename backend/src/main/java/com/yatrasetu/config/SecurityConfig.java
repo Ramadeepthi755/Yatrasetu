@@ -59,6 +59,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/hotels/**").permitAll()
                 .requestMatchers("/api/v1/local/**").permitAll()
                 .requestMatchers("/api/v1/experiences/**").permitAll()
+                .requestMatchers("/api/v1/culture/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/travel-connect").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/travel-connect/destination/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/travel-connect/*").permitAll()

@@ -406,6 +406,8 @@ export interface PoiItem {
 export interface HotelItem {
   id: string;
   hotelName: string;
+  ownerId?: string;
+  ownerName?: string;
   cityId?: string;
   cityName?: string;
   stateId?: string;
@@ -423,7 +425,188 @@ export interface HotelItem {
   inventoryType?: string;
   sourceType?: string;
   sourceLabel?: string;
+  verificationStatus?: 'UNVERIFIED' | 'PENDING_REVIEW' | 'VERIFIED' | 'REJECTED' | 'SUSPENDED';
+  verificationNotes?: string;
+  verifiedBy?: string;
+  verifiedAt?: string;
+  rejectionReason?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  officialWebsite?: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+  isDemoData?: boolean;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
+
+export interface CreateHotelRequest {
+  hotelName: string;
+  cityId: string;
+  destinationId?: string;
+  category?: string;
+  pricePerNight: number;
+  address?: string;
+  amenities?: string[];
+  latitude?: number;
+  longitude?: number;
+  contactPhone?: string;
+  contactEmail?: string;
+  officialWebsite?: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+}
+
+export interface UpdateHotelRequest {
+  hotelName?: string;
+  cityId?: string;
+  destinationId?: string;
+  category?: string;
+  pricePerNight?: number;
+  address?: string;
+  amenities?: string[];
+  latitude?: number;
+  longitude?: number;
+  contactPhone?: string;
+  contactEmail?: string;
+  officialWebsite?: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+}
+
+export interface HotelVerificationRequest {
+  decision: 'APPROVED' | 'REJECTED' | 'SUSPENDED';
+  notes?: string;
+  rejectionReason?: string;
+}
+
+export interface HotelRoomTypeItem {
+  id: string;
+  hotelId: string;
+  hotelName?: string;
+  roomTypeName: string;
+  description?: string;
+  maxOccupancy: number;
+  bedConfiguration?: string;
+  roomSizeSqft?: number;
+  amenities: string[];
+  isAccessible: boolean;
+  baseInventoryUnits: number;
+  sourceType: string;
+  isActive: boolean;
+  isDemoData?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateRoomTypeRequest {
+  roomTypeName: string;
+  description?: string;
+  maxOccupancy: number;
+  bedConfiguration?: string;
+  roomSizeSqft?: number;
+  amenities?: string[];
+  isAccessible?: boolean;
+  baseInventoryUnits: number;
+  isActive?: boolean;
+}
+
+export interface UpdateRoomTypeRequest {
+  roomTypeName?: string;
+  description?: string;
+  maxOccupancy?: number;
+  bedConfiguration?: string;
+  roomSizeSqft?: number;
+  amenities?: string[];
+  isAccessible?: boolean;
+  baseInventoryUnits?: number;
+  isActive?: boolean;
+}
+
+export interface HotelInventoryItem {
+  id: string;
+  roomTypeId: string;
+  roomTypeName?: string;
+  hotelId?: string;
+  inventoryDate?: string;
+  totalUnits: number;
+  blockedUnits: number;
+  sourceType: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface UpdateInventoryRequest {
+  inventoryDate?: string;
+  totalUnits: number;
+  blockedUnits?: number;
+}
+
+export interface HotelRatePlanItem {
+  id: string;
+  roomTypeId: string;
+  roomTypeName?: string;
+  hotelId?: string;
+  hotelName?: string;
+  planName: string;
+  mealPlan: 'EP' | 'CP' | 'MAP' | 'AP';
+  description?: string;
+  basePrice: number;
+  currency: string;
+  priceUnit: string;
+  validFrom?: string;
+  validTo?: string;
+  cancellationPolicy: 'FREE_CANCELLATION' | 'NON_REFUNDABLE' | 'PARTIAL_REFUND' | 'CUSTOM';
+  cancellationDeadlineHours: number;
+  cancellationFeeType?: 'NONE' | 'PERCENTAGE' | 'FIXED_AMOUNT' | 'FIRST_NIGHT';
+  cancellationFeeValue?: number;
+  taxesIncluded: boolean;
+  feesIncluded: boolean;
+  sourceType: string;
+  status: 'DRAFT' | 'ACTIVE' | 'INACTIVE';
+  isDemoData?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateRatePlanRequest {
+  planName: string;
+  mealPlan: string;
+  description?: string;
+  basePrice: number;
+  currency?: string;
+  priceUnit?: string;
+  validFrom?: string;
+  validTo?: string;
+  cancellationPolicy?: string;
+  cancellationDeadlineHours?: number;
+  cancellationFeeType?: string;
+  cancellationFeeValue?: number;
+  taxesIncluded?: boolean;
+  feesIncluded?: boolean;
+  status?: string;
+}
+
+export interface UpdateRatePlanRequest {
+  planName?: string;
+  mealPlan?: string;
+  description?: string;
+  basePrice?: number;
+  currency?: string;
+  priceUnit?: string;
+  validFrom?: string;
+  validTo?: string;
+  cancellationPolicy?: string;
+  cancellationDeadlineHours?: number;
+  cancellationFeeType?: string;
+  cancellationFeeValue?: number;
+  taxesIncluded?: boolean;
+  feesIncluded?: boolean;
+  status?: string;
+}
+
+
 
 export interface FamousFoodItem {
   id: string;
@@ -561,6 +744,13 @@ export interface ExperienceItem {
   isApproved: boolean;
   isActive: boolean;
   isDemoData: boolean;
+  culturalTraditionId?: string;
+  culturalTraditionName?: string;
+  status?: 'DRAFT' | 'SUBMITTED' | 'UNDER_REVIEW' | 'APPROVED' | 'PUBLISHED' | 'REJECTED' | 'SUSPENDED';
+  verificationStatus?: 'UNVERIFIED' | 'PENDING_REVIEW' | 'VERIFIED' | 'REJECTED' | 'SUSPENDED';
+  verificationNotes?: string;
+  verifiedBy?: string;
+  verifiedAt?: string;
 }
 
 export interface LocalHostDetail extends LocalHost {
@@ -1356,6 +1546,67 @@ export async function deletePartnerExperience(
   return res.json();
 }
 
+export async function submitPartnerExperienceForReview(
+  id: string,
+  token?: string
+): Promise<ApiResponse<ExperienceItem>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/partner/experiences/${encodeURIComponent(id)}/submit`, {
+    method: 'POST',
+    headers,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to submit experience for review: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPendingGovernmentExperiences(
+  token?: string
+): Promise<ApiResponse<ExperienceItem[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/experiences/pending`, {
+    headers,
+    cache: 'no-store',
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch pending experiences: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function reviewGovernmentExperience(
+  id: string,
+  decision: 'APPROVED' | 'REJECTED' | 'SUSPENDED',
+  verificationNotes?: string,
+  token?: string
+): Promise<ApiResponse<ExperienceItem>> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/experiences/${encodeURIComponent(id)}/review`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ decision, verificationNotes }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to review experience: ${res.status}`);
+  }
+  return res.json();
+}
+
 // =========================================================================
 // Travel Connect
 // =========================================================================
@@ -1950,5 +2201,873 @@ export async function deleteTrip(id: string, token?: string): Promise<ApiRespons
   return res.json();
 }
 
+// ==========================================
+// Cultural Traditions & Heritage Craft APIs
+// ==========================================
+
+export interface CulturalTraditionDto {
+  id: string;
+  stateId: string;
+  stateName?: string;
+  cityId?: string;
+  cityName?: string;
+  destinationId?: string;
+  destinationName?: string;
+  traditionName: string;
+  category: string;
+  craftType?: string;
+  historicalOrigin?: string;
+  materialsUsed?: string;
+  culturalSignificance?: string;
+  isGiTagged?: boolean;
+  giTagYear?: string;
+  primaryProducingCluster?: string;
+  sourceOrganization?: string;
+  sourceType?: string;
+  sourceLabel?: string;
+  sourceUrl?: string;
+  imageUrl?: string;
+  provenance?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface GetCulturalTraditionsParams {
+  stateId?: string;
+  cityId?: string;
+  destinationId?: string;
+  category?: string;
+  search?: string;
+  page?: number;
+  size?: number;
+  sortBy?: string;
+  sortDir?: string;
+}
+
+export async function getCulturalTraditions(
+  params: GetCulturalTraditionsParams = {}
+): Promise<ApiResponse<PageResponse<CulturalTraditionDto>>> {
+  const query = new URLSearchParams();
+  if (params.stateId && params.stateId !== 'All') query.set('stateId', params.stateId);
+  if (params.cityId && params.cityId !== 'All') query.set('cityId', params.cityId);
+  if (params.destinationId && params.destinationId !== 'All') query.set('destinationId', params.destinationId);
+  if (params.category && params.category !== 'All') query.set('category', params.category);
+  if (params.search && params.search.trim()) query.set('search', params.search.trim());
+  if (params.page !== undefined) query.set('page', params.page.toString());
+  if (params.size !== undefined) query.set('size', params.size.toString());
+  if (params.sortBy) query.set('sortBy', params.sortBy);
+  if (params.sortDir) query.set('sortDir', params.sortDir);
+
+  const url = `${API_BASE_URL}/culture/traditions${query.toString() ? `?${query.toString()}` : ''}`;
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural traditions: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalTraditionDetail(
+  id: string
+): Promise<ApiResponse<CulturalTraditionDto>> {
+  const res = await fetch(`${API_BASE_URL}/culture/traditions/${encodeURIComponent(id)}`, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural tradition detail: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalCategories(): Promise<ApiResponse<string[]>> {
+  const res = await fetch(`${API_BASE_URL}/culture/categories`, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural categories: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalTraditionsByState(
+  stateId: string
+): Promise<ApiResponse<CulturalTraditionDto[]>> {
+  const res = await fetch(`${API_BASE_URL}/culture/states/${encodeURIComponent(stateId)}`, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural traditions for state: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalTraditionsByDestination(
+  destinationId: string
+): Promise<ApiResponse<CulturalTraditionDto[]>> {
+  const res = await fetch(`${API_BASE_URL}/culture/destinations/${encodeURIComponent(destinationId)}`, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural traditions for destination: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalTraditionExperiences(
+  id: string
+): Promise<ApiResponse<ExperienceItem[]>> {
+  const res = await fetch(`${API_BASE_URL}/culture/traditions/${encodeURIComponent(id)}/experiences`, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch experiences for cultural tradition: ${res.status}`);
+  }
+  return res.json();
+}
+
+// ---------------------------------------------------------------------------
+// Phase 21.5 — Cultural Opportunity Score & Intelligence APIs
+// ---------------------------------------------------------------------------
+
+export interface CulturalOpportunityItem {
+  destinationId: string;
+  destinationName: string;
+  cityId?: string;
+  cityName?: string;
+  stateId?: string;
+  stateName?: string;
+  score: number | null;
+  status: 'SUFFICIENT_DATA' | 'INSUFFICIENT_DATA';
+  confidence: 'HIGH' | 'MEDIUM' | 'LOW' | 'INSUFFICIENT';
+  classification: 'HIGH_OPPORTUNITY' | 'MODERATE_OPPORTUNITY' | 'EMERGING_OPPORTUNITY' | 'LOWER_OPPORTUNITY' | 'INSUFFICIENT_DATA';
+  matrixCategory: 'HIGH_DEMAND_LOW_SUPPLY' | 'HIGH_DEMAND_HIGH_SUPPLY' | 'LOW_DEMAND_LOW_SUPPLY' | 'LOW_DEMAND_HIGH_SUPPLY' | 'INSUFFICIENT_DATA';
+  traditionScore: number;
+  demandScore: number;
+  supplyScore: number;
+  gapPenalty: number;
+  traditionCount: number;
+  destinationTraditionCount: number;
+  cityTraditionCount: number;
+  stateTraditionCount: number;
+  giTraditionCount: number;
+  observedDemandSignals: number;
+  verifiedExperienceCount: number;
+  verifiedArtisanCount: number;
+  detectedGaps: string[];
+  explanations: string[];
+  suggestedActions: string[];
+  dataMode: 'OBSERVED' | 'DEMO';
+  disclaimer: string;
+  generatedAt: string;
+}
+
+export interface CulturalOpportunityOverview {
+  totalDestinationsEvaluated: number;
+  destinationsWithSufficientData: number;
+  destinationsWithInsufficientData: number;
+  averageOpportunityScore: number;
+  highOpportunityCount: number;
+  moderateOpportunityCount: number;
+  emergingOpportunityCount: number;
+  lowerOpportunityCount: number;
+  culturalExperienceDeficitCount: number;
+  giRichDestinationsCount: number;
+  matrixDistribution: Record<string, number>;
+  topOpportunityDestinations: CulturalOpportunityItem[];
+  isDemoModeActive: boolean;
+  observedSignalsCount: number;
+  demoSignalsCount: number;
+  dataProvenance: Record<string, string>;
+  dataDisclaimer: string;
+  generatedAt: string;
+}
+
+export async function getCulturalOpportunities(
+  token?: string,
+  includeDemo = false
+): Promise<ApiResponse<CulturalOpportunityItem[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-opportunities?includeDemo=${includeDemo}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural opportunities: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalOpportunityOverview(
+  token?: string,
+  includeDemo = false
+): Promise<ApiResponse<CulturalOpportunityOverview>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-opportunities/overview?includeDemo=${includeDemo}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural opportunity overview: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalOpportunityDetail(
+  destinationId: string,
+  token?: string,
+  includeDemo = false
+): Promise<ApiResponse<CulturalOpportunityItem>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-opportunities/${encodeURIComponent(destinationId)}?includeDemo=${includeDemo}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural opportunity detail: ${res.status}`);
+  }
+  return res.json();
+}
+
+// ---------------------------------------------------------------------------
+// Phase 21.6 — Cultural Ecosystem Gap & Government Action Engine APIs
+// ---------------------------------------------------------------------------
+
+export interface CulturalEcosystemGapItem {
+  id: string;
+  destinationId: string;
+  destinationName: string;
+  cityId?: string;
+  cityName?: string;
+  stateId?: string;
+  stateName?: string;
+  gapType: 'CULTURAL_EXPERIENCE_DEFICIT' | 'ARTISAN_PARTNER_DEFICIT' | 'CONNECTIVITY_GAP' | 'STAYS_DEFICIT' | 'GUIDE_HOST_DEFICIT' | 'CULTURAL_DATA_GAP';
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INSUFFICIENT_DATA';
+  opportunityScore: number | null;
+  traditionScore: number;
+  demandScore: number;
+  supplyScore: number;
+  traditionCount: number;
+  giTraditionCount: number;
+  observedDemandSignals: number;
+  verifiedExperienceCount: number;
+  verifiedArtisanCount: number;
+  recommendedAction: string;
+  evidence: string;
+  honestyDisclaimer: string;
+  confidence: 'HIGH' | 'MEDIUM' | 'LOW' | 'INSUFFICIENT';
+  dataMode: 'OBSERVED' | 'DEMO';
+  detectedAt: string;
+}
+
+export interface CulturalEcosystemGapOverview {
+  totalGapsDetected: number;
+  criticalGapsCount: number;
+  highSeverityGapsCount: number;
+  mediumSeverityGapsCount: number;
+  lowSeverityGapsCount: number;
+  experienceDeficitCount: number;
+  artisanDeficitCount: number;
+  connectivityGapCount: number;
+  staysDeficitCount: number;
+  guideHostDeficitCount: number;
+  culturalDataGapCount: number;
+  totalDestinationsWithGaps: number;
+  isDemoModeActive: boolean;
+  gapsByType: Record<string, number>;
+  gapsBySeverity: Record<string, number>;
+  dataDisclaimer: string;
+  generatedAt: string;
+}
+
+export interface CulturalGovernmentActionItem {
+  id: string;
+  destinationId: string;
+  destinationName: string;
+  stateId?: string;
+  stateName?: string;
+  cityName?: string;
+  actionType: string;
+  title: string;
+  description: string;
+  gapType: 'CULTURAL_EXPERIENCE_DEFICIT' | 'ARTISAN_PARTNER_DEFICIT' | 'CONNECTIVITY_GAP' | 'STAYS_DEFICIT' | 'GUIDE_HOST_DEFICIT' | 'CULTURAL_DATA_GAP';
+  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'DISMISSED';
+  opportunityScore: number | null;
+  severity: string;
+  recommendedAction: string;
+  actionReason: string;
+  resolutionNotes?: string;
+  resolvedAt?: string;
+  assignedTo?: string;
+  updatedBy?: string;
+  evidenceSummary: string;
+  honestyDisclaimer: string;
+  dataMode: 'OBSERVED' | 'DEMO';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function getCulturalGaps(
+  token?: string,
+  includeDemo = false
+): Promise<ApiResponse<CulturalEcosystemGapItem[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-actions/gaps?includeDemo=${includeDemo}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural gaps: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalGapsOverview(
+  token?: string,
+  includeDemo = false
+): Promise<ApiResponse<CulturalEcosystemGapOverview>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-actions/gaps/overview?includeDemo=${includeDemo}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural gaps overview: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalGapsForDestination(
+  destinationId: string,
+  token?: string,
+  includeDemo = false
+): Promise<ApiResponse<CulturalEcosystemGapItem[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-actions/gaps/destination/${encodeURIComponent(destinationId)}?includeDemo=${includeDemo}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural gaps for destination: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalActions(
+  token?: string,
+  includeDemo = false,
+  status?: string,
+  priority?: string,
+  gapType?: string
+): Promise<ApiResponse<CulturalGovernmentActionItem[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const query = new URLSearchParams();
+  query.set('includeDemo', includeDemo.toString());
+  if (status && status !== 'ALL') query.set('status', status);
+  if (priority && priority !== 'ALL') query.set('priority', priority);
+  if (gapType && gapType !== 'ALL') query.set('gapType', gapType);
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-actions?${query.toString()}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural actions: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalActionById(
+  actionId: string,
+  token?: string
+): Promise<ApiResponse<CulturalGovernmentActionItem>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-actions/${encodeURIComponent(actionId)}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural action: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function generateCulturalActions(
+  token?: string,
+  includeDemo = false
+): Promise<ApiResponse<CulturalGovernmentActionItem[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-actions/generate?includeDemo=${includeDemo}`, {
+    method: 'POST',
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to generate cultural actions: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function updateCulturalActionStatus(
+  actionId: string,
+  status: string,
+  resolutionNotes?: string,
+  token?: string
+): Promise<ApiResponse<CulturalGovernmentActionItem>> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-actions/${encodeURIComponent(actionId)}/status`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({ status, resolutionNotes }),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to update cultural action status: ${res.status}`);
+  }
+  return res.json();
+}
+
+// ==========================================
+// HOTEL PARTNER ONBOARDING & VERIFICATION APIS
+// ==========================================
+
+export async function getMyPartnerHotels(token?: string): Promise<ApiResponse<HotelItem[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/partner/hotels`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch partner hotels: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getMyPartnerHotelById(id: string, token?: string): Promise<ApiResponse<HotelItem>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(id)}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch partner hotel: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function createPartnerHotel(data: CreateHotelRequest, token?: string): Promise<ApiResponse<HotelItem>> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/partner/hotels`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.message || `Failed to create hotel property: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function updatePartnerHotel(id: string, data: UpdateHotelRequest, token?: string): Promise<ApiResponse<HotelItem>> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.message || `Failed to update hotel property: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function submitPartnerHotel(id: string, token?: string): Promise<ApiResponse<HotelItem>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(id)}/submit`, {
+    method: 'POST',
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.message || `Failed to submit hotel for verification: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function deletePartnerHotel(id: string, token?: string): Promise<ApiResponse<void>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to delete hotel: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPendingGovernmentHotels(token?: string): Promise<ApiResponse<HotelItem[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/hotels/pending`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch pending hotel verifications: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getGovernmentHotelById(id: string, token?: string): Promise<ApiResponse<HotelItem>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/hotels/${encodeURIComponent(id)}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch hotel for verification review: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function reviewGovernmentHotel(
+  id: string,
+  data: HotelVerificationRequest,
+  token?: string
+): Promise<ApiResponse<HotelItem>> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/hotels/${encodeURIComponent(id)}/review`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.message || `Failed to review hotel verification: ${res.status}`);
+  }
+  return res.json();
+}
+
+// ----------------------------------------------------
+// PHASE 22.3: HOTEL ROOM TYPES & INVENTORY API CLIENT
+// ----------------------------------------------------
+
+export async function getPublicHotelRooms(hotelId: string): Promise<ApiResponse<HotelRoomTypeItem[]>> {
+  const res = await fetch(`${API_BASE_URL}/hotels/${encodeURIComponent(hotelId)}/rooms`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch hotel room types: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPartnerHotelRooms(hotelId: string, token: string): Promise<ApiResponse<HotelRoomTypeItem[]>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch partner room types: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function createPartnerHotelRoom(
+  hotelId: string,
+  data: CreateRoomTypeRequest,
+  token: string
+): Promise<ApiResponse<HotelRoomTypeItem>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to create room type: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function updatePartnerHotelRoom(
+  hotelId: string,
+  roomId: string,
+  data: UpdateRoomTypeRequest,
+  token: string
+): Promise<ApiResponse<HotelRoomTypeItem>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to update room type: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function deletePartnerHotelRoom(
+  hotelId: string,
+  roomId: string,
+  token: string
+): Promise<ApiResponse<void>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to delete room type: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPartnerRoomInventory(
+  hotelId: string,
+  roomId: string,
+  token: string
+): Promise<ApiResponse<HotelInventoryItem[]>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/inventory`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch room inventory: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function updatePartnerRoomInventory(
+  hotelId: string,
+  roomId: string,
+  data: UpdateInventoryRequest,
+  token: string
+): Promise<ApiResponse<HotelInventoryItem>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/inventory`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to update room inventory: ${res.status}`);
+  }
+  return res.json();
+}
+
+// ----------------------------------------------------------------------------
+// PHASE 22.4 — HOTEL RATE PLANS & PRICING API
+// ----------------------------------------------------------------------------
+
+export async function getPublicHotelRatePlans(
+  hotelId: string
+): Promise<ApiResponse<HotelRatePlanItem[]>> {
+  const res = await fetch(`${API_BASE_URL}/hotels/${encodeURIComponent(hotelId)}/rate-plans`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch hotel rate plans: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPublicRoomRatePlans(
+  hotelId: string,
+  roomId: string
+): Promise<ApiResponse<HotelRatePlanItem[]>> {
+  const res = await fetch(`${API_BASE_URL}/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/rate-plans`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch room rate plans: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPartnerRatePlans(
+  hotelId: string,
+  roomId: string,
+  token: string
+): Promise<ApiResponse<HotelRatePlanItem[]>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/rate-plans`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch partner rate plans: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function createPartnerRatePlan(
+  hotelId: string,
+  roomId: string,
+  data: CreateRatePlanRequest,
+  token: string
+): Promise<ApiResponse<HotelRatePlanItem>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/rate-plans`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to create rate plan: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function updatePartnerRatePlan(
+  hotelId: string,
+  roomId: string,
+  ratePlanId: string,
+  data: UpdateRatePlanRequest,
+  token: string
+): Promise<ApiResponse<HotelRatePlanItem>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/rate-plans/${encodeURIComponent(ratePlanId)}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to update rate plan: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function activatePartnerRatePlan(
+  hotelId: string,
+  roomId: string,
+  ratePlanId: string,
+  token: string
+): Promise<ApiResponse<HotelRatePlanItem>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/rate-plans/${encodeURIComponent(ratePlanId)}/activate`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to activate rate plan: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function deactivatePartnerRatePlan(
+  hotelId: string,
+  roomId: string,
+  ratePlanId: string,
+  token: string
+): Promise<ApiResponse<HotelRatePlanItem>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/rate-plans/${encodeURIComponent(ratePlanId)}/deactivate`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to deactivate rate plan: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function deletePartnerRatePlan(
+  hotelId: string,
+  roomId: string,
+  ratePlanId: string,
+  token: string
+): Promise<ApiResponse<void>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/rate-plans/${encodeURIComponent(ratePlanId)}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to delete rate plan: ${res.status}`);
+  }
+  return res.json();
+}
 
 

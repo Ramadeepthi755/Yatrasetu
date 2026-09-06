@@ -34,6 +34,10 @@ public class Experience {
     @JoinColumn(name = "city_id")
     private City city;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cultural_tradition_id")
+    private CulturalTradition culturalTradition;
+
     @Column(name = "title", length = 200, nullable = false)
     private String title;
 
@@ -81,6 +85,25 @@ public class Experience {
     @Column(name = "is_demo_data")
     @Builder.Default
     private Boolean isDemoData = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 30, nullable = false)
+    @Builder.Default
+    private ExperienceStatus status = ExperienceStatus.PUBLISHED;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "verification_status", length = 30, nullable = false)
+    @Builder.Default
+    private ExperienceVerificationStatus verificationStatus = ExperienceVerificationStatus.UNVERIFIED;
+
+    @Column(name = "verification_notes", columnDefinition = "TEXT")
+    private String verificationNotes;
+
+    @Column(name = "verified_by", length = 50)
+    private String verifiedBy;
+
+    @Column(name = "verified_at")
+    private Instant verifiedAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default

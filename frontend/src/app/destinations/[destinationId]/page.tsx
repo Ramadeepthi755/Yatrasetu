@@ -58,6 +58,7 @@ import { RentalProvidersSection } from '@/components/destination/RentalProviders
 import { TravelAgenciesSection } from '@/components/destination/TravelAgenciesSection';
 import { WeatherSection } from '@/components/destination/WeatherSection';
 import { ProvenanceBadge } from '@/components/destination/ProvenanceBadge';
+import { DestinationLocalCultureSection } from '@/components/destination/LocalCultureSection';
 
 export default function DestinationDetailPage() {
   const params = useParams();
@@ -517,41 +518,11 @@ export default function DestinationDetailPage() {
               </section>
             )}
 
-            {/* Local Culture & Artisan Experiences Section */}
-            <section id="local-culture" className="rounded-3xl border border-teal-100 bg-teal-50/40 p-6 md:p-8">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className="text-xl md:text-2xl font-bold text-stone-900 flex items-center">
-                    <Palette className="h-5 w-5 mr-2 text-teal-700" />
-                    Local Culture &amp; Artisan Experiences
-                  </h2>
-                  <p className="text-xs text-stone-600 mt-0.5">
-                    Living craft heritage, traditional workshops, and indigenous community artisans
-                  </p>
-                </div>
-              </div>
-
-              {experiences.filter(e => ['Handicraft / Artisan', 'Cultural Workshop', 'Traditional Food / Culinary', 'Folk Art / Performance', 'Local Cultural Business', 'Traditional Product', 'Heritage Craft'].includes(e.category) || e.category.toLowerCase().includes('craft')).length > 0 ? (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 mt-4">
-                  {experiences.filter(e => ['Handicraft / Artisan', 'Cultural Workshop', 'Traditional Food / Culinary', 'Folk Art / Performance', 'Local Cultural Business', 'Traditional Product', 'Heritage Craft'].includes(e.category) || e.category.toLowerCase().includes('craft')).map((exp) => (
-                    <ExperienceCard key={exp.id} experience={exp} />
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-teal-200 bg-white/80 p-6 text-center space-y-2.5 mt-4">
-                  <Store className="h-7 w-7 text-teal-600 mx-auto opacity-70" />
-                  <p className="text-xs text-stone-600">
-                    Local cultural listings are currently limited in this destination.
-                  </p>
-                  <Link
-                    href="/partner/dashboard"
-                    className="inline-flex items-center gap-1 text-xs font-bold text-teal-800 hover:text-teal-900 underline"
-                  >
-                    Become a Local Culture Partner →
-                  </Link>
-                </div>
-              )}
-            </section>
+            {/* Local Culture & Traditions Section (Phase 21.3) */}
+            <DestinationLocalCultureSection
+              destinationId={destination.id}
+              destinationName={destination.destinationName}
+            />
 
             {/* Local People & Guides Section */}
             {hosts.length > 0 && (
@@ -594,33 +565,42 @@ export default function DestinationDetailPage() {
             )}
 
             {/* 6. Hotels Nearby */}
-            {destination.nearbyHotels && destination.nearbyHotels.length > 0 && (
-              <section id="hotels">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-2xl font-bold text-stone-900 flex items-center">
-                      <Bed className="h-6 w-6 mr-2 text-indigo-900" />
-                      Hotels & Stays Nearby ({destination.nearbyHotels.length})
-                    </h2>
-                    <p className="text-xs text-stone-500 mt-0.5">
-                      Verified partner homestays and regional heritage properties
-                    </p>
-                  </div>
+            <section id="hotels">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-stone-900 flex items-center">
+                    <Bed className="h-6 w-6 mr-2 text-indigo-900" />
+                    Hotels & Stays Nearby {destination.nearbyHotels && destination.nearbyHotels.length > 0 ? `(${destination.nearbyHotels.length})` : ''}
+                  </h2>
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    {destination.nearbyHotels && destination.nearbyHotels.length > 0
+                      ? 'Property information available; live availability is not currently provided.'
+                      : 'YatraSetu accommodation coverage is currently unavailable for this destination.'}
+                  </p>
+                </div>
+                {destination.nearbyHotels && destination.nearbyHotels.length > 0 && (
                   <Link
                     href={`/hotels?destinationId=${destination.id}`}
                     className="text-xs font-bold text-indigo-900 hover:text-indigo-800"
                   >
                     Browse All Stays →
                   </Link>
-                </div>
+                )}
+              </div>
 
+              {destination.nearbyHotels && destination.nearbyHotels.length > 0 ? (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {destination.nearbyHotels.map((hotel) => (
                     <HotelCard key={hotel.id} hotel={hotel} />
                   ))}
                 </div>
-              </section>
-            )}
+              ) : (
+                <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-6 text-center text-xs text-stone-500">
+                  <p className="font-semibold text-stone-700 mb-1">Accommodation Coverage Notice</p>
+                  YatraSetu accommodation coverage is currently unavailable for this destination. We are onboarding local homestay and hotel partners in this region.
+                </div>
+              )}
+            </section>
 
             {/* Bike & Car Rentals */}
             <RentalProvidersSection

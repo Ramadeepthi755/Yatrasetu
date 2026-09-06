@@ -37,4 +37,11 @@ public class ExperienceDto {
     private Boolean isApproved;
     private Boolean isActive;
     private Boolean isDemoData;
+    private String culturalTraditionId;
+    private String culturalTraditionName;
+    private String status;
+    private String verificationStatus;
+    private String verificationNotes;
+    private String verifiedBy;
+    private java.time.Instant verifiedAt;
 }

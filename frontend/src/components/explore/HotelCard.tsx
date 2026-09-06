@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Bed, Star, MapPin, CheckCircle, IndianRupee } from 'lucide-react';
+import { Bed, Star, MapPin, CheckCircle, IndianRupee, Database, ShieldCheck, Clock } from 'lucide-react';
 import { HotelItem } from '@/lib/api';
 
 interface HotelCardProps {
@@ -10,6 +10,11 @@ interface HotelCardProps {
 }
 
 export function HotelCard({ hotel }: HotelCardProps) {
+  const isPartner = hotel.isPartnerProperty;
+  const isVerifiedPartner = isPartner && hotel.verificationStatus === 'VERIFIED';
+  const isPendingPartner = isPartner && hotel.verificationStatus === 'PENDING_REVIEW';
+  const isLiveApi = hotel.sourceType === 'LIVE_API';
+
   return (
     <div className="flex flex-col justify-between rounded-xl border border-stone-200 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-md hover:border-indigo-400">
       <div>
@@ -19,17 +24,29 @@ export function HotelCard({ hotel }: HotelCardProps) {
               <Bed className="h-4 w-4" />
             </div>
             <div>
-              <div className="flex items-center space-x-1.5">
+              <div className="flex items-center space-x-1.5 flex-wrap gap-y-1">
                 <Link href={`/hotels/${hotel.id}`} className="font-bold text-stone-900 hover:text-indigo-900 transition-colors leading-snug">
                   {hotel.hotelName}
                 </Link>
-                {hotel.isPartnerProperty ? (
-                  <span className="flex items-center rounded-full bg-teal-50 px-1.5 py-0.5 text-[10px] font-bold text-teal-800 border border-teal-200">
-                    <CheckCircle className="h-3 w-3 mr-0.5" /> Partner
+                {isVerifiedPartner ? (
+                  <span className="flex items-center rounded-full bg-teal-50 px-1.5 py-0.5 text-[10px] font-bold text-teal-800 border border-teal-200" title="YatraSetu Verified Partner Property">
+                    <ShieldCheck className="h-3 w-3 mr-0.5 text-teal-600" /> Verified Partner
+                  </span>
+                ) : isPendingPartner ? (
+                  <span className="flex items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-200" title="Partner Property Verification in Progress">
+                    <Clock className="h-3 w-3 mr-0.5 text-amber-600" /> In Review
+                  </span>
+                ) : isPartner ? (
+                  <span className="flex items-center rounded-full bg-stone-50 px-1.5 py-0.5 text-[10px] font-bold text-stone-700 border border-stone-200" title="Registered Partner Property">
+                    <CheckCircle className="h-3 w-3 mr-0.5 text-stone-500" /> Partner
+                  </span>
+                ) : isLiveApi ? (
+                  <span className="flex items-center rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 border border-emerald-200" title="Live Inventory API Feed">
+                    <CheckCircle className="h-3 w-3 mr-0.5 text-emerald-600" /> Live API
                   </span>
                 ) : (
-                  <span className="rounded bg-stone-100 px-1.5 py-0.5 text-[10px] text-stone-500 border border-stone-200">
-                    Dataset Property
+                  <span className="flex items-center rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-medium text-stone-600 border border-stone-200" title="Verified Curated Dataset Record">
+                    <Database className="h-2.5 w-2.5 mr-0.5 text-stone-400" /> Dataset
                   </span>
                 )}
               </div>
@@ -65,7 +82,9 @@ export function HotelCard({ hotel }: HotelCardProps) {
 
       <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-3 text-xs">
         <div>
-          <span className="text-stone-400 text-[11px]">From</span>
+          <span className="text-stone-400 text-[10px] block">
+            {isPartner ? 'Partner Rate' : isLiveApi ? 'Live Rate' : 'Indicative Rate'}
+          </span>
           <p className="text-sm font-bold text-stone-900 flex items-center">
             <IndianRupee className="h-3.5 w-3.5" />
             {Number(hotel.pricePerNight).toLocaleString('en-IN')}

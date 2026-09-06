@@ -22,6 +22,8 @@ import java.util.List;
 public class HotelController {
 
     private final HotelService hotelService;
+    private final com.yatrasetu.service.HotelRoomService hotelRoomService;
+    private final com.yatrasetu.service.HotelRatePlanService hotelRatePlanService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<HotelDto>>> getAllHotels(
@@ -67,6 +69,41 @@ public class HotelController {
                                 .data(null)
                                 .timestamp(Instant.now())
                                 .build()));
+    }
+
+    @GetMapping("/{id}/rooms")
+    public ResponseEntity<ApiResponse<List<com.yatrasetu.web.dto.HotelRoomTypeDto>>> getHotelRooms(@PathVariable("id") String id) {
+        List<com.yatrasetu.web.dto.HotelRoomTypeDto> rooms = hotelRoomService.getPublicRoomTypes(id);
+        return ResponseEntity.ok(ApiResponse.<List<com.yatrasetu.web.dto.HotelRoomTypeDto>>builder()
+                .success(true)
+                .message("Retrieved hotel room types successfully")
+                .data(rooms)
+                .timestamp(Instant.now())
+                .build());
+    }
+
+    @GetMapping("/{id}/rate-plans")
+    public ResponseEntity<ApiResponse<List<com.yatrasetu.web.dto.HotelRatePlanDto>>> getHotelRatePlans(@PathVariable("id") String id) {
+        List<com.yatrasetu.web.dto.HotelRatePlanDto> ratePlans = hotelRatePlanService.getPublicRatePlansForHotel(id);
+        return ResponseEntity.ok(ApiResponse.<List<com.yatrasetu.web.dto.HotelRatePlanDto>>builder()
+                .success(true)
+                .message("Retrieved hotel rate plans successfully")
+                .data(ratePlans)
+                .timestamp(Instant.now())
+                .build());
+    }
+
+    @GetMapping("/{id}/rooms/{roomId}/rate-plans")
+    public ResponseEntity<ApiResponse<List<com.yatrasetu.web.dto.HotelRatePlanDto>>> getRoomRatePlans(
+            @PathVariable("id") String id,
+            @PathVariable("roomId") String roomId) {
+        List<com.yatrasetu.web.dto.HotelRatePlanDto> ratePlans = hotelRatePlanService.getPublicRatePlansForRoomType(id, roomId);
+        return ResponseEntity.ok(ApiResponse.<List<com.yatrasetu.web.dto.HotelRatePlanDto>>builder()
+                .success(true)
+                .message("Retrieved room rate plans successfully")
+                .data(ratePlans)
+                .timestamp(Instant.now())
+                .build());
     }
 
     @GetMapping("/categories")

@@ -29,16 +29,20 @@ export function ExperienceCard({ experience }: ExperienceCardProps) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
 
           {/* Top Badges */}
-          <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+          <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 flex-wrap">
             <span className="rounded-full bg-stone-900/80 backdrop-blur-md px-2.5 py-1 text-[11px] font-semibold text-amber-300 border border-amber-400/30">
               {experience.category}
             </span>
 
-            {experience.isDemoData && (
+            {experience.verificationStatus === 'VERIFIED' ? (
+              <span className="inline-flex items-center rounded-full bg-emerald-950/80 backdrop-blur-md px-2 py-0.5 text-[10px] font-extrabold text-emerald-300 border border-emerald-500/40 shadow-sm">
+                Verified Experience
+              </span>
+            ) : experience.isDemoData ? (
               <span className="rounded-full bg-stone-900/80 backdrop-blur-md px-2 py-0.5 text-[10px] font-medium text-stone-300 border border-stone-700">
                 Sample Experience
               </span>
-            )}
+            ) : null}
           </div>
 
           {/* Bottom Overlay Location */}

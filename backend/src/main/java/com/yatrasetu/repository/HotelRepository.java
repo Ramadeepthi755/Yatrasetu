@@ -1,6 +1,7 @@
 package com.yatrasetu.repository;
 
 import com.yatrasetu.domain.Hotel;
+import com.yatrasetu.domain.HotelVerificationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface HotelRepository extends JpaRepository<Hotel, String> {
@@ -20,6 +22,18 @@ public interface HotelRepository extends JpaRepository<Hotel, String> {
     List<Object[]> countHotelsByDestination();
 
     List<Hotel> findByCityId(String cityId);
+
+    List<Hotel> findByOwnerId(String ownerId);
+
+    Page<Hotel> findByOwnerId(String ownerId, Pageable pageable);
+
+    Optional<Hotel> findByIdAndOwnerId(String id, String ownerId);
+
+    List<Hotel> findByVerificationStatus(HotelVerificationStatus status);
+
+    Page<Hotel> findByVerificationStatus(HotelVerificationStatus status, Pageable pageable);
+
+    boolean existsByHotelNameIgnoreCaseAndCityId(String hotelName, String cityId);
 
     @Query("SELECT DISTINCT h.category FROM Hotel h WHERE h.isActive = true AND h.category IS NOT NULL")
     List<String> findDistinctCategories();

@@ -27,6 +27,7 @@ import { FilterBar } from '@/components/explore/FilterBar';
 import { DestinationCard } from '@/components/explore/DestinationCard';
 import { StateCard } from '@/components/explore/StateCard';
 import { LocationDiscovery } from '@/components/explore/LocationDiscovery';
+import { LocalCultureSection } from '@/components/explore/LocalCultureSection';
 import { DestinationCardSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 
@@ -124,7 +125,7 @@ export default function ExplorePage() {
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center space-x-2 rounded-full bg-amber-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-amber-400 backdrop-blur-md border border-amber-500/20 mb-6">
             <Compass className="h-4 w-4 text-amber-400" />
-            <span>Discover India &bull; 39 States &amp; UTs &bull; 202 Cities &bull; 164 Curated Destinations</span>
+            <span>Discover India &bull; 36 States &amp; UTs &bull; 202 Cities &bull; 164 Curated Destinations</span>
           </div>
 
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white max-w-4xl mx-auto leading-tight">
@@ -300,7 +301,10 @@ export default function ExplorePage() {
               </section>
             )}
 
-            {/* Section 4: Hidden Gems & Lesser-Known Destinations */}
+            {/* Section 4: Local Culture & Heritage Crafts (Phase 21.3) */}
+            <LocalCultureSection statesList={states} />
+
+            {/* Section 5: Hidden Gems & Lesser-Known Destinations */}
             {hiddenGems.length > 0 && (
               <section className="rounded-3xl bg-gradient-to-br from-stone-900 via-indigo-950 to-slate-950 p-6 md:p-10 text-white shadow-xl">
                 <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">
