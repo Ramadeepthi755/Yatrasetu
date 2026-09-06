@@ -1,7 +1,9 @@
 package com.yatrasetu.repository;
 
 import com.yatrasetu.domain.HotelRoomType;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -15,6 +17,10 @@ public interface HotelRoomTypeRepository extends JpaRepository<HotelRoomType, St
     List<HotelRoomType> findByHotelIdOrderByCreatedAtAsc(String hotelId);
 
     List<HotelRoomType> findByHotelIdAndIsActiveTrueOrderByCreatedAtAsc(String hotelId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT r FROM HotelRoomType r WHERE r.id = :id")
+    Optional<HotelRoomType> findByIdWithLock(@Param("id") String id);
 
     @Query("SELECT r FROM HotelRoomType r WHERE r.hotel.id = :hotelId AND LOWER(TRIM(r.roomTypeName)) = LOWER(TRIM(:roomTypeName))")
     Optional<HotelRoomType> findByHotelIdAndNormalizedName(

@@ -27,23 +27,29 @@ import {
   Layers,
   ChevronDown,
   ChevronUp,
+  X,
 } from 'lucide-react';
 import {
   getHotelById,
   getPublicHotelRooms,
   getPublicHotelRatePlans,
   getHotelAvailability,
+  createHotelBooking,
   HotelItem,
   HotelRoomTypeItem,
   HotelRatePlanItem,
   HotelAvailabilityDto,
   HotelAvailabilityStatus,
+  HotelBookingDto,
+  CreateHotelBookingRequest,
 } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import { MapView, MapMarker } from '@/components/map/MapView';
 
 export default function HotelDetailPage() {
   const params = useParams();
   const hotelId = params?.hotelId as string;
+  const { user, token, isAuthenticated, openAuthModal } = useAuth();
 
   const [hotel, setHotel] = useState<HotelItem | null>(null);
   const [roomsList, setRoomsList] = useState<HotelRoomTypeItem[]>([]);
@@ -70,6 +76,21 @@ export default function HotelDetailPage() {
 
   // Inquiry form state
   const [inquirySubmitted, setInquirySubmitted] = useState<boolean>(false);
+
+  // Phase 22.6: Hotel Booking Modal State
+  const [bookingModalOpen, setBookingModalOpen] = useState<boolean>(false);
+  const [selectedRoomForBooking, setSelectedRoomForBooking] = useState<HotelRoomTypeItem | null>(null);
+  const [selectedRatePlanForBooking, setSelectedRatePlanForBooking] = useState<HotelRatePlanItem | null>(null);
+  const [bookingRoomsCount, setBookingRoomsCount] = useState<number>(1);
+  const [bookingAdultsCount, setBookingAdultsCount] = useState<number>(2);
+  const [bookingChildrenCount, setBookingChildrenCount] = useState<number>(0);
+  const [guestName, setGuestName] = useState<string>('');
+  const [guestEmail, setGuestEmail] = useState<string>('');
+  const [guestPhone, setGuestPhone] = useState<string>('');
+  const [specialRequests, setSpecialRequests] = useState<string>('');
+  const [submittingBooking, setSubmittingBooking] = useState<boolean>(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+  const [createdBooking, setCreatedBooking] = useState<HotelBookingDto | null>(null);
 
   const fetchAvailability = useCallback(async () => {
     if (!hotelId || !checkInDate || !checkOutDate) return;
@@ -98,6 +119,86 @@ export default function HotelDetailPage() {
       setLoadingAvailability(false);
     }
   }, [hotelId, checkInDate, checkOutDate, guestCount]);
+
+  const handleOpenBookingModal = (room: HotelRoomTypeItem, plan: HotelRatePlanItem) => {
+    if (!isAuthenticated || !token) {
+      openAuthModal('TRAVELER');
+      return;
+    }
+    setSelectedRoomForBooking(room);
+    setSelectedRatePlanForBooking(plan);
+    setBookingRoomsCount(1);
+    setBookingAdultsCount(guestCount > 0 ? guestCount : 2);
+    setBookingChildrenCount(0);
+    setGuestName(user?.fullName || user?.displayName || '');
+    setGuestEmail(user?.email || '');
+    setGuestPhone(user?.phone || '');
+    setSpecialRequests('');
+    setBookingError(null);
+    setCreatedBooking(null);
+    setBookingModalOpen(true);
+  };
+
+  const handleCloseBookingModal = () => {
+    setBookingModalOpen(false);
+    setSelectedRoomForBooking(null);
+    setSelectedRatePlanForBooking(null);
+    setCreatedBooking(null);
+    setBookingError(null);
+  };
+
+  const handleSubmitBooking = async () => {
+    if (!hotelId || !selectedRoomForBooking || !selectedRatePlanForBooking || !token) return;
+
+    if (!guestName.trim()) {
+      setBookingError('Primary guest name is required.');
+      return;
+    }
+    if (!guestEmail.trim()) {
+      setBookingError('Guest contact email is required.');
+      return;
+    }
+    if (!guestPhone.trim()) {
+      setBookingError('Guest phone number is required.');
+      return;
+    }
+
+    setSubmittingBooking(true);
+    setBookingError(null);
+
+    const idempotencyKey = `idemp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+    const payload: CreateHotelBookingRequest = {
+      roomTypeId: selectedRoomForBooking.id,
+      ratePlanId: selectedRatePlanForBooking.id,
+      checkIn: checkInDate,
+      checkOut: checkOutDate,
+      numberOfRooms: bookingRoomsCount,
+      adults: bookingAdultsCount,
+      children: bookingChildrenCount,
+      guestName: guestName.trim(),
+      guestEmail: guestEmail.trim(),
+      guestPhone: guestPhone.trim(),
+      specialRequests: specialRequests.trim() || undefined,
+      idempotencyKey,
+    };
+
+    try {
+      const res = await createHotelBooking(hotelId, payload, token);
+      if (res.success && res.data) {
+        setCreatedBooking(res.data);
+        // Refresh live availability to reflect newly booked capacity
+        fetchAvailability();
+      } else {
+        setBookingError(res.message || 'Unable to complete reservation.');
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Booking creation failed. Please check availability.';
+      setBookingError(msg);
+    } finally {
+      setSubmittingBooking(false);
+    }
+  };
 
   useEffect(() => {
     if (!hotelId) return;
@@ -382,6 +483,7 @@ export default function HotelDetailPage() {
                   {roomsList.map((room) => {
                     const availRoom = availabilityData?.rooms?.find((r) => r.roomTypeId === room.id);
                     const roomRatePlans = ratePlansList.filter((p) => p.roomTypeId === room.id);
+                    const isSoldOut = availRoom ? (!availRoom.isAvailable || availRoom.availableUnits <= 0) : false;
 
                     return (
                       <div
@@ -614,7 +716,7 @@ export default function HotelDetailPage() {
                                     </div>
                                   </div>
 
-                                  <div className="flex sm:flex-col items-end justify-between sm:justify-start gap-1 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-emerald-100">
+                                  <div className="flex sm:flex-col items-end justify-between sm:justify-start gap-2 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-emerald-100">
                                     <div className="text-right">
                                       <div className="text-base font-extrabold text-stone-900 flex items-center justify-end">
                                         <IndianRupee className="w-3.5 h-3.5" />
@@ -623,6 +725,21 @@ export default function HotelDetailPage() {
                                       </div>
                                       <span className="text-[10px] text-emerald-800 font-medium">Standard Tariff ({plan.currency})</span>
                                     </div>
+
+                                    {isPartner && (
+                                      <button
+                                        onClick={() => handleOpenBookingModal(room, plan)}
+                                        disabled={isSoldOut}
+                                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-1.5 ${
+                                          isSoldOut
+                                            ? 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                                            : 'bg-indigo-900 hover:bg-indigo-950 text-white shadow-sm'
+                                        }`}
+                                      >
+                                        <CheckCircle className="w-3.5 h-3.5" />
+                                        <span>{isSoldOut ? 'Sold Out' : 'Reserve Room'}</span>
+                                      </button>
+                                    )}
                                   </div>
                                 </div>
                               ))}
@@ -640,7 +757,7 @@ export default function HotelDetailPage() {
                   <div className="rounded-xl bg-stone-100 p-3 text-[11px] text-stone-500 flex items-start gap-2">
                     <Info className="h-4 w-4 text-stone-400 flex-shrink-0 mt-0.5" />
                     <span>
-                      <strong>Physical Capacity Transparency:</strong> Availability is computed strictly on physical room units. All rate plans for a room type draw from the same physical unit capacity. Phase 22.5 availability calculation; direct bookings and reservations are handled in Phase 22.6.
+                      <strong>Physical Capacity Transparency:</strong> Availability is computed strictly on physical room units. All rate plans for a room type draw from the same physical unit capacity. Phase 22.6 real reservations actively decrement availability with database-authoritative row locking.
                     </span>
                   </div>
                 </div>
@@ -687,7 +804,7 @@ export default function HotelDetailPage() {
               </h3>
               <p className="text-xs text-indigo-900/80 leading-relaxed">
                 {isPartner
-                  ? 'This property is managed by a verified YatraSetu partner. Room configurations and physical inventory are updated in real-time.'
+                  ? 'This property is managed by a verified YatraSetu partner. Room configurations, physical inventory, and live booking allocations are updated with transactional row-level guarantees.'
                   : 'Live availability is not currently provided for this dataset property. Listed ratings, amenities, and pricing are baseline indicators from the curated catalog.'}
               </p>
             </div>
@@ -749,54 +866,81 @@ export default function HotelDetailPage() {
               {inquirySubmitted ? (
                 <div className="rounded-2xl bg-teal-50 border border-teal-200 p-5 text-center">
                   <CheckCircle className="mx-auto h-8 w-8 text-teal-600 mb-2" />
-                  <h4 className="text-sm font-bold text-teal-900">Stay Evaluated</h4>
-                  <p className="mt-1 text-xs text-teal-700">
-                    Stay window ({checkInDate} → {checkOutDate}, {guestCount} guest(s)) evaluated. Direct online booking and payment integration will launch in Phase 22.6.
+                  <h4 className="text-xs font-bold text-teal-950">Stay Parameters Evaluated</h4>
+                  <p className="mt-1 text-[11px] text-teal-800 leading-normal">
+                    Availability and rates reflect your requested dates {checkInDate} to {checkOutDate}. Scroll down to the Room Options section to select a room and reserve.
                   </p>
                   <button
                     onClick={() => setInquirySubmitted(false)}
-                    className="mt-4 text-xs font-semibold text-teal-900 underline"
+                    className="mt-3 text-xs font-semibold text-teal-700 underline hover:text-teal-900"
                   >
-                    Modify parameters
+                    Adjust dates
                   </button>
                 </div>
               ) : (
-                <div className="space-y-4 text-xs">
-                  {/* Check-in / Check-out Display */}
-                  <div className="rounded-xl border border-stone-200 bg-stone-50 p-3 space-y-2">
-                    <div className="flex justify-between items-center text-stone-700">
-                      <span className="font-semibold">Check-in:</span>
-                      <span className="font-bold text-stone-900">{checkInDate}</span>
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+                    Search Live Availability
+                  </h3>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-stone-700 mb-1">Check-in Date</label>
+                      <input
+                        type="date"
+                        value={checkInDate}
+                        onChange={(e) => setCheckInDate(e.target.value)}
+                        className="w-full rounded-xl border border-stone-200 p-2.5 text-xs text-stone-800 bg-stone-50 focus:outline-none focus:ring-2 focus:ring-indigo-900"
+                      />
                     </div>
-                    <div className="flex justify-between items-center text-stone-700">
-                      <span className="font-semibold">Check-out:</span>
-                      <span className="font-bold text-stone-900">{checkOutDate}</span>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-stone-700 mb-1">Check-out Date</label>
+                      <input
+                        type="date"
+                        value={checkOutDate}
+                        onChange={(e) => setCheckOutDate(e.target.value)}
+                        className="w-full rounded-xl border border-stone-200 p-2.5 text-xs text-stone-800 bg-stone-50 focus:outline-none focus:ring-2 focus:ring-indigo-900"
+                      />
                     </div>
-                    <div className="flex justify-between items-center text-stone-700 pt-1.5 border-t border-stone-200">
-                      <span className="font-semibold">Nights:</span>
-                      <span className="font-bold text-indigo-950">
-                        {availabilityData?.nights || Math.max(1, Math.round((new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / (1000 * 3600 * 24)))} Night(s)
-                      </span>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-stone-700 mb-1">Guests</label>
+                      <select
+                        value={guestCount}
+                        onChange={(e) => setGuestCount(Number(e.target.value))}
+                        className="w-full rounded-xl border border-stone-200 p-2.5 text-xs text-stone-800 bg-stone-50 focus:outline-none focus:ring-2 focus:ring-indigo-900"
+                      >
+                        {[1, 2, 3, 4, 5, 6].map((num) => (
+                          <option key={num} value={num}>
+                            {num} {num === 1 ? 'Guest' : 'Guests'}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
 
-                  {/* Availability Summary */}
                   {availabilityData && (
-                    <div className="rounded-xl p-3.5 border space-y-1.5 bg-stone-50 border-stone-200">
+                    <div className="rounded-xl bg-stone-50 p-3 border border-stone-200 text-xs space-y-1">
                       <div className="flex justify-between text-stone-600">
-                        <span>Availability Status:</span>
-                        <span className="font-bold">
-                          {availabilityData.status === 'AVAILABLE' && <span className="text-emerald-700">AVAILABLE</span>}
-                          {availabilityData.status === 'LIMITED' && <span className="text-amber-700">LIMITED</span>}
-                          {availabilityData.status === 'SOLD_OUT' && <span className="text-rose-700">SOLD OUT</span>}
-                          {availabilityData.status === 'UNAVAILABLE_DATA' && <span className="text-stone-600">UNAVAILABLE (DATASET)</span>}
+                        <span>Stay Duration:</span>
+                        <span className="font-semibold text-stone-900">{availabilityData.nights} Night(s)</span>
+                      </div>
+                      <div className="flex justify-between text-stone-600">
+                        <span>Live Status:</span>
+                        <span className={`font-semibold ${
+                          availabilityData.status === 'AVAILABLE' ? 'text-teal-700' :
+                          availabilityData.status === 'LIMITED' ? 'text-amber-700' :
+                          availabilityData.status === 'SOLD_OUT' ? 'text-rose-700' : 'text-stone-700'
+                        }`}>
+                          {availabilityData.status}
                         </span>
                       </div>
                       {availabilityData.rooms && availabilityData.rooms.length > 0 && (
                         <div className="flex justify-between text-stone-600 pt-1 border-t border-stone-200">
-                          <span>Total Available Units:</span>
+                          <span>Max Available:</span>
                           <span className="font-bold text-stone-900">
-                            {availabilityData.rooms.reduce((sum, r) => sum + r.availableUnits, 0)} Units across {availabilityData.rooms.length} configurations
+                            {Math.max(...availabilityData.rooms.map(r => r.availableUnits), 0)} Room(s)
                           </span>
                         </div>
                       )}
@@ -804,17 +948,23 @@ export default function HotelDetailPage() {
                   )}
 
                   <button
-                    onClick={() => setInquirySubmitted(true)}
+                    onClick={() => {
+                      fetchAvailability();
+                      setInquirySubmitted(true);
+                    }}
                     className="w-full rounded-xl bg-indigo-900 py-3 text-xs font-bold text-white transition-colors hover:bg-indigo-800 shadow-md flex items-center justify-center space-x-1.5"
                   >
                     <Calendar className="h-4 w-4" />
-                    <span>Evaluate Stay Parameters</span>
+                    <span>Check Availability</span>
                   </button>
 
-                  <div className="rounded-xl bg-amber-50 p-3 border border-amber-200 text-[11px] text-amber-900 leading-snug">
-                    <p className="font-semibold">Phase 22.5 Architectural Boundary:</p>
-                    <p className="mt-0.5 text-amber-800">
-                      Physical capacity and blocked maintenance calculations are active. Booking, payment, and reservation locks will launch in Phase 22.6.
+                  <div className="rounded-xl bg-emerald-50 p-3 border border-emerald-200 text-[11px] text-emerald-950 leading-snug">
+                    <p className="font-bold flex items-center gap-1">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-700" />
+                      Phase 22.6 Booking Engine Active
+                    </p>
+                    <p className="mt-0.5 text-emerald-800">
+                      Real reservations with database row-level locking. Price snapshot is authoritative and taxes/fees are honestly disclosed.
                     </p>
                   </div>
                 </div>
@@ -823,6 +973,319 @@ export default function HotelDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Phase 22.6: Interactive Reservation & Booking Modal */}
+      {bookingModalOpen && selectedRoomForBooking && selectedRatePlanForBooking && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/60 backdrop-blur-xs overflow-y-auto">
+          <div className="relative w-full max-w-xl rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-stone-200 space-y-6 my-8 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-stone-100 pb-4">
+              <div>
+                <span className="text-[10px] font-bold tracking-wider uppercase text-teal-800 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200">
+                  Room Reservation (Phase 22.6)
+                </span>
+                <h3 className="text-lg sm:text-xl font-black text-stone-900 mt-1">
+                  {selectedRoomForBooking.roomTypeName}
+                </h3>
+                <p className="text-xs text-stone-500 font-medium">
+                  Rate Plan: {selectedRatePlanForBooking.planName}
+                </p>
+              </div>
+              <button
+                onClick={handleCloseBookingModal}
+                className="rounded-full p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-700 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* If booking created successfully -> Show Confirmation Screen */}
+            {createdBooking ? (
+              <div className="space-y-5 text-center py-2">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto shadow-sm">
+                  <CheckCircle className="w-8 h-8" />
+                </div>
+
+                <div className="space-y-1">
+                  <h4 className="text-lg font-black text-stone-900">Reservation Created Successfully!</h4>
+                  <p className="text-xs text-stone-600 max-w-md mx-auto">
+                    Your room allocation is confirmed in the database with status <strong className="text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">PENDING_PAYMENT</strong>.
+                  </p>
+                </div>
+
+                {/* Booking Reference Box */}
+                <div className="rounded-2xl bg-stone-50 p-4 border border-stone-200 text-left space-y-2 text-xs">
+                  <div className="flex justify-between items-center pb-2 border-b border-stone-200">
+                    <span className="text-stone-500">Booking Reference:</span>
+                    <span className="font-mono font-black text-stone-900 text-sm bg-white px-2 py-1 rounded-md border border-stone-300">
+                      {createdBooking.bookingReference}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-500">Stay Window:</span>
+                    <span className="font-semibold text-stone-900">
+                      {createdBooking.checkIn} → {createdBooking.checkOut} ({createdBooking.numberOfNights} Nights)
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-500">Rooms & Capacity:</span>
+                    <span className="font-semibold text-stone-900">
+                      {createdBooking.numberOfRooms} Room(s) · {createdBooking.adults} Adult(s)
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-500">Booking Status:</span>
+                    <span className="font-bold text-amber-700">{createdBooking.bookingStatus}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-500">Payment Status:</span>
+                    <span className="font-bold text-stone-700">{createdBooking.paymentStatus}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-stone-200 font-bold text-stone-900 text-sm">
+                    <span>Total Amount:</span>
+                    <span className="flex items-center text-teal-800">
+                      <IndianRupee className="w-3.5 h-3.5" />
+                      {Number(createdBooking.totalAmount).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Honest Tax & Payment Boundary Notice */}
+                <div className="rounded-xl bg-amber-50 p-3.5 border border-amber-200 text-left text-[11px] text-amber-950 leading-relaxed space-y-1">
+                  <p className="font-bold flex items-center gap-1 text-amber-900">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    Payment & Tax Transparency
+                  </p>
+                  <p>
+                    {createdBooking.pricingDisclosure || 'Applicable taxes/fees are not currently configured/included.'}
+                  </p>
+                  <p className="text-amber-800 font-medium">
+                    Payment processing will be integrated in Phase 22.7. Your reservation is safely held.
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                  <Link
+                    href="/trips"
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-indigo-900 hover:bg-indigo-950 text-white text-xs font-bold rounded-xl shadow-md transition"
+                  >
+                    <span>View in My Trips</span>
+                    <ArrowLeft className="w-4 h-4 rotate-180" />
+                  </Link>
+                  <button
+                    onClick={handleCloseBookingModal}
+                    className="w-full px-5 py-3 border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-bold rounded-xl transition"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Booking Submission Form */
+              <div className="space-y-5">
+                {/* Stay Summary Card */}
+                <div className="rounded-2xl bg-stone-50 p-4 border border-stone-200 text-xs space-y-1.5">
+                  <div className="flex justify-between text-stone-600">
+                    <span>Dates:</span>
+                    <span className="font-bold text-stone-900">
+                      {checkInDate} → {checkOutDate} ({(new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / (1000 * 60 * 60 * 24)} Nights)
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-stone-600">
+                    <span>Meal Plan:</span>
+                    <span className="font-semibold text-stone-900">
+                      {selectedRatePlanForBooking.mealPlan} ({selectedRatePlanForBooking.mealPlan === 'EP' ? 'Room Only' : selectedRatePlanForBooking.mealPlan === 'CP' ? 'Breakfast Included' : 'Included'})
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-stone-600">
+                    <span>Cancellation:</span>
+                    <span className="font-semibold text-teal-800">
+                      {selectedRatePlanForBooking.cancellationPolicy === 'FREE_CANCELLATION'
+                        ? `Free cancellation (${selectedRatePlanForBooking.cancellationDeadlineHours}h prior)`
+                        : selectedRatePlanForBooking.cancellationPolicy}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Error Banner */}
+                {bookingError && (
+                  <div className="rounded-xl bg-rose-50 border border-rose-200 p-3 text-xs text-rose-800 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+                    <span>{bookingError}</span>
+                  </div>
+                )}
+
+                {/* Room & Guest Count Inputs */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-700 mb-1">Number of Rooms</label>
+                    <select
+                      value={bookingRoomsCount}
+                      onChange={(e) => setBookingRoomsCount(Number(e.target.value))}
+                      className="w-full rounded-xl border border-stone-200 p-2.5 text-xs text-stone-800 bg-stone-50 focus:ring-2 focus:ring-indigo-900 focus:outline-none"
+                    >
+                      {[1, 2, 3, 4, 5].map((num) => (
+                        <option key={num} value={num}>
+                          {num} {num === 1 ? 'Room' : 'Rooms'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-700 mb-1">Adults</label>
+                    <select
+                      value={bookingAdultsCount}
+                      onChange={(e) => setBookingAdultsCount(Number(e.target.value))}
+                      className="w-full rounded-xl border border-stone-200 p-2.5 text-xs text-stone-800 bg-stone-50 focus:ring-2 focus:ring-indigo-900 focus:outline-none"
+                    >
+                      {[1, 2, 3, 4, 6, 8].map((num) => (
+                        <option key={num} value={num}>
+                          {num} {num === 1 ? 'Adult' : 'Adults'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-stone-700 mb-1">Children (Optional)</label>
+                    <select
+                      value={bookingChildrenCount}
+                      onChange={(e) => setBookingChildrenCount(Number(e.target.value))}
+                      className="w-full rounded-xl border border-stone-200 p-2.5 text-xs text-stone-800 bg-stone-50 focus:ring-2 focus:ring-indigo-900 focus:outline-none"
+                    >
+                      {[0, 1, 2, 3, 4].map((num) => (
+                        <option key={num} value={num}>
+                          {num} {num === 1 ? 'Child' : 'Children'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Primary Guest Contact Details */}
+                <div className="space-y-3 pt-2 border-t border-stone-100">
+                  <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">Primary Guest Details</h4>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-stone-700 mb-1">Full Name *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Rahul Sharma"
+                      value={guestName}
+                      onChange={(e) => setGuestName(e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 p-2.5 text-xs text-stone-800 bg-stone-50 focus:ring-2 focus:ring-indigo-900 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-stone-700 mb-1">Email Address *</label>
+                      <input
+                        type="email"
+                        placeholder="e.g. traveler@example.com"
+                        value={guestEmail}
+                        onChange={(e) => setGuestEmail(e.target.value)}
+                        className="w-full rounded-xl border border-stone-200 p-2.5 text-xs text-stone-800 bg-stone-50 focus:ring-2 focus:ring-indigo-900 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-stone-700 mb-1">Phone Number *</label>
+                      <input
+                        type="tel"
+                        placeholder="e.g. +91 98765 43210"
+                        value={guestPhone}
+                        onChange={(e) => setGuestPhone(e.target.value)}
+                        className="w-full rounded-xl border border-stone-200 p-2.5 text-xs text-stone-800 bg-stone-50 focus:ring-2 focus:ring-indigo-900 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-stone-700 mb-1">Special Requests (Optional)</label>
+                    <textarea
+                      rows={2}
+                      placeholder="e.g. Late check-in, ground floor room, quiet room"
+                      value={specialRequests}
+                      onChange={(e) => setSpecialRequests(e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 p-2.5 text-xs text-stone-800 bg-stone-50 focus:ring-2 focus:ring-indigo-900 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Immutable Price Snapshot Calculation */}
+                {(() => {
+                  const nights = Math.max(1, (new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / (1000 * 60 * 60 * 24));
+                  const rate = Number(selectedRatePlanForBooking.basePrice || 0);
+                  const subtotal = rate * nights * bookingRoomsCount;
+                  const taxes = 0; // Honest tax policy: 0 unless specifically configured
+                  const total = subtotal + taxes;
+
+                  return (
+                    <div className="rounded-2xl bg-indigo-50/60 p-4 border border-indigo-100 space-y-2 text-xs">
+                      <div className="flex justify-between text-stone-600">
+                        <span>Nightly Base Rate:</span>
+                        <span className="font-semibold text-stone-900">₹{rate.toLocaleString('en-IN')}</span>
+                      </div>
+                      <div className="flex justify-between text-stone-600">
+                        <span>Computation:</span>
+                        <span>₹{rate.toLocaleString('en-IN')} × {nights} Night(s) × {bookingRoomsCount} Room(s)</span>
+                      </div>
+                      <div className="flex justify-between text-stone-600">
+                        <span>Subtotal:</span>
+                        <span className="font-semibold text-stone-900">₹{subtotal.toLocaleString('en-IN')}</span>
+                      </div>
+                      <div className="flex justify-between text-stone-600">
+                        <span>Taxes & Service Surcharges:</span>
+                        <span className="font-semibold text-emerald-800">₹0.00</span>
+                      </div>
+                      <div className="pt-2 border-t border-indigo-200 flex justify-between items-center text-sm font-black text-stone-900">
+                        <span>Total Price Snapshot:</span>
+                        <span className="flex items-center text-indigo-950 font-mono text-base">
+                          <IndianRupee className="w-4 h-4" />
+                          {total.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-indigo-900/80 leading-normal pt-1">
+                        * Applicable taxes/fees are not currently configured/included. Price snapshot is authoritative and immutable.
+                      </p>
+                    </div>
+                  );
+                })()}
+
+                {/* Submit Reservation Action */}
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleCloseBookingModal}
+                    className="px-4 py-2.5 rounded-xl border border-stone-200 text-xs font-semibold text-stone-600 hover:bg-stone-50 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSubmitBooking}
+                    disabled={submittingBooking}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-900 hover:bg-indigo-950 text-white text-xs font-bold rounded-xl shadow-md transition disabled:opacity-50"
+                  >
+                    {submittingBooking ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Reserving Inventory...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-4 h-4" />
+                        <span>Confirm Reservation (Status: PENDING_PAYMENT)</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

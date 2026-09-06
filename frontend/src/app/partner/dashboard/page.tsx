@@ -64,6 +64,7 @@ import {
   activatePartnerRatePlan,
   deactivatePartnerRatePlan,
   deletePartnerRatePlan,
+  getPartnerHotelBookings,
   ExperienceItem,
   CulturalTraditionDto,
   HotelItem,
@@ -77,6 +78,7 @@ import {
   HotelRatePlanItem,
   CreateRatePlanRequest,
   UpdateRatePlanRequest,
+  HotelBookingDto,
 } from '@/lib/api';
 
 const CULTURAL_CATEGORIES = [
@@ -178,6 +180,29 @@ export default function PartnerDashboardPage() {
   const [ratePlanFormModalOpen, setRatePlanFormModalOpen] = useState<boolean>(false);
   const [editingRatePlan, setEditingRatePlan] = useState<HotelRatePlanItem | null>(null);
   const [submittingRatePlanForm, setSubmittingRatePlanForm] = useState<boolean>(false);
+
+  // Partner Hotel Bookings State (Phase 22.6)
+  const [partnerBookingsModalOpen, setPartnerBookingsModalOpen] = useState<boolean>(false);
+  const [selectedHotelForBookings, setSelectedHotelForBookings] = useState<HotelItem | null>(null);
+  const [partnerBookingsList, setPartnerBookingsList] = useState<HotelBookingDto[]>([]);
+  const [loadingPartnerBookings, setLoadingPartnerBookings] = useState<boolean>(false);
+
+  const handleOpenPartnerBookings = async (h: HotelItem) => {
+    if (!token) return;
+    setSelectedHotelForBookings(h);
+    setPartnerBookingsModalOpen(true);
+    setLoadingPartnerBookings(true);
+    try {
+      const res = await getPartnerHotelBookings(h.id, token);
+      if (res.success && res.data) {
+        setPartnerBookingsList(res.data);
+      }
+    } catch (err: unknown) {
+      console.error('Failed to load partner hotel bookings:', err);
+    } finally {
+      setLoadingPartnerBookings(false);
+    }
+  };
 
   // Rate Plan Form Data
   const [ratePlanFormData, setRatePlanFormData] = useState({
@@ -1564,6 +1589,14 @@ export default function PartnerDashboardPage() {
                         >
                           <BedDouble className="w-3.5 h-3.5 text-indigo-700" />
                           <span>Rooms &amp; Inventory</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleOpenPartnerBookings(h)}
+                          className="px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-950 font-bold text-[11px] flex items-center gap-1.5 border border-teal-200 transition-colors"
+                        >
+                          <Calendar className="w-3.5 h-3.5 text-teal-700" />
+                          <span>Bookings</span>
                         </button>
 
                         {(isDraft || isRejected) && (
@@ -3166,6 +3199,136 @@ export default function PartnerDashboardPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Partner Hotel Bookings & Allocation Audit (Phase 22.6) */}
+      {partnerBookingsModalOpen && selectedHotelForBookings && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+          <div className="relative w-full max-w-4xl rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6 my-8 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-slate-100 pb-4">
+              <div>
+                <span className="text-[10px] font-bold tracking-wider uppercase text-teal-800 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200">
+                  Property Bookings (Phase 22.6)
+                </span>
+                <h3 className="text-xl font-black text-slate-900 mt-1">
+                  {selectedHotelForBookings.hotelName} — Reservations
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Authoritative reservation records with immutable price snapshots and active inventory holds.
+                </p>
+              </div>
+              <button
+                onClick={() => setPartnerBookingsModalOpen(false)}
+                className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content: Loading / Empty / List */}
+            {loadingPartnerBookings ? (
+              <div className="py-16 flex flex-col items-center justify-center gap-3">
+                <div className="w-8 h-8 border-3 border-teal-600 border-t-transparent rounded-full animate-spin" />
+                <p className="text-xs text-slate-500">Loading hotel reservations...</p>
+              </div>
+            ) : partnerBookingsList.length === 0 ? (
+              <div className="text-center py-16 bg-slate-50 rounded-2xl border border-dashed border-slate-200 p-6 space-y-2">
+                <Calendar className="mx-auto w-10 h-10 text-slate-300" />
+                <h4 className="text-sm font-bold text-slate-800">No Reservations Yet</h4>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  When travelers reserve rooms for your property, their active allocations and stay records will appear here.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {partnerBookingsList.map((b) => (
+                    <div
+                      key={b.id}
+                      className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 space-y-3 shadow-xs"
+                    >
+                      <div className="flex items-start justify-between gap-2 border-b border-slate-200 pb-2.5">
+                        <div>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Reference</span>
+                          <div className="font-mono font-black text-xs text-slate-900">{b.bookingReference}</div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border ${
+                            b.bookingStatus === 'CONFIRMED' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                            b.bookingStatus === 'PENDING_PAYMENT' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                            b.bookingStatus === 'CANCELLED' ? 'bg-rose-50 text-rose-800 border-rose-200' :
+                            'bg-stone-100 text-stone-700 border-stone-200'
+                          }`}>
+                            {b.bookingStatus}
+                          </span>
+                          <span className="text-[10px] font-semibold text-slate-500 bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                            {b.paymentStatus}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Guest Info (Masked PII) */}
+                      <div className="text-xs space-y-1">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Guest:</span>
+                          <span className="font-bold text-slate-900">{b.guestName}</span>
+                        </div>
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-slate-500">Phone (Masked):</span>
+                          <span className="font-mono text-slate-700">{b.guestPhone}</span>
+                        </div>
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-slate-500">Email (Masked):</span>
+                          <span className="font-mono text-slate-700">{b.guestEmail}</span>
+                        </div>
+                      </div>
+
+                      {/* Room & Stay Details */}
+                      <div className="rounded-xl bg-white p-3 border border-slate-200 text-xs space-y-1">
+                        <div className="font-bold text-slate-900">{b.roomTypeName}</div>
+                        <div className="text-[11px] text-teal-800 font-medium">Plan: {b.ratePlanName} ({b.mealPlan || 'EP'})</div>
+                        <div className="flex justify-between text-[11px] text-slate-600 pt-1 border-t border-slate-100">
+                          <span>{b.checkIn} → {b.checkOut}</span>
+                          <span className="font-semibold">{b.numberOfNights} Night(s) · {b.numberOfRooms} Room(s)</span>
+                        </div>
+                      </div>
+
+                      {/* Price Snapshot */}
+                      <div className="flex justify-between items-baseline pt-1 text-xs">
+                        <span className="text-slate-500">Commercial Snapshot:</span>
+                        <span className="text-sm font-black text-slate-900 flex items-center">
+                          <IndianRupee className="w-3.5 h-3.5" />
+                          {Number(b.totalAmount).toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Privacy & Provenance Disclaimer */}
+                <div className="rounded-xl bg-indigo-50/70 p-3.5 border border-indigo-100 text-[11px] text-indigo-950 leading-relaxed flex items-start gap-2">
+                  <ShieldCheck className="w-4 h-4 text-indigo-700 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold">Privacy &amp; RBAC Protection:</p>
+                    <p className="text-indigo-900/80">
+                      Traveler contact PII is automatically masked in accordance with YatraSetu privacy compliance. Commercial pricing snapshots are immutable.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end pt-4 border-t border-slate-100">
+              <button
+                onClick={() => setPartnerBookingsModalOpen(false)}
+                className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

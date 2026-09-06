@@ -122,6 +122,30 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleConflict(
+            ConflictException ex, HttpServletRequest request) {
+
+        log.warn("Conflict on {}: {}", request.getRequestURI(), ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .error("Conflict")
+                .message(ex.getMessage() != null ? ex.getMessage() : "Resource conflict or insufficient capacity")
+                .path(request.getRequestURI())
+                .timestamp(Instant.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                ApiResponse.<ErrorResponse>builder()
+                        .success(false)
+                        .message(errorResponse.getMessage())
+                        .data(errorResponse)
+                        .timestamp(Instant.now())
+                        .build()
+        );
+    }
+
     @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
     public ResponseEntity<ApiResponse<ErrorResponse>> handleAccessDenied(
             org.springframework.security.access.AccessDeniedException ex, HttpServletRequest request) {

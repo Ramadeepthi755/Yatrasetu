@@ -23,6 +23,7 @@ public class HotelAvailabilityService {
     private final HotelRoomTypeRepository roomTypeRepository;
     private final HotelInventoryRepository inventoryRepository;
     private final HotelRatePlanRepository ratePlanRepository;
+    private final HotelBookingAllocationRepository bookingAllocationRepository;
     private final HotelRatePlanService ratePlanService;
 
     /**
@@ -30,9 +31,8 @@ public class HotelAvailabilityService {
      * Deterministically calculates date-specific room availability for a requested stay window.
      * Check-in date is inclusive; Check-out date is exclusive.
      *
-     * Architectural Boundary Note (Phase 22.5):
-     * AVAILABLE_UNITS(date) = TOTAL_UNITS(date) - BLOCKED_UNITS(date) - FUTURE_RESERVED_UNITS(date)
-     * Because the booking and reservation engine is introduced in Phase 22.6, FUTURE_RESERVED_UNITS = 0.
+     * Architectural Formula (Phase 22.6):
+     * AVAILABLE_UNITS(date) = max(0, TOTAL_UNITS(date) - BLOCKED_UNITS(date) - ACTIVE_RESERVED_UNITS(date))
      */
     @Transactional(readOnly = true)
     public HotelAvailabilityDto getHotelAvailability(
@@ -112,6 +112,20 @@ public class HotelAvailabilityService {
         List<HotelRatePlan> activeRatePlans = ratePlanRepository.findByRoomTypeIdInAndStatus(
                 roomTypeIds, RatePlanStatus.ACTIVE);
 
+        // Fetch active booking reservations across the search window
+        List<Object[]> activeAllocations = bookingAllocationRepository.findActiveReservedUnitsByRoomTypeIdsAndDateRange(
+                roomTypeIds, checkIn, searchEndDate, BookingAllocationStatus.ACTIVE);
+
+        // Map active reservations: roomTypeId -> (allocationDate -> sumReservedUnits)
+        Map<String, Map<LocalDate, Integer>> activeReservedMap = new HashMap<>();
+        for (Object[] row : activeAllocations) {
+            String rId = (String) row[0];
+            LocalDate date = (LocalDate) row[1];
+            Number sum = (Number) row[2];
+            int reserved = sum != null ? sum.intValue() : 0;
+            activeReservedMap.computeIfAbsent(rId, k -> new HashMap<>()).put(date, reserved);
+        }
+
         // Map date-specific inventory: roomTypeId -> (inventoryDate -> HotelInventory)
         Map<String, Map<LocalDate, HotelInventory>> dateInventoryMap = new HashMap<>();
         for (HotelInventory inv : dateSpecificList) {
@@ -149,6 +163,7 @@ public class HotelAvailabilityService {
             String rId = room.getId();
             HotelInventory baseInv = baselineInventoryMap.get(rId);
             Map<LocalDate, HotelInventory> dateOverrides = dateInventoryMap.getOrDefault(rId, Collections.emptyMap());
+            Map<LocalDate, Integer> reservedByDate = activeReservedMap.getOrDefault(rId, Collections.emptyMap());
 
             List<HotelAvailabilityDto.NightlyAvailabilityDto> nightlyList = new ArrayList<>();
             int minAvailableAcrossStay = Integer.MAX_VALUE;
@@ -180,7 +195,8 @@ public class HotelAvailabilityService {
                     blockedUnits = totalUnits;
                 }
 
-                int nightAvailable = totalUnits - blockedUnits;
+                int reservedUnits = reservedByDate.getOrDefault(d, 0);
+                int nightAvailable = Math.max(0, totalUnits - blockedUnits - reservedUnits);
                 minAvailableAcrossStay = Math.min(minAvailableAcrossStay, nightAvailable);
 
                 nightlyList.add(HotelAvailabilityDto.NightlyAvailabilityDto.builder()

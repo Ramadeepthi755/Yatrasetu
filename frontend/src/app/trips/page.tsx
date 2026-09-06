@@ -2,9 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
-import { getMyTrips, deleteTrip, TripDto } from '@/lib/api';
+import {
+  getMyTrips,
+  deleteTrip,
+  getMyHotelBookings,
+  cancelHotelBooking,
+  TripDto,
+  HotelBookingDto,
+} from '@/lib/api';
 import {
   Calendar,
   MapPin,
@@ -20,18 +26,29 @@ import {
   Plus,
   Landmark,
   ShieldCheck,
+  Building2,
+  BedDouble,
+  IndianRupee,
+  CheckCircle,
+  XCircle,
+  Tag,
+  Utensils,
 } from 'lucide-react';
 
 export default function MyTripsPage() {
   const { user, token, isAuthenticated, openAuthModal } = useAuth();
 
+  const [activeTab, setActiveTab] = useState<'ITINERARIES' | 'HOTEL_BOOKINGS'>('ITINERARIES');
   const [trips, setTrips] = useState<TripDto[]>([]);
+  const [hotelBookings, setHotelBookings] = useState<HotelBookingDto[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [loadingBookings, setLoadingBookings] = useState<boolean>(false);
   const [selectedTrip, setSelectedTrip] = useState<TripDto | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [cancellingBookingRef, setCancellingBookingRef] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadTrips() {
+    async function loadData() {
       if (!isAuthenticated || !token) {
         setIsLoading(false);
         return;
@@ -40,23 +57,47 @@ export default function MyTripsPage() {
       setIsLoading(true);
       setErrorMsg(null);
       try {
-        const res = await getMyTrips(token);
-        if (res.success && res.data) {
-          setTrips(res.data);
-          if (res.data.length > 0) {
-            setSelectedTrip(res.data[0]);
+        const [tripsRes, bookingsRes] = await Promise.all([
+          getMyTrips(token).catch(() => ({ success: true, data: [] })),
+          getMyHotelBookings(token).catch(() => ({ success: true, data: [] })),
+        ]);
+
+        if (tripsRes.success && tripsRes.data) {
+          setTrips(tripsRes.data);
+          if (tripsRes.data.length > 0) {
+            setSelectedTrip(tripsRes.data[0]);
           }
         }
+        if (bookingsRes.success && bookingsRes.data) {
+          setHotelBookings(bookingsRes.data);
+        }
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Failed to load trips';
+        const msg = err instanceof Error ? err.message : 'Failed to load traveler data';
         setErrorMsg(msg);
       } finally {
         setIsLoading(false);
       }
     }
 
-    loadTrips();
+    loadData();
   }, [isAuthenticated, token]);
+
+  const handleCancelBooking = async (bookingReference: string) => {
+    if (!token) return;
+    if (!confirm(`Are you sure you want to cancel booking ${bookingReference}? Inventory allocations will be immediately released.`)) return;
+
+    setCancellingBookingRef(bookingReference);
+    try {
+      const res = await cancelHotelBooking(bookingReference, 'Cancelled by traveler from dashboard', token);
+      if (res.success && res.data) {
+        setHotelBookings(prev => prev.map(b => b.bookingReference === bookingReference ? res.data! : b));
+      }
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to cancel reservation');
+    } finally {
+      setCancellingBookingRef(null);
+    }
+  };
 
   const handleDeleteTrip = async (tripId: string) => {
     if (!token) return;
@@ -129,6 +170,33 @@ export default function MyTripsPage() {
           </Link>
         </div>
 
+        {/* Tab Switcher */}
+        <div className="flex items-center gap-3 border-b border-gray-200 dark:border-gray-800 pb-2">
+          <button
+            onClick={() => setActiveTab('ITINERARIES')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+              activeTab === 'ITINERARIES'
+                ? 'bg-primary text-white shadow-sm'
+                : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:border-primary/50'
+            }`}
+          >
+            <Calendar className="w-4 h-4" />
+            <span>Smart Itineraries ({trips.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('HOTEL_BOOKINGS')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+              activeTab === 'HOTEL_BOOKINGS'
+                ? 'bg-primary text-white shadow-sm'
+                : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:border-primary/50'
+            }`}
+          >
+            <Building2 className="w-4 h-4" />
+            <span>Hotel Reservations ({hotelBookings.length})</span>
+          </button>
+        </div>
+
         {/* Error message if any */}
         {errorMsg && (
           <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
@@ -137,35 +205,158 @@ export default function MyTripsPage() {
           </div>
         )}
 
-        {/* Loading State */}
-        {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="text-xs text-gray-500">Loading your itineraries...</p>
-          </div>
-        ) : trips.length === 0 ? (
-          /* Empty State */
-          <div className="text-center py-20 bg-white dark:bg-gray-900 rounded-3xl border border-dashed border-gray-200 dark:border-gray-800 p-8 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
-              <Calendar className="w-8 h-8" />
+        {/* HOTEL RESERVATIONS VIEW */}
+        {activeTab === 'HOTEL_BOOKINGS' ? (
+          isLoading ? (
+            <div className="py-20 flex flex-col items-center justify-center gap-3">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <p className="text-xs text-gray-500">Loading your hotel reservations...</p>
             </div>
-            <div className="space-y-1">
-              <h3 className="text-base font-bold text-gray-900 dark:text-white">
-                No trips planned yet
-              </h3>
-              <p className="text-xs text-gray-500 max-w-sm mx-auto">
-                Use the Smart AI Trip Planner to craft your first personalized, day-by-day itinerary!
-              </p>
+          ) : hotelBookings.length === 0 ? (
+            <div className="text-center py-20 bg-white dark:bg-gray-900 rounded-3xl border border-dashed border-gray-200 dark:border-gray-800 p-8 space-y-4">
+              <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
+                <Building2 className="w-8 h-8" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                  No hotel reservations yet
+                </h3>
+                <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                  Browse verified partner hotels and reserve rooms with date-specific inventory guarantees!
+                </p>
+              </div>
+              <Link
+                href="/hotels"
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/90 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
+              >
+                <BedDouble className="w-4 h-4" />
+                <span>Explore Hotels</span>
+              </Link>
             </div>
-            <Link
-              href="/plan-trip"
-              className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/90 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>Start Planning</span>
-            </Link>
-          </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {hotelBookings.map((b) => (
+                <div
+                  key={b.id}
+                  className="rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-6 shadow-sm flex flex-col justify-between space-y-5 transition hover:shadow-md"
+                >
+                  <div className="space-y-4">
+                    {/* Reference & Status Badges */}
+                    <div className="flex items-start justify-between gap-2 border-b border-gray-100 dark:border-gray-800 pb-3">
+                      <div>
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Booking Ref</span>
+                        <div className="font-mono font-black text-xs text-gray-900 dark:text-white">
+                          {b.bookingReference}
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border ${
+                          b.bookingStatus === 'CONFIRMED' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                          b.bookingStatus === 'PENDING_PAYMENT' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                          b.bookingStatus === 'CANCELLED' ? 'bg-rose-50 text-rose-800 border-rose-200' :
+                          'bg-stone-100 text-stone-700 border-stone-200'
+                        }`}>
+                          {b.bookingStatus}
+                        </span>
+                        <span className="text-[10px] font-semibold text-stone-500 bg-stone-100 dark:bg-stone-800 px-2 py-0.5 rounded">
+                          {b.paymentStatus}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Hotel & Room Title */}
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-900 dark:text-white leading-tight">
+                        {b.hotelName}
+                      </h4>
+                      <p className="text-xs text-primary font-medium mt-0.5">
+                        {b.roomTypeName}
+                      </p>
+                      <p className="text-[11px] text-gray-500 mt-0.5">
+                        Plan: {b.ratePlanName} · {b.mealPlan || 'EP'}
+                      </p>
+                    </div>
+
+                    {/* Stay Dates */}
+                    <div className="rounded-2xl bg-stone-50 dark:bg-gray-800/60 p-3.5 border border-stone-100 dark:border-gray-800 text-xs space-y-1.5">
+                      <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                        <Calendar className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>{b.checkIn} → {b.checkOut} ({b.numberOfNights} Nights)</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                        <BedDouble className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>{b.numberOfRooms} Room(s) · {b.adults} Adult(s)</span>
+                      </div>
+                    </div>
+
+                    {/* Price Snapshot */}
+                    <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-xs text-gray-500">Total Snapshot:</span>
+                        <span className="text-base font-black text-gray-900 dark:text-white flex items-center">
+                          <IndianRupee className="w-3.5 h-3.5" />
+                          {Number(b.totalAmount).toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-gray-400 mt-0.5">
+                        * {b.pricingDisclosure || 'Applicable taxes/fees are not currently configured/included.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Card Actions */}
+                  <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-100 dark:border-gray-800">
+                    <Link
+                      href={`/hotels/${b.hotelId}`}
+                      className="text-xs font-bold text-primary hover:text-primary/80 transition"
+                    >
+                      View Hotel →
+                    </Link>
+
+                    {(b.bookingStatus === 'PENDING_PAYMENT' || b.bookingStatus === 'CONFIRMED') && (
+                      <button
+                        onClick={() => handleCancelBooking(b.bookingReference)}
+                        disabled={cancellingBookingRef === b.bookingReference}
+                        className="text-xs font-semibold text-rose-600 hover:text-rose-800 transition disabled:opacity-50"
+                      >
+                        {cancellingBookingRef === b.bookingReference ? 'Cancelling...' : 'Cancel Reservation'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
         ) : (
+          /* SMART ITINERARIES VIEW */
+          isLoading ? (
+            <div className="py-20 flex flex-col items-center justify-center gap-3">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <p className="text-xs text-gray-500">Loading your itineraries...</p>
+            </div>
+          ) : trips.length === 0 ? (
+            /* Empty State */
+            <div className="text-center py-20 bg-white dark:bg-gray-900 rounded-3xl border border-dashed border-gray-200 dark:border-gray-800 p-8 space-y-4">
+              <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
+                <Calendar className="w-8 h-8" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                  No trips planned yet
+                </h3>
+                <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                  Use the Smart AI Trip Planner to craft your first personalized, day-by-day itinerary!
+                </p>
+              </div>
+              <Link
+                href="/plan-trip"
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/90 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Start Planning</span>
+              </Link>
+            </div>
+          ) : (
           /* Main Layout: Trips List + Details Pane */
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             {/* Left Column: List of Trips */}
@@ -328,8 +519,9 @@ export default function MyTripsPage() {
               </div>
             )}
           </div>
-        )}
-      </div>
+        )
+      )}
+    </div>
     </div>
   );
 }

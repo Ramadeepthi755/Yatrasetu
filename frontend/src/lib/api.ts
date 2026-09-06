@@ -3168,5 +3168,165 @@ export async function updatePartnerBulkRoomInventory(
   return res.json();
 }
 
+export type HotelBookingStatus = 'PENDING_PAYMENT' | 'CONFIRMED' | 'CANCELLED' | 'EXPIRED';
+export type HotelPaymentStatus = 'UNPAID' | 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
+
+export interface HotelBookingAllocationDto {
+  id: string;
+  allocationDate: string;
+  allocatedUnits: number;
+  status: string;
+}
+
+export interface HotelBookingDto {
+  id: string;
+  bookingReference: string;
+  travelerId?: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  specialRequests?: string;
+  hotelId: string;
+  hotelName: string;
+  hotelCity?: string;
+  hotelState?: string;
+  hotelAddress?: string;
+  roomTypeId: string;
+  roomTypeName: string;
+  ratePlanId: string;
+  ratePlanName: string;
+  mealPlan?: string;
+  checkIn: string;
+  checkOut: string;
+  numberOfRooms: number;
+  numberOfNights: number;
+  adults: number;
+  children?: number;
+  currency: string;
+  pricePerNight: number;
+  subtotal: number;
+  taxesAmount: number;
+  feesAmount: number;
+  totalAmount: number;
+  pricingDisclosure: string;
+  bookingStatus: HotelBookingStatus;
+  paymentStatus: HotelPaymentStatus;
+  sourceType: string;
+  idempotencyKey?: string;
+  expiresAt?: string;
+  cancelledAt?: string;
+  cancellationReason?: string;
+  createdAt: string;
+  updatedAt: string;
+  allocations?: HotelBookingAllocationDto[];
+}
+
+export interface CreateHotelBookingRequest {
+  roomTypeId: string;
+  ratePlanId: string;
+  checkIn: string;
+  checkOut: string;
+  numberOfRooms: number;
+  adults: number;
+  children?: number;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  specialRequests?: string;
+  idempotencyKey?: string;
+}
+
+export async function createHotelBooking(
+  hotelId: string,
+  data: CreateHotelBookingRequest,
+  token: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/hotels/${encodeURIComponent(hotelId)}/bookings`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to create booking: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getMyHotelBookings(
+  token: string
+): Promise<ApiResponse<HotelBookingDto[]>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch bookings: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getHotelBookingByReference(
+  bookingReference: string,
+  token: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/${encodeURIComponent(bookingReference)}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch booking details: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPartnerHotelBookings(
+  hotelId: string,
+  token: string
+): Promise<ApiResponse<HotelBookingDto[]>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/bookings`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch partner bookings: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function cancelHotelBooking(
+  bookingReference: string,
+  reason: string | undefined,
+  token: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/${encodeURIComponent(bookingReference)}/cancel`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ reason }),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to cancel booking: ${res.status}`);
+  }
+  return res.json();
+}
+
 
 

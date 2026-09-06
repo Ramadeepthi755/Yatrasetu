@@ -41,19 +41,25 @@ public class Phase22HotelAvailabilityTest {
     private HotelRoomTypeRepository roomTypeRepository;
 
     @Autowired
+    private HotelBookingAllocationRepository allocationRepository;
+
+    @Autowired
+    private HotelBookingRepository bookingRepository;
+
+    @Autowired
     private HotelInventoryRepository inventoryRepository;
 
     @Autowired
     private HotelRatePlanRepository ratePlanRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private CityRepository cityRepository;
 
     @Autowired
     private StateRepository stateRepository;
 
     @Autowired
-    private CityRepository cityRepository;
+    private UserRepository userRepository;
 
     private User partnerA;
     private User partnerB;
@@ -160,6 +166,8 @@ public class Phase22HotelAvailabilityTest {
     }
 
     private void cleanup() {
+        allocationRepository.deleteAll();
+        bookingRepository.deleteAll();
         inventoryRepository.deleteAll();
         ratePlanRepository.deleteAll();
         roomTypeRepository.deleteAll();
