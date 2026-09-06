@@ -60,14 +60,11 @@ export function CulturalTraditionCard({ tradition, className = '' }: CulturalTra
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center p-6 text-center text-white/90">
-            <div className="mb-2 rounded-full bg-amber-500/20 p-3 text-amber-400 backdrop-blur-sm border border-amber-400/30">
-              <Landmark className="h-6 w-6" />
-            </div>
-            <span className="text-xs font-semibold tracking-wider text-amber-300 uppercase">
-              {categoryLabel}
+          <div className="flex h-full w-full flex-col items-center justify-center p-6 text-center bg-stone-900 text-stone-400">
+            <span className="text-xs font-medium text-stone-400">
+              Craft image currently unavailable
             </span>
-            <span className="text-sm font-bold text-stone-200 mt-1 line-clamp-1">
+            <span className="text-[11px] text-stone-500 mt-1 line-clamp-1">
               {tradition.traditionName}
             </span>
           </div>

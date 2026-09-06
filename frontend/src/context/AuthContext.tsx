@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import {
   UserProfile,
@@ -21,8 +22,10 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isAuthModalOpen: boolean;
   authModalTargetRole: 'TRAVELER' | 'PARTNER' | 'GOVERNMENT' | null;
-  openAuthModal: (targetRole?: 'TRAVELER' | 'PARTNER' | 'GOVERNMENT') => void;
+  authModalReturnTo: string | null;
+  openAuthModal: (targetRole?: 'TRAVELER' | 'PARTNER' | 'GOVERNMENT' | null, returnTo?: string | null) => void;
   closeAuthModal: () => void;
+  requireAuth: (destination: string, targetRole?: 'TRAVELER' | 'PARTNER' | 'GOVERNMENT') => boolean;
   login: (email: string, password?: string) => Promise<void>;
   signup: (
     name: string,
@@ -40,22 +43,35 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [partnerDetails, setPartnerDetails] = useState<PartnerProfile | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [authModalTargetRole, setAuthModalTargetRole] = useState<'TRAVELER' | 'PARTNER' | 'GOVERNMENT' | null>(null);
+  const [authModalReturnTo, setAuthModalReturnTo] = useState<string | null>(null);
 
-  const openAuthModal = (targetRole?: 'TRAVELER' | 'PARTNER' | 'GOVERNMENT') => {
+  const openAuthModal = useCallback((targetRole?: 'TRAVELER' | 'PARTNER' | 'GOVERNMENT' | null, returnTo?: string | null) => {
     setAuthModalTargetRole(targetRole || null);
+    setAuthModalReturnTo(returnTo || null);
     setIsAuthModalOpen(true);
-  };
+  }, []);
 
-  const closeAuthModal = () => {
+  const closeAuthModal = useCallback(() => {
     setIsAuthModalOpen(false);
     setAuthModalTargetRole(null);
-  };
+    setAuthModalReturnTo(null);
+  }, []);
+
+  const requireAuth = useCallback((destination: string, targetRole: 'TRAVELER' | 'PARTNER' | 'GOVERNMENT' = 'TRAVELER'): boolean => {
+    if (user) {
+      router.push(destination);
+      return true;
+    }
+    openAuthModal(targetRole, destination);
+    return false;
+  }, [user, router, openAuthModal]);
 
   // Initialize session on mount
   useEffect(() => {
@@ -332,8 +348,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: Boolean(user),
         isAuthModalOpen,
         authModalTargetRole,
+        authModalReturnTo,
         openAuthModal,
         closeAuthModal,
+        requireAuth,
         login,
         signup,
         logout,

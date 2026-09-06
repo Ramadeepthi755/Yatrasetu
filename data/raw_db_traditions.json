@@ -1,0 +1,1002 @@
+[
+  {
+    "id": "cult-an-nicobar-mat",
+    "traditionName": "Nicobarese Traditional Mat & Cane Weaving",
+    "stateId": "IN-AN",
+    "stateName": "Andaman & Nicobar Islands",
+    "craftType": "Split Forest Cane and Pandanus Leaf Weaving",
+    "category": "HANDICRAFT",
+    "primaryProducingCluster": "Car Nicobar & Port Blair",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Nicobarese_Cane_Mat_Weaving.jpg/800px-Nicobarese_Cane_Mat_Weaving.jpg"
+  },
+  {
+    "id": "cult-an-shell-craft",
+    "traditionName": "Andaman Marine Shell Carving",
+    "stateId": "IN-AN",
+    "stateName": "Andaman & Nicobar Islands",
+    "craftType": "Polishing, Engraving, and Cutting of Permitted Marine Shells",
+    "category": "HANDICRAFT",
+    "primaryProducingCluster": "Port Blair & Aberdeen Bazaar",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Andaman_Sea_Shell_Craft.jpg/800px-Andaman_Sea_Shell_Craft.jpg"
+  },
+  {
+    "id": "cult-ap-dharmavaram",
+    "traditionName": "Dharmavaram Silk Sarees & Paavadas",
+    "stateId": "IN-AP",
+    "stateName": "Andhra Pradesh",
+    "craftType": "Pure Mulberry Silk Brocade Weaving",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Dharmavaram, Sri Sathya Sai District",
+    "imageUrl": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    "id": "cult-ap-kalamkari",
+    "traditionName": "Srikalahasti Kalamkari",
+    "stateId": "IN-AP",
+    "stateName": "Andhra Pradesh",
+    "craftType": "Textile Art / Freehand Pen Painting",
+    "category": "HANDICRAFT",
+    "primaryProducingCluster": "Srikalahasti, Tirupati District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Kalamkari_art_tree_of_life.jpg/800px-Kalamkari_art_tree_of_life.jpg"
+  },
+  {
+    "id": "cult-ap-kondapalli",
+    "traditionName": "Kondapalli Toys",
+    "stateId": "IN-AP",
+    "stateName": "Andhra Pradesh",
+    "craftType": "Soft Wood Toy Craft (Tella Poniki)",
+    "category": "WOOD_CRAFT",
+    "primaryProducingCluster": "Kondapalli, Krishna District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Kondapalli_Toys_01.jpg/800px-Kondapalli_Toys_01.jpg"
+  },
+  {
+    "id": "cult-ap-machilipatnam",
+    "traditionName": "Machilipatnam Kalamkari",
+    "stateId": "IN-AP",
+    "stateName": "Andhra Pradesh",
+    "craftType": "Hand Block Printed Cotton Textiles",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Pedana & Machilipatnam, Krishna District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Block_printing_in_India.jpg/800px-Block_printing_in_India.jpg"
+  },
+  {
+    "id": "cult-ar-apatani-weave",
+    "traditionName": "Apatani Textile Weaving",
+    "stateId": "IN-AR",
+    "stateName": "Arunachal Pradesh",
+    "craftType": "Loin-Loom (Backstrap Loom) Geometric Cotton Weaving",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Ziro Valley, Lower Subansiri",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Apatani_Weaving_Arunachal.jpg/800px-Apatani_Weaving_Arunachal.jpg"
+  },
+  {
+    "id": "cult-ar-monpa-paper",
+    "traditionName": "Monpa Handmade Paper (Mon Shugu)",
+    "stateId": "IN-AR",
+    "stateName": "Arunachal Pradesh",
+    "craftType": "Daphne Bark Chemical-Free Acid-Free Paper",
+    "category": "HERITAGE_CRAFT",
+    "primaryProducingCluster": "Tawang & Dirang Heritage Clusters",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Monpa_Handmade_Paper_Making.jpg/800px-Monpa_Handmade_Paper_Making.jpg"
+  },
+  {
+    "id": "cult-ar-wancho-wood",
+    "traditionName": "Wancho Wood Carving",
+    "stateId": "IN-AR",
+    "stateName": "Arunachal Pradesh",
+    "craftType": "Tribal Hardwood Sculptural Carving",
+    "category": "WOOD_CRAFT",
+    "primaryProducingCluster": "Longding District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Wancho_Wood_Carving_Arunachal.jpg/800px-Wancho_Wood_Carving_Arunachal.jpg"
+  },
+  {
+    "id": "cult-as-majuli-mask",
+    "traditionName": "Majuli Mask Making (Bhaona Mukha)",
+    "stateId": "IN-AS",
+    "stateName": "Assam",
+    "craftType": "Bamboo, Clay, and Cloth Traditional Theatrical Masks",
+    "category": "HERITAGE_CRAFT",
+    "primaryProducingCluster": "Samaguri Satra, Majuli River Island",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Majuli_Mask_Mukha_Assam.jpg/800px-Majuli_Mask_Mukha_Assam.jpg"
+  },
+  {
+    "id": "cult-as-muga-silk",
+    "traditionName": "Assam Muga Silk Weaving",
+    "stateId": "IN-AS",
+    "stateName": "Assam",
+    "craftType": "Endemic Golden Silk Weaving",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Sualkuchi Textile Cluster, Kamrup",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Muga_Silk_Assam.jpg/800px-Muga_Silk_Assam.jpg"
+  },
+  {
+    "id": "cult-as-sarthebari",
+    "traditionName": "Sarthebari Bell Metal Craft",
+    "stateId": "IN-AS",
+    "stateName": "Assam",
+    "craftType": "Hand-Hammered Bronze/Kansa Traditional Vessels",
+    "category": "METAL_CRAFT",
+    "primaryProducingCluster": "Sarthebari, Barpeta District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Sarthebari_Bell_Metal_Kahi.jpg/800px-Sarthebari_Bell_Metal_Kahi.jpg"
+  },
+  {
+    "id": "cult-br-madhubani",
+    "traditionName": "Madhubani (Mithila) Painting",
+    "stateId": "IN-BR",
+    "stateName": "Bihar",
+    "craftType": "Twig, Nib, and Finger Line Painting with Natural Pigments",
+    "category": "PAINTING",
+    "primaryProducingCluster": "Jitwarpur & Ranti, Madhubani District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Madhubani_painting_Mithila.jpg/800px-Madhubani_painting_Mithila.jpg"
+  },
+  {
+    "id": "cult-br-sikki",
+    "traditionName": "Sikki Grass Craft of Bihar",
+    "stateId": "IN-BR",
+    "stateName": "Bihar",
+    "craftType": "Golden Grass Basketry and Structural Sculptures",
+    "category": "HANDICRAFT",
+    "primaryProducingCluster": "Madhubani & Darbhanga Districts",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Sikki_Grass_Craft_Bihar.jpg/800px-Sikki_Grass_Craft_Bihar.jpg"
+  },
+  {
+    "id": "cult-br-sujuni",
+    "traditionName": "Sujuni Embroidery of Bihar",
+    "stateId": "IN-BR",
+    "stateName": "Bihar",
+    "craftType": "Chain Stitch Storytelling Quilt Work on Tussar Silk",
+    "category": "EMBROIDERY",
+    "primaryProducingCluster": "Bhusra, Muzaffarpur District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Sujuni_Embroidery_Bihar.jpg/800px-Sujuni_Embroidery_Bihar.jpg"
+  },
+  {
+    "id": "cult-cg-bastar-dhokra",
+    "traditionName": "Bastar Dhokra (Bell Metal Craft)",
+    "stateId": "IN-CG",
+    "stateName": "Chhattisgarh",
+    "craftType": "Lost-Wax Hollow Casting of Brass and Bronze",
+    "category": "METAL_CRAFT",
+    "primaryProducingCluster": "Kondagaon & Jagdalpur, Bastar District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Bastar_Dhokra_Bell_Metal.jpg/800px-Bastar_Dhokra_Bell_Metal.jpg"
+  },
+  {
+    "id": "cult-cg-bastar-iron",
+    "traditionName": "Bastar Wrought Iron Craft (Loha Shilp)",
+    "stateId": "IN-CG",
+    "stateName": "Chhattisgarh",
+    "craftType": "Recycled Iron Forging over Charcoal Furnaces",
+    "category": "METAL_CRAFT",
+    "primaryProducingCluster": "Bastar & Kondagaon Districts",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Bastar_Iron_Craft_Loha_Shilp.jpg/800px-Bastar_Iron_Craft_Loha_Shilp.jpg"
+  },
+  {
+    "id": "cult-cg-terracotta",
+    "traditionName": "Bastar Terracotta Pottery",
+    "stateId": "IN-CG",
+    "stateName": "Chhattisgarh",
+    "craftType": "Fired Red Clay Figurines and Devotional Vessels",
+    "category": "POTTERY",
+    "primaryProducingCluster": "Nagarnar & Kondagaon, Bastar",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Bastar_Terracotta_Pottery.jpg/800px-Bastar_Terracotta_Pottery.jpg"
+  },
+  {
+    "id": "cult-ch-assemblage",
+    "traditionName": "Chandigarh Urban Folk Material Assemblage Art",
+    "stateId": "IN-CH",
+    "stateName": "Chandigarh",
+    "craftType": "Upcycled Industrial & Ceramic Waste Sculptural Assemblage",
+    "category": "SCULPTURE",
+    "primaryProducingCluster": "Sector 1 Heritage Precinct, Chandigarh",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Rock_Garden_Chandigarh_Sculpture_Assemblage.jpg/800px-Rock_Garden_Chandigarh_Sculpture_Assemblage.jpg"
+  },
+  {
+    "id": "cult-dh-warli",
+    "traditionName": "Silvassa & Daman Warli Indigenous Art",
+    "stateId": "IN-DH",
+    "stateName": "Dadra and Nagar Haveli and Daman and Diu",
+    "craftType": "Forest Ochre Clay Painting of Tarpa Dance and Agriculture",
+    "category": "FOLK_ART",
+    "primaryProducingCluster": "Silvassa & Daman Tribal Hamlets",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Daman_DNH_Warli_Art.jpg/800px-Daman_DNH_Warli_Art.jpg"
+  },
+  {
+    "id": "cult-dl-meenakari",
+    "traditionName": "Delhi Kundan & Meenakari Enamelling",
+    "stateId": "IN-DL",
+    "stateName": "Delhi",
+    "craftType": "Champleve and Cloisonne Enamel Fusion on Gold and Silver",
+    "category": "JEWELLERY",
+    "primaryProducingCluster": "Dariba Kalan, Old Delhi",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Meenakari_Enamelling_Art.jpg/800px-Meenakari_Enamelling_Art.jpg"
+  },
+  {
+    "id": "cult-dl-zardozi",
+    "traditionName": "Delhi Zardozi & Resham Embroidery",
+    "stateId": "IN-DL",
+    "stateName": "Delhi",
+    "craftType": "Three-Dimensional Metallic Thread (Kalabattu) Embroidery",
+    "category": "EMBROIDERY",
+    "primaryProducingCluster": "Chandni Chowk & Old Delhi Craft Quarters",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Zardozi_Metallic_Embroidery_Delhi.jpg/800px-Zardozi_Metallic_Embroidery_Delhi.jpg"
+  },
+  {
+    "id": "cult-ga-azulejos",
+    "traditionName": "Goan Hand-Painted Ceramic Tiles (Azulejos)",
+    "stateId": "IN-GA",
+    "stateName": "Goa",
+    "craftType": "Glazed Tin-Enamelled Ceramic Tile Painting",
+    "category": "POTTERY",
+    "primaryProducingCluster": "Panaji (Fontainhas) & Bicholim",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Goan_Azulejos_Tile.jpg/800px-Goan_Azulejos_Tile.jpg"
+  },
+  {
+    "id": "cult-ga-kunbi",
+    "traditionName": "Goan Kunbi Saree Weaving",
+    "stateId": "IN-GA",
+    "stateName": "Goa",
+    "craftType": "Checked Cotton Handloom Weave with Natural Dyes",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Chandor & Quepem, South Goa",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Kunbi_Saree_Goa.jpg/800px-Kunbi_Saree_Goa.jpg"
+  },
+  {
+    "id": "cult-gj-bandhani",
+    "traditionName": "Jamnagar & Kutch Bandhani (Tie & Dye)",
+    "stateId": "IN-GJ",
+    "stateName": "Gujarat",
+    "craftType": "Micro-Plucking and Resisting with Thread on Fine Silk/Cotton",
+    "category": "TEXTILE",
+    "primaryProducingCluster": "Jamnagar, Mandvi, Bhuj, Kutch District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Bandhani_Tie_and_Dye_Gujarat.jpg/800px-Bandhani_Tie_and_Dye_Gujarat.jpg"
+  },
+  {
+    "id": "cult-gj-kutch-lippan",
+    "traditionName": "Kutch Lippan Mud-Mirror Art (Lippan Kaam)",
+    "stateId": "IN-GJ",
+    "stateName": "Gujarat",
+    "craftType": "Clay and Inlaid Concave Mirror Relief Work",
+    "category": "FOLK_ART",
+    "primaryProducingCluster": "Banni Grasslands & Bhuj, Kutch District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Lippan_Kaam_Mud_Mirror_Work.jpg/800px-Lippan_Kaam_Mud_Mirror_Work.jpg"
+  },
+  {
+    "id": "cult-gj-patan-patola",
+    "traditionName": "Patan Double-Ikat Patola",
+    "stateId": "IN-GJ",
+    "stateName": "Gujarat",
+    "craftType": "Resham Silk Double-Ikat Weaving",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Patan Heritage Cluster",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Patan_Patola_Double_Ikat.jpg/800px-Patan_Patola_Double_Ikat.jpg"
+  },
+  {
+    "id": "cult-gj-rogan",
+    "traditionName": "Nirona Rogan Painting",
+    "stateId": "IN-GJ",
+    "stateName": "Gujarat",
+    "craftType": "Castor Oil Gel-Based Residue Painting with Metal Stylus",
+    "category": "FOLK_ART",
+    "primaryProducingCluster": "Nirona Village, Kutch District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Rogan_Art_Nirona_Kutch.jpg/800px-Rogan_Art_Nirona_Kutch.jpg"
+  },
+  {
+    "id": "cult-hp-chamba-rumal",
+    "traditionName": "Chamba Rumal Needlework",
+    "stateId": "IN-HP",
+    "stateName": "Himachal Pradesh",
+    "craftType": "Double Satin Stitch (Do-Rukha) Reversible Embroidery",
+    "category": "EMBROIDERY",
+    "primaryProducingCluster": "Chamba Heritage Cluster",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Chamba_Rumal_Embroidery.jpg/800px-Chamba_Rumal_Embroidery.jpg"
+  },
+  {
+    "id": "cult-hp-kangra-painting",
+    "traditionName": "Kangra Miniature Painting",
+    "stateId": "IN-HP",
+    "stateName": "Himachal Pradesh",
+    "craftType": "Pahari School Painting with Natural Stone Pigments",
+    "category": "PAINTING",
+    "primaryProducingCluster": "Kangra, Dharamshala & Guler",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Kangra_Miniature_Painting.jpg/800px-Kangra_Miniature_Painting.jpg"
+  },
+  {
+    "id": "cult-hp-kullu-shawl",
+    "traditionName": "Kullu Shawl Weaving",
+    "stateId": "IN-HP",
+    "stateName": "Himachal Pradesh",
+    "craftType": "Pure Wool Warp with Geometric Extra-Weft Borders",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Kullu, Naggar & Bhuntar Valley",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Kullu_Shawl_Geometric_Pattern.jpg/800px-Kullu_Shawl_Geometric_Pattern.jpg"
+  },
+  {
+    "id": "cult-hr-panipat-handloom",
+    "traditionName": "Panipat Durrie & Handloom Weaving",
+    "stateId": "IN-HR",
+    "stateName": "Haryana",
+    "craftType": "Coarse Cotton and Wool Handloom Flat-Weave Durries",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Panipat Textile Cluster",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Panipat_Handloom_Textiles.jpg/800px-Panipat_Handloom_Textiles.jpg"
+  },
+  {
+    "id": "cult-hr-rewari-metal",
+    "traditionName": "Rewari Brass & Metalware",
+    "stateId": "IN-HR",
+    "stateName": "Haryana",
+    "craftType": "Hand-Hammered Traditional Brass Cookware and Utensils",
+    "category": "METAL_CRAFT",
+    "primaryProducingCluster": "Rewari Heritage Cluster",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Rewari_Brass_Utensils.jpg/800px-Rewari_Brass_Utensils.jpg"
+  },
+  {
+    "id": "cult-jh-dhokra",
+    "traditionName": "Jharkhand Dokra Brass Metalcraft",
+    "stateId": "IN-JH",
+    "stateName": "Jharkhand",
+    "craftType": "Traditional Brass and Bronze Lost-Wax Hollow Casting",
+    "category": "METAL_CRAFT",
+    "primaryProducingCluster": "Khunti, Dumka & Ranchi Districts",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Dhokra_Craft_Tribal_Art.jpg/800px-Dhokra_Craft_Tribal_Art.jpg"
+  },
+  {
+    "id": "cult-jh-sohrai-khovar",
+    "traditionName": "Sohrai & Khovar Mural Painting",
+    "stateId": "IN-JH",
+    "stateName": "Jharkhand",
+    "craftType": "Ochre, Kaolin Clay, and Comb-Cut Earth Murals",
+    "category": "FOLK_ART",
+    "primaryProducingCluster": "Hazaribagh & Dumka Districts",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Sohrai_Painting_Hazaribagh.jpg/800px-Sohrai_Painting_Hazaribagh.jpg"
+  },
+  {
+    "id": "cult-jk-kani",
+    "traditionName": "Kani Shawl Weaving",
+    "stateId": "IN-JK",
+    "stateName": "Jammu & Kashmir",
+    "craftType": "Eyeless Wooden Bobbin (Tujis) Weaving using Coded Script",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Kanihama, Budgam District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Kani_Shawl_Weaving_Kashmir.jpg/800px-Kani_Shawl_Weaving_Kashmir.jpg"
+  },
+  {
+    "id": "cult-jk-paper-mache",
+    "traditionName": "Kashmir Paper Mache (Kari-Kalamdani)",
+    "stateId": "IN-JK",
+    "stateName": "Jammu & Kashmir",
+    "craftType": "Molded Waste Paper Pulp Painted with Fine Mineral Colors",
+    "category": "HERITAGE_CRAFT",
+    "primaryProducingCluster": "Srinagar & Anantnag",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Kashmir_Paper_Mache_Box.jpg/800px-Kashmir_Paper_Mache_Box.jpg"
+  },
+  {
+    "id": "cult-jk-pashmina",
+    "traditionName": "Kashmir Pashmina Shawl Weaving",
+    "stateId": "IN-JK",
+    "stateName": "Jammu & Kashmir",
+    "craftType": "Ultra-Fine Changthangi Cashmere Wool Hand-Spun Weaving",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Srinagar & Budgam Districts",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Kashmir_Pashmina_Shawl.jpg/800px-Kashmir_Pashmina_Shawl.jpg"
+  },
+  {
+    "id": "cult-jk-wood-carving",
+    "traditionName": "Kashmir Walnut Wood Carving",
+    "stateId": "IN-JK",
+    "stateName": "Jammu & Kashmir",
+    "craftType": "Deep Relief and Undercut Carving on Seasoned Walnut Wood",
+    "category": "WOOD_CRAFT",
+    "primaryProducingCluster": "Srinagar Heritage Craft Quarter",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Kashmir_Walnut_Wood_Carving.jpg/800px-Kashmir_Walnut_Wood_Carving.jpg"
+  },
+  {
+    "id": "cult-ka-bidriware",
+    "traditionName": "Bidriware Metal Inlay",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "craftType": "Zinc-Copper Alloy Inlaid with Pure Silver Wire",
+    "category": "METAL_CRAFT",
+    "primaryProducingCluster": "Bidar District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Bidriware_Vase_India.jpg/800px-Bidriware_Vase_India.jpg"
+  },
+  {
+    "id": "cult-ka-channapatna",
+    "traditionName": "Channapatna Wooden Toys & Lacquerware",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "craftType": "Turned Woodcraft with Natural Non-Toxic Lac Dyes",
+    "category": "WOOD_CRAFT",
+    "primaryProducingCluster": "Channapatna (Gombegala Ooru), Ramanagara",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Channapatna_toys_display.jpg/800px-Channapatna_toys_display.jpg"
+  },
+  {
+    "id": "cult-ka-ilkal",
+    "traditionName": "Ilkal Saree Weaving",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "craftType": "Cotton-Silk Warp Weaving with Tope Teni Seragu",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Ilkal, Bagalkot District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Ilkal_saree_pallu.jpg/800px-Ilkal_saree_pallu.jpg"
+  },
+  {
+    "id": "cult-ka-mysore-silk",
+    "traditionName": "Mysore Silk Weaving",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "craftType": "Pure Crepe-de-Chine Silk with Pure Gold Zari",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Mysore & Ramanagara Districts",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Mysore_Silk_Saree.jpg/800px-Mysore_Silk_Saree.jpg"
+  },
+  {
+    "id": "cult-kl-aranmula",
+    "traditionName": "Aranmula Kannadi (Metal Mirror)",
+    "stateId": "IN-KL",
+    "stateName": "Kerala",
+    "craftType": "Front-Surface Reflecting Metallurgical Bell-Metal Alloy",
+    "category": "METAL_CRAFT",
+    "primaryProducingCluster": "Aranmula, Pathanamthitta District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Aranmula_kannadi_mirror.jpg/800px-Aranmula_kannadi_mirror.jpg"
+  },
+  {
+    "id": "cult-kl-balaramapuram",
+    "traditionName": "Balaramapuram Kasavu Sarees & Mundu",
+    "stateId": "IN-KL",
+    "stateName": "Kerala",
+    "craftType": "Unbleached Fine Kasavu Cotton Weaving",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Balaramapuram, Thiruvananthapuram District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Kasavu_Mundu_Kerala.jpg/800px-Kasavu_Mundu_Kerala.jpg"
+  },
+  {
+    "id": "cult-kl-coir",
+    "traditionName": "Kerala Coir Craft Traditions",
+    "stateId": "IN-KL",
+    "stateName": "Kerala",
+    "craftType": "Natural Coconut Husk Fiber Spinning & Loom Weaving",
+    "category": "HANDICRAFT",
+    "primaryProducingCluster": "Alappuzha (Alleppey) Coir Belt",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Coir_spinning_wheel_Kerala.jpg/800px-Coir_spinning_wheel_Kerala.jpg"
+  },
+  {
+    "id": "cult-kl-kathakali",
+    "traditionName": "Kathakali Classical Dance-Drama",
+    "stateId": "IN-KL",
+    "stateName": "Kerala",
+    "craftType": "Classical Dance-Theatre with Stylized Makeup (Aharya)",
+    "category": "PERFORMING_ART",
+    "primaryProducingCluster": "Cheruthuruthy, Kalamandalam & Fort Kochi",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Kathakali_dancer_performing.jpg/800px-Kathakali_dancer_performing.jpg"
+  },
+  {
+    "id": "cult-la-pashmina",
+    "traditionName": "Ladakh Pashmina (Lena)",
+    "stateId": "IN-LA",
+    "stateName": "Ladakh",
+    "craftType": "Raw Mountain Changthangi Cashmere Fiber Processing",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Changthang Plateau & Leh",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Changthangi_Goat_Ladakh_Pashmina.jpg/800px-Changthangi_Goat_Ladakh_Pashmina.jpg"
+  },
+  {
+    "id": "cult-la-thangka",
+    "traditionName": "Ladakhi Monastic Thangka Scroll Art",
+    "stateId": "IN-LA",
+    "stateName": "Ladakh",
+    "craftType": "Mineral Color Tibetan Buddhist Scroll Painting",
+    "category": "PAINTING",
+    "primaryProducingCluster": "Leh, Hemis & Thiksey Monasteries",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Ladakh_Thangka_Scroll.jpg/800px-Ladakh_Thangka_Scroll.jpg"
+  },
+  {
+    "id": "cult-la-wood-carving",
+    "traditionName": "Ladakhi Wood Carving (Shingszo)",
+    "stateId": "IN-LA",
+    "stateName": "Ladakh",
+    "craftType": "Structural and Altar Wood Carving with Dragon Reliefs",
+    "category": "WOOD_CRAFT",
+    "primaryProducingCluster": "Leh & Choglamsar",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Ladakh_Wood_Carving_Dragon.jpg/800px-Ladakh_Wood_Carving_Dragon.jpg"
+  },
+  {
+    "id": "cult-ld-coir-craft",
+    "traditionName": "Lakshadweep Coir Fiber Twisting & Shell Art",
+    "stateId": "IN-LD",
+    "stateName": "Lakshadweep",
+    "craftType": "Sea-Soaked Coconut Husk White Coir Twisting",
+    "category": "HANDICRAFT",
+    "primaryProducingCluster": "Kavaratti & Minicoy Islands",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Lakshadweep_Coir_Craft.jpg/800px-Lakshadweep_Coir_Craft.jpg"
+  },
+  {
+    "id": "cult-mh-kolhapuri",
+    "traditionName": "Kolhapuri Handcrafted Leather Footwear",
+    "stateId": "IN-MH",
+    "stateName": "Maharashtra",
+    "craftType": "Vegetable-Tanned Leather with Hard-Pressed Knot Braiding",
+    "category": "HERITAGE_CRAFT",
+    "primaryProducingCluster": "Kolhapur & Miraj Clusters",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Kolhapuri_Chappal_Leather.jpg/800px-Kolhapuri_Chappal_Leather.jpg"
+  },
+  {
+    "id": "cult-mh-paithani",
+    "traditionName": "Paithani Silk Saree Weaving",
+    "stateId": "IN-MH",
+    "stateName": "Maharashtra",
+    "craftType": "Tapestry Weaving with Pure Gold and Silver Zari Pallu",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Paithan & Yeola (Nashik)",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Paithani_Saree_Pallu_Peacock.jpg/800px-Paithani_Saree_Pallu_Peacock.jpg"
+  },
+  {
+    "id": "cult-mh-warli",
+    "traditionName": "Warli Tribal Painting",
+    "stateId": "IN-MH",
+    "stateName": "Maharashtra",
+    "craftType": "Indigenous Rice Paste and Gum Geometrical Murals",
+    "category": "PAINTING",
+    "primaryProducingCluster": "Dahanu, Jawhar & Palghar District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Warli_Painting_Maharashtra.jpg/800px-Warli_Painting_Maharashtra.jpg"
+  },
+  {
+    "id": "cult-ml-khasi-cane",
+    "traditionName": "Khasi Cane & Bamboo Craft",
+    "stateId": "IN-ML",
+    "stateName": "Meghalaya",
+    "craftType": "Splitting and Weaving of Indigenous Forest Cane",
+    "category": "HANDICRAFT",
+    "primaryProducingCluster": "Sohra (Cherrapunji) & East Khasi Hills",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Khasi_Cane_Bamboo_Knup.jpg/800px-Khasi_Cane_Bamboo_Knup.jpg"
+  },
+  {
+    "id": "cult-ml-ryndia-eri",
+    "traditionName": "Meghalaya Ryndia (Eri Peace Silk) Weaving",
+    "stateId": "IN-ML",
+    "stateName": "Meghalaya",
+    "craftType": "Ahimsa Silk Hand-Spun and Natural Vegetable Dyed",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Umden Silk Village, Ri-Bhoi District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Ryndia_Eri_Silk_Meghalaya.jpg/800px-Ryndia_Eri_Silk_Meghalaya.jpg"
+  },
+  {
+    "id": "cult-mn-kauna-craft",
+    "traditionName": "Kauna Reed & Grass Craft",
+    "stateId": "IN-MN",
+    "stateName": "Manipur",
+    "craftType": "Woven Wetland Reed Mats and Structured Baskets",
+    "category": "HANDICRAFT",
+    "primaryProducingCluster": "Thanga, Loktak Lake & Imphal",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Kauna_Reed_Craft_Manipur.jpg/800px-Kauna_Reed_Craft_Manipur.jpg"
+  },
+  {
+    "id": "cult-mn-longpi",
+    "traditionName": "Longpi Black Stone Pottery (Longpi Ham)",
+    "stateId": "IN-MN",
+    "stateName": "Manipur",
+    "craftType": "Serpentinite Stone and Clay Hand-Molded Pottery",
+    "category": "POTTERY",
+    "primaryProducingCluster": "Longpi (Nungbi) Village, Ukhrul District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Longpi_Black_Pottery_Manipur.jpg/800px-Longpi_Black_Pottery_Manipur.jpg"
+  },
+  {
+    "id": "cult-mn-moirang-phee",
+    "traditionName": "Moirang Phee Handloom Weaving",
+    "stateId": "IN-MN",
+    "stateName": "Manipur",
+    "craftType": "Cotton and Silk Weave with Temple Gate Border Motifs",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Moirang & Imphal Valley",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Moirang_Phee_Handloom_Manipur.jpg/800px-Moirang_Phee_Handloom_Manipur.jpg"
+  },
+  {
+    "id": "cult-mp-bagh",
+    "traditionName": "Bagh Print of Madhya Pradesh",
+    "stateId": "IN-MP",
+    "stateName": "Madhya Pradesh",
+    "craftType": "Natural Alizarin & Iron Acetate Block Printing",
+    "category": "TEXTILE",
+    "primaryProducingCluster": "Bagh, Dhar District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Bagh_Print_Textile_MP.jpg/800px-Bagh_Print_Textile_MP.jpg"
+  },
+  {
+    "id": "cult-mp-chanderi",
+    "traditionName": "Chanderi Silk & Cotton Weaving",
+    "stateId": "IN-MP",
+    "stateName": "Madhya Pradesh",
+    "craftType": "Fine Sheer Weave with Traditional Bootis and Zari",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Chanderi, Ashoknagar District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Chanderi_Fabric_Weaving.jpg/800px-Chanderi_Fabric_Weaving.jpg"
+  },
+  {
+    "id": "cult-mp-gond",
+    "traditionName": "Gond Tribal Painting",
+    "stateId": "IN-MP",
+    "stateName": "Madhya Pradesh",
+    "craftType": "Dot and Fine-Line Narrative Painting of Flora and Fauna",
+    "category": "PAINTING",
+    "primaryProducingCluster": "Patangarh, Dindori & Mandla Districts",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Gond_Painting_Madhya_Pradesh.jpg/800px-Gond_Painting_Madhya_Pradesh.jpg"
+  },
+  {
+    "id": "cult-mz-bamboo",
+    "traditionName": "Mizo Bamboo Hat & Basketry (Khumbeu)",
+    "stateId": "IN-MZ",
+    "stateName": "Mizoram",
+    "craftType": "Water-Resistant Woven Bamboo Craft",
+    "category": "HANDICRAFT",
+    "primaryProducingCluster": "Aizawl & Champhai Districts",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Mizo_Bamboo_Hat_Khumbeu.jpg/800px-Mizo_Bamboo_Hat_Khumbeu.jpg"
+  },
+  {
+    "id": "cult-mz-puan",
+    "traditionName": "Mizo Puan Handloom Weaving",
+    "stateId": "IN-MZ",
+    "stateName": "Mizoram",
+    "craftType": "Backstrap and Frame-Loom Traditional Ceremonial Weaving",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Thenzawl Handloom City & Aizawl",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Mizo_Puan_Handloom.jpg/800px-Mizo_Puan_Handloom.jpg"
+  },
+  {
+    "id": "cult-nl-naga-shawl",
+    "traditionName": "Naga Chakesang & Angami Shawl Weaving",
+    "stateId": "IN-NL",
+    "stateName": "Nagaland",
+    "craftType": "Backstrap Loom Extra-Weft Heritage Weaving",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Kohima, Dimapur & Phek Districts",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Naga_Traditional_Shawl_Weaving.jpg/800px-Naga_Traditional_Shawl_Weaving.jpg"
+  },
+  {
+    "id": "cult-nl-wood-carving",
+    "traditionName": "Naga Tribal Wood Carving",
+    "stateId": "IN-NL",
+    "stateName": "Nagaland",
+    "craftType": "Morung Pillar and Village Gate Hardwood Relief Carving",
+    "category": "WOOD_CRAFT",
+    "primaryProducingCluster": "Mon & Mokokchung Districts",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Naga_Morung_Wood_Carving.jpg/800px-Naga_Morung_Wood_Carving.jpg"
+  },
+  {
+    "id": "cult-od-cuttack-tarakasi",
+    "traditionName": "Cuttack Silver Filigree (Tarakasi)",
+    "stateId": "IN-OD",
+    "stateName": "Odisha",
+    "craftType": "Drawn Fine Silver Wire Lattice Craft",
+    "category": "METAL_CRAFT",
+    "primaryProducingCluster": "Cuttack Heritage Cluster",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Tarakasi_Silver_Filigree_Cuttack.jpg/800px-Tarakasi_Silver_Filigree_Cuttack.jpg"
+  },
+  {
+    "id": "cult-od-pattachitra",
+    "traditionName": "Raghurajpur Pattachitra Painting",
+    "stateId": "IN-OD",
+    "stateName": "Odisha",
+    "craftType": "Palm Leaf & Treated Cloth Scroll Painting",
+    "category": "PAINTING",
+    "primaryProducingCluster": "Raghurajpur & Puri Heritage Village",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Pattachitra_Raghurajpur.jpg/800px-Pattachitra_Raghurajpur.jpg"
+  },
+  {
+    "id": "cult-od-pipili",
+    "traditionName": "Pipili Applique Work",
+    "stateId": "IN-OD",
+    "stateName": "Odisha",
+    "craftType": "Layered Fabric Cutwork & Embroidery",
+    "category": "HANDICRAFT",
+    "primaryProducingCluster": "Pipili, Puri District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Pipili_Applique_Work.jpg/800px-Pipili_Applique_Work.jpg"
+  },
+  {
+    "id": "cult-od-sambalpuri",
+    "traditionName": "Sambalpuri Bandha Ikat Weaving",
+    "stateId": "IN-OD",
+    "stateName": "Odisha",
+    "craftType": "Warp & Weft Tie-Dye Handloom Weaving",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Bargarh, Sonepur & Sambalpur Districts",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Sambalpuri_Ikat_Saree.jpg/800px-Sambalpuri_Ikat_Saree.jpg"
+  },
+  {
+    "id": "cult-pb-jutti",
+    "traditionName": "Muktsar & Patiala Handcrafted Jutti",
+    "stateId": "IN-PB",
+    "stateName": "Punjab",
+    "craftType": "Vegetable Tanned Leather with Tilla (Metallic) Embroidery",
+    "category": "HERITAGE_CRAFT",
+    "primaryProducingCluster": "Sri Muktsar Sahib & Patiala",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Punjabi_Jutti_Handcrafted.jpg/800px-Punjabi_Jutti_Handcrafted.jpg"
+  },
+  {
+    "id": "cult-pb-phulkari",
+    "traditionName": "Punjab Phulkari Needlework Embroidery",
+    "stateId": "IN-PB",
+    "stateName": "Punjab",
+    "craftType": "Darning Stitch on Coarse Khaddar with Untwisted Silk Floss",
+    "category": "EMBROIDERY",
+    "primaryProducingCluster": "Patiala, Amritsar & Bathinda Districts",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Phulkari_Dupatta_Punjab.jpg/800px-Phulkari_Dupatta_Punjab.jpg"
+  },
+  {
+    "id": "cult-py-handmade-paper",
+    "traditionName": "Puducherry Handmade Cotton Rag Paper",
+    "stateId": "IN-PY",
+    "stateName": "Puducherry",
+    "craftType": "Recycled Cotton Rag Sheet Molding and Calendering",
+    "category": "HERITAGE_CRAFT",
+    "primaryProducingCluster": "Sri Aurobindo Ashram Paper Unit, Puducherry",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Puducherry_Handmade_Paper_Craft.jpg/800px-Puducherry_Handmade_Paper_Craft.jpg"
+  },
+  {
+    "id": "cult-py-terracotta",
+    "traditionName": "Villianur Terracotta Craft",
+    "stateId": "IN-PY",
+    "stateName": "Puducherry",
+    "craftType": "Fine-Textured Silt Clay Modeling of Votive Sculptures",
+    "category": "POTTERY",
+    "primaryProducingCluster": "Villianur, Puducherry",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Villianur_Terracotta_Puducherry.jpg/800px-Villianur_Terracotta_Puducherry.jpg"
+  },
+  {
+    "id": "cult-rj-bagru-print",
+    "traditionName": "Bagru Hand Block Printing",
+    "stateId": "IN-RJ",
+    "stateName": "Rajasthan",
+    "craftType": "Dabu Mud-Resist and Natural Vegetable Dye Block Printing",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Bagru, Jaipur District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Bagru_Block_Printing_Rajasthan.jpg/800px-Bagru_Block_Printing_Rajasthan.jpg"
+  },
+  {
+    "id": "cult-rj-blue-pottery",
+    "traditionName": "Jaipur Blue Pottery",
+    "stateId": "IN-RJ",
+    "stateName": "Rajasthan",
+    "craftType": "Low-Fire Quartz Stone and Glass Glazed Craft",
+    "category": "POTTERY",
+    "primaryProducingCluster": "Jaipur & Kot Jewar",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Jaipur_Blue_Pottery_Plates.jpg/800px-Jaipur_Blue_Pottery_Plates.jpg"
+  },
+  {
+    "id": "cult-rj-pichwai",
+    "traditionName": "Nathdwara Pichwai Painting",
+    "stateId": "IN-RJ",
+    "stateName": "Rajasthan",
+    "craftType": "Temple Cloth Backdrop Painting with Natural Stone Pigments",
+    "category": "PAINTING",
+    "primaryProducingCluster": "Nathdwara, Rajsamand District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Nathdwara_Pichwai_Shrinathji.jpg/800px-Nathdwara_Pichwai_Shrinathji.jpg"
+  },
+  {
+    "id": "cult-rj-thewa",
+    "traditionName": "Thewa Gold Work on Glass",
+    "stateId": "IN-RJ",
+    "stateName": "Rajasthan",
+    "craftType": "Intricate 24K Gold Foil Fused on Colored Glass",
+    "category": "METAL_CRAFT",
+    "primaryProducingCluster": "Pratapgarh Heritage Cluster",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Thewa_Jewellery_Gold_Work.jpg/800px-Thewa_Jewellery_Gold_Work.jpg"
+  },
+  {
+    "id": "cult-sk-choktse",
+    "traditionName": "Sikkim Wood Carved Tables (Choktse)",
+    "stateId": "IN-SK",
+    "stateName": "Sikkim",
+    "craftType": "Foldable Altar Tables with Buddhist Symbolic Reliefs",
+    "category": "WOOD_CRAFT",
+    "primaryProducingCluster": "Gangtok & Ravangla",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Choktse_Table_Woodcarving_Sikkim.jpg/800px-Choktse_Table_Woodcarving_Sikkim.jpg"
+  },
+  {
+    "id": "cult-sk-thangka",
+    "traditionName": "Sikkimese Buddhist Thangka Painting",
+    "stateId": "IN-SK",
+    "stateName": "Sikkim",
+    "craftType": "Silk Applique and Gouache Scroll Painting",
+    "category": "PAINTING",
+    "primaryProducingCluster": "Directorate of Handicrafts and Handlooms, Gangtok",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Sikkim_Buddhist_Thangka.jpg/800px-Sikkim_Buddhist_Thangka.jpg"
+  },
+  {
+    "id": "cult-tg-cheriyal",
+    "traditionName": "Cheriyal Scroll Painting & Masks",
+    "stateId": "IN-TG",
+    "stateName": "Telangana",
+    "craftType": "Narrative Scroll Painting on Khadi & Tamarind Paste",
+    "category": "FOLK_ART",
+    "primaryProducingCluster": "Cheriyal, Siddipet & Jangaon Districts",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Cheriyal_scroll_painting.jpg/800px-Cheriyal_scroll_painting.jpg"
+  },
+  {
+    "id": "cult-tg-pembarthi",
+    "traditionName": "Pembarthi Metal Craft",
+    "stateId": "IN-TG",
+    "stateName": "Telangana",
+    "craftType": "Sheet Metal Brass Repousse and Engraving",
+    "category": "METAL_CRAFT",
+    "primaryProducingCluster": "Pembarthi, Jangaon District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Pembarthi_sheet_metal_art.jpg/800px-Pembarthi_sheet_metal_art.jpg"
+  },
+  {
+    "id": "cult-tg-pochampally",
+    "traditionName": "Pochampally Ikat (Tie & Dye)",
+    "stateId": "IN-TG",
+    "stateName": "Telangana",
+    "craftType": "Geometric Double-Ikat Silk & Cotton Weaving",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Bhoodan Pochampally & Koyalagudem, Yadadri Bhuvanagiri",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Pochampally_sari.jpg/800px-Pochampally_sari.jpg"
+  },
+  {
+    "id": "cult-tn-kanchipuram",
+    "traditionName": "Kanchipuram Silk Sarees",
+    "stateId": "IN-TN",
+    "stateName": "Tamil Nadu",
+    "craftType": "Heavy Mulberry Silk with Korvai Interlocking Zari Border",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Kanchipuram District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Kanchipuram_Silk_Weaving.jpg/800px-Kanchipuram_Silk_Weaving.jpg"
+  },
+  {
+    "id": "cult-tn-swamimalai",
+    "traditionName": "Swamimalai Bronze Icons",
+    "stateId": "IN-TN",
+    "stateName": "Tamil Nadu",
+    "craftType": "Lost-Wax (Cire Perdue) Solid Bronze Casting",
+    "category": "METAL_CRAFT",
+    "primaryProducingCluster": "Swamimalai, Thanjavur District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Swamimalai_Bronze_Idol.jpg/800px-Swamimalai_Bronze_Idol.jpg"
+  },
+  {
+    "id": "cult-tn-thanjavur-painting",
+    "traditionName": "Thanjavur Gold Leaf Painting",
+    "stateId": "IN-TN",
+    "stateName": "Tamil Nadu",
+    "craftType": "Relief Work with Pure 22K Gold Foil and Gem Inlays",
+    "category": "PAINTING",
+    "primaryProducingCluster": "Thanjavur District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Thanjavur_painting_Ganesha.jpg/800px-Thanjavur_painting_Ganesha.jpg"
+  },
+  {
+    "id": "cult-tn-toda",
+    "traditionName": "Toda Tribal Embroidery (Pukhoor)",
+    "stateId": "IN-TN",
+    "stateName": "Tamil Nadu",
+    "craftType": "Geometric Counted-Thread Embroidery on Raw Cotton",
+    "category": "EMBROIDERY",
+    "primaryProducingCluster": "Nilgiris Biosphere, Ooty & Kodaikanal",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Toda_Embroidery_Shawl.jpg/800px-Toda_Embroidery_Shawl.jpg"
+  },
+  {
+    "id": "cult-tr-cane-bamboo",
+    "traditionName": "Tripura Bamboo & Cane Screen Craft",
+    "stateId": "IN-TR",
+    "stateName": "Tripura",
+    "craftType": "Fine Split Bamboo Screens, Partitions, and Lamp Shades",
+    "category": "HANDICRAFT",
+    "primaryProducingCluster": "Agartala & Kailashahar",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Tripura_Bamboo_Screens_Craft.jpg/800px-Tripura_Bamboo_Screens_Craft.jpg"
+  },
+  {
+    "id": "cult-tr-risa",
+    "traditionName": "Tripura Risa Handloom Textile",
+    "stateId": "IN-TR",
+    "stateName": "Tripura",
+    "craftType": "Traditional Indigenous Female Upper Garment on Loin Loom",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Agartala & Radhakishorepur",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Tripura_Risa_Textile.jpg/800px-Tripura_Risa_Textile.jpg"
+  },
+  {
+    "id": "cult-up-firozabad-glass",
+    "traditionName": "Firozabad Glass & Bangle Craft",
+    "stateId": "IN-UP",
+    "stateName": "Uttar Pradesh",
+    "craftType": "Blown and Molded Glass Fusion and Lustrous Bangles",
+    "category": "HERITAGE_CRAFT",
+    "primaryProducingCluster": "Firozabad Craft Cluster",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Firozabad_Glass_Bangles.jpg/800px-Firozabad_Glass_Bangles.jpg"
+  },
+  {
+    "id": "cult-up-lucknow-chikan",
+    "traditionName": "Lucknow Chikankari Embroidery",
+    "stateId": "IN-UP",
+    "stateName": "Uttar Pradesh",
+    "craftType": "White-on-White Shadow Work and Needle Embroidery",
+    "category": "EMBROIDERY",
+    "primaryProducingCluster": "Lucknow Heritage Craft Cluster",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Lucknow_Chikan_Embroidery.jpg/800px-Lucknow_Chikan_Embroidery.jpg"
+  },
+  {
+    "id": "cult-up-moradabad-brass",
+    "traditionName": "Moradabad Metal Craft (Brassware)",
+    "stateId": "IN-UP",
+    "stateName": "Uttar Pradesh",
+    "craftType": "Sand Casting, Engraving, and Chemical Lacquering",
+    "category": "METAL_CRAFT",
+    "primaryProducingCluster": "Moradabad Peetal Nagri Cluster",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Moradabad_Brassware_Work.jpg/800px-Moradabad_Brassware_Work.jpg"
+  },
+  {
+    "id": "cult-up-varanasi-silk",
+    "traditionName": "Banaras Brocade & Silk Sarees",
+    "stateId": "IN-UP",
+    "stateName": "Uttar Pradesh",
+    "craftType": "Pure Silk Warp with Kadhwa and Tanchoi Zari Inlay",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Varanasi & Mubarakpur",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Banarasi_Silk_Saree_Weave.jpg/800px-Banarasi_Silk_Saree_Weave.jpg"
+  },
+  {
+    "id": "cult-ut-aipan",
+    "traditionName": "Kumaoni Aipan Folk Art",
+    "stateId": "IN-UT",
+    "stateName": "Uttarakhand",
+    "craftType": "Geometrical Ritual Floor and Wall Art using Rice Paste",
+    "category": "FOLK_ART",
+    "primaryProducingCluster": "Almora, Nainital & Kumaon Region",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Aipan_Art_Uttarakhand.jpg/800px-Aipan_Art_Uttarakhand.jpg"
+  },
+  {
+    "id": "cult-ut-ringal",
+    "traditionName": "Uttarakhand Ringal Bamboo Craft",
+    "stateId": "IN-UT",
+    "stateName": "Uttarakhand",
+    "craftType": "Weaving of Hill Arundinaria (Ringal) Bamboo",
+    "category": "HANDICRAFT",
+    "primaryProducingCluster": "Chamoli, Uttarkashi & Pithoragarh",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Ringal_Bamboo_Craft_Himalayas.jpg/800px-Ringal_Bamboo_Craft_Himalayas.jpg"
+  },
+  {
+    "id": "cult-ut-thulma",
+    "traditionName": "Uttarakhand Thulma Woolen Blankets",
+    "stateId": "IN-UT",
+    "stateName": "Uttarakhand",
+    "craftType": "Heavy Hand-Spun Sheep Wool Fluffy Blankets",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Dharchula, Munsiyari & Chamoli",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Thulma_Blanket_Weave_Uttarakhand.jpg/800px-Thulma_Blanket_Weave_Uttarakhand.jpg"
+  },
+  {
+    "id": "cult-wb-baluchari",
+    "traditionName": "Baluchari Silk Brocade Weaving",
+    "stateId": "IN-WB",
+    "stateName": "West Bengal",
+    "craftType": "Jacquard & Jala Loom Epic Narrative Weaving",
+    "category": "HANDLOOM",
+    "primaryProducingCluster": "Bishnupur, Bankura District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Baluchari_Saree_Motif.jpg/800px-Baluchari_Saree_Motif.jpg"
+  },
+  {
+    "id": "cult-wb-bankura-terracotta",
+    "traditionName": "Bankura Terracotta Craft & Horses",
+    "stateId": "IN-WB",
+    "stateName": "West Bengal",
+    "craftType": "Traditional Red Clay Kiln-Fired Structural Art",
+    "category": "POTTERY",
+    "primaryProducingCluster": "Panchmura & Bishnupur, Bankura District",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Bankura_Horse_Bishnupur.jpg/800px-Bankura_Horse_Bishnupur.jpg"
+  },
+  {
+    "id": "cult-wb-dokra",
+    "traditionName": "Bengal Dokra Metalcraft",
+    "stateId": "IN-WB",
+    "stateName": "West Bengal",
+    "craftType": "Non-Ferrous Lost-Wax Metal Casting",
+    "category": "METAL_CRAFT",
+    "primaryProducingCluster": "Bikna (Bankura) & Dariyapur (Purba Bardhaman)",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Dokra_artifact_Bengal.jpg/800px-Dokra_artifact_Bengal.jpg"
+  },
+  {
+    "id": "cult-wb-kantha",
+    "traditionName": "Nakshi Kantha Embroidery",
+    "stateId": "IN-WB",
+    "stateName": "West Bengal",
+    "craftType": "Running Stitch Storytelling Embroidery",
+    "category": "EMBROIDERY",
+    "primaryProducingCluster": "Birbhum, Shantiniketan & Murshidabad",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Kantha_stitch_embroidery.jpg/800px-Kantha_stitch_embroidery.jpg"
+  }
+]

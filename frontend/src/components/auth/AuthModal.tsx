@@ -20,6 +20,7 @@ export default function AuthModal() {
     isAuthModalOpen,
     closeAuthModal,
     authModalTargetRole,
+    authModalReturnTo,
     login,
     loginAsDemo,
   } = useAuth();
@@ -70,14 +71,18 @@ export default function AuthModal() {
     }
     setError(null);
     setLoading(true);
+    const targetRole = authModalTargetRole;
+    const returnTo = authModalReturnTo;
     try {
       await login(email, password);
       closeAuthModal();
       // Route appropriately if target was set
-      if (authModalTargetRole === 'PARTNER') {
-        router.push('/partner/dashboard');
-      } else if (authModalTargetRole === 'GOVERNMENT') {
-        router.push('/government/dashboard');
+      if (targetRole === 'PARTNER') {
+        router.push(returnTo && returnTo.startsWith('/partner') ? returnTo : '/partner/dashboard');
+      } else if (targetRole === 'GOVERNMENT') {
+        router.push(returnTo && returnTo.startsWith('/government') ? returnTo : '/government/dashboard');
+      } else {
+        router.push(returnTo || '/explore');
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to sign in. Please verify your credentials.';
@@ -90,16 +95,17 @@ export default function AuthModal() {
   const handleSelectDemo = async (role: 'TRAVELER' | 'PARTNER' | 'GOVERNMENT') => {
     setDemoLoadingRole(role);
     setError(null);
+    const returnTo = authModalReturnTo;
     try {
       await loginAsDemo(role);
       closeAuthModal();
 
       if (role === 'PARTNER') {
-        router.push('/partner/dashboard');
+        router.push(returnTo && returnTo.startsWith('/partner') ? returnTo : '/partner/dashboard');
       } else if (role === 'GOVERNMENT') {
-        router.push('/government/dashboard');
+        router.push(returnTo && returnTo.startsWith('/government') ? returnTo : '/government/dashboard');
       } else {
-        router.push('/explore');
+        router.push(returnTo || '/explore');
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Demo sign-in failed. Please try again.';

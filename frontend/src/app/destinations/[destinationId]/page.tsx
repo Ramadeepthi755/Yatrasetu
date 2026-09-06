@@ -231,8 +231,10 @@ export default function DestinationDetailPage() {
               onError={() => setImageError(true)}
             />
           ) : (
-            <div className="h-full w-full bg-gradient-to-br from-indigo-950 via-teal-900 to-amber-900 flex items-center justify-center">
-              <Compass className="h-24 w-24 text-amber-400 opacity-30" />
+            <div className="h-full w-full bg-stone-900 flex items-center justify-center">
+              <span className="text-xs font-medium text-stone-500">
+                Destination photography currently unavailable
+              </span>
             </div>
           )}
 

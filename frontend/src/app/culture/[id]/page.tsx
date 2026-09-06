@@ -223,17 +223,16 @@ export default function CulturalTraditionDetailPage() {
                 />
               </div>
             ) : (
-              <div className="w-full lg:w-96 h-56 rounded-3xl p-6 bg-gradient-to-br from-stone-900 to-indigo-950/80 border border-stone-800 flex flex-col justify-between text-stone-300 flex-shrink-0">
+              <div className="w-full lg:w-96 h-56 rounded-3xl p-6 bg-stone-900 border border-stone-800 flex flex-col justify-between text-stone-300 flex-shrink-0">
                 <div>
-                  <Landmark className="h-8 w-8 text-amber-400 mb-2" />
-                  <h4 className="text-sm font-bold text-white uppercase tracking-wider">
+                  <h4 className="text-sm font-bold text-stone-200 uppercase tracking-wider">
                     {categoryLabel}
                   </h4>
-                  <p className="text-xs text-stone-400 mt-1">
-                    Authentic regional craft documented in official Indian cultural registry.
+                  <p className="text-xs text-stone-400 mt-2">
+                    Authentic craft photography currently unavailable in official registry.
                   </p>
                 </div>
-                <div className="text-[11px] text-amber-300/80 font-mono">
+                <div className="text-[11px] text-stone-500 font-mono">
                   Registry Code: {tradition.id}
                 </div>
               </div>

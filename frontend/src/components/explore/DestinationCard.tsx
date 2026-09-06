@@ -10,44 +10,6 @@ interface DestinationCardProps {
   featured?: boolean;
 }
 
-// Consistent fallback imagery gradients & iconography based on region/tripType
-function getFallbackVisual(destination: DestinationSummary) {
-  const types = (destination.tripTypes || []).map(t => t.toLowerCase());
-  if (types.some(t => t.includes('beach') || t.includes('coast'))) {
-    return {
-      gradient: 'from-blue-600 via-teal-500 to-amber-200',
-      tag: 'Coastal Haven',
-      emoji: '🏖️',
-    };
-  }
-  if (types.some(t => t.includes('trek') || t.includes('hill') || t.includes('mountain') || t.includes('nature'))) {
-    return {
-      gradient: 'from-emerald-700 via-teal-600 to-amber-500',
-      tag: 'Mountain Vista',
-      emoji: '⛰️',
-    };
-  }
-  if (types.some(t => t.includes('heritage') || t.includes('monument') || t.includes('history') || t.includes('palace'))) {
-    return {
-      gradient: 'from-amber-700 via-rose-700 to-indigo-900',
-      tag: 'Royal Heritage',
-      emoji: '🏰',
-    };
-  }
-  if (types.some(t => t.includes('spiritual') || t.includes('religious') || t.includes('temple'))) {
-    return {
-      gradient: 'from-amber-600 via-orange-500 to-indigo-800',
-      tag: 'Spiritual Sacred',
-      emoji: '🕉️',
-    };
-  }
-  return {
-    gradient: 'from-indigo-900 via-teal-800 to-amber-600',
-    tag: 'Indian Wonder',
-    emoji: '✨',
-  };
-}
-
 // Format factual and clean location label without raw administrative slashes
 function formatLocationLabel(destination: DestinationSummary): string {
   const isCircuit = destination.destinationName.toLowerCase().includes('circuit') ||
@@ -82,7 +44,6 @@ export function DestinationCard({ destination, featured = false }: DestinationCa
   const [isSaved, setIsSaved] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  const fallback = getFallbackVisual(destination);
   const hasImage = destination.heroImageUrl && destination.heroImageUrl.trim() !== '' && !imageError;
   const locationLabel = formatLocationLabel(destination);
   const accessibleAlt = `${destination.destinationName} landscape and cultural heritage, ${destination.stateName || 'India'}`;
@@ -111,10 +72,12 @@ export function DestinationCard({ destination, featured = false }: DestinationCa
             loading="lazy"
           />
         ) : (
-          <div className={`h-full w-full bg-gradient-to-br ${fallback.gradient} flex flex-col items-center justify-center p-6 text-white text-center transition-transform duration-500 group-hover:scale-105`}>
-            <span className="text-4xl mb-2 drop-shadow-md">{fallback.emoji}</span>
-            <span className="text-xs font-semibold uppercase tracking-wider bg-black/30 px-3 py-1 rounded-full backdrop-blur-sm">
-              {fallback.tag}
+          <div className="h-full w-full bg-stone-900 flex flex-col items-center justify-center p-6 text-stone-400 text-center">
+            <span className="text-xs font-medium text-stone-400">
+              Destination image currently unavailable
+            </span>
+            <span className="text-[11px] text-stone-500 mt-1 truncate max-w-[80%]">
+              {locationLabel}
             </span>
           </div>
         )}
