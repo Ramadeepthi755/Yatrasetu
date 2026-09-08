@@ -27,6 +27,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const rawRedirect = searchParams.get('redirect');
+  // Safe redirect validation: must start with single slash, not protocol-relative
   const targetRedirect = (rawRedirect && rawRedirect.startsWith('/') && !rawRedirect.startsWith('//'))
     ? rawRedirect
     : null;
@@ -35,6 +36,7 @@ export default function LoginPage() {
   const [authMethod, setAuthMethod] = useState<AuthMethod>('email');
   
   // Email fields
+  const { login, loginAsDemo } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
