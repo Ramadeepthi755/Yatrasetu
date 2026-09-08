@@ -1,0 +1,11 @@
+package com.yatrasetu.domain.intelligence;
+
+public enum GovernmentActionType {
+    CULTURAL_ECOSYSTEM_INTERVENTION,
+    ARTISAN_ONBOARDING_INITIATIVE,
+    CULTURAL_CIRCUIT_PROMOTION,
+    REVIEW_RECOMMENDATION,
+    CREATE_INITIATIVE,
+    FLAG_DESTINATION,
+    NOTE
+}

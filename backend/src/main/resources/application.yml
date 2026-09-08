@@ -1,0 +1,80 @@
+server:
+  port: ${BACKEND_PORT:8080}
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: yatrasetu-backend
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://db.ngbmkquftbcpvbchuhew.supabase.co:5432/postgres?sslmode=require}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:B3sUYPMVMKnQLmFK}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      connection-timeout: 20000
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 50
+
+  flyway:
+    enabled: ${FLYWAY_ENABLED:true} # Enabled for Supabase database migrations
+    validate-on-migrate: false
+    out-of-order: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001}
+  supabase:
+    jwt-secret: ${SUPABASE_JWT_SECRET:}
+  rate-limit:
+    enabled: ${RATE_LIMIT_ENABLED:true}
+    ai-limit-per-minute: ${RATE_LIMIT_AI:15}
+    connect-limit-per-minute: ${RATE_LIMIT_CONNECT:30}
+    auth-limit-per-minute: ${RATE_LIMIT_AUTH:20}
+    public-limit-per-minute: ${RATE_LIMIT_PUBLIC:120}
+  gemini:
+    api-key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_MODEL:gemini-flash-latest}
+    connect-timeout-ms: ${GEMINI_CONNECT_TIMEOUT_MS:5000}
+    read-timeout-ms: ${GEMINI_READ_TIMEOUT_MS:15000}
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:}
+    key-secret: ${RAZORPAY_KEY_SECRET:}
+  open-meteo:
+    base-url: ${OPEN_METEO_BASE_URL:https://api.open-meteo.com/v1}
+    connect-timeout-ms: ${OPEN_METEO_CONNECT_TIMEOUT_MS:3000}
+    read-timeout-ms: ${OPEN_METEO_READ_TIMEOUT_MS:5000}
+
+logging:
+  level:
+    root: INFO
+    com.yatrasetu: DEBUG
+    org.springframework.web: INFO
