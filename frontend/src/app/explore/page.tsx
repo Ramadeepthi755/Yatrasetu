@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import {
   Compass,
   MapPin,
@@ -32,6 +33,8 @@ import { DestinationCardSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 
 export default function ExplorePage() {
+  const router = useRouter();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
   const initialRegion = searchParams.get('region') || 'All';
@@ -52,6 +55,12 @@ export default function ExplorePage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/login?redirect=/explore');
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   // Load Initial metadata
   useEffect(() => {

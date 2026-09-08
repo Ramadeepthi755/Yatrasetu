@@ -42,6 +42,16 @@ import {
   Percent,
   BarChart3,
   TrendingUp,
+  CreditCard,
+  Star,
+  UserCheck,
+  Sparkles,
+  Play,
+  Flag,
+  Navigation,
+  FileCheck,
+  ChevronRight,
+  Handshake,
 } from 'lucide-react';
 import {
   getPartnerExperiences,
@@ -70,6 +80,18 @@ import {
   getPartnerHotelBookings,
   getPartnerHotelAnalytics,
   getPartnerHotelInventoryCalendar,
+  getPartnerExperienceBookings,
+  acceptPartnerBooking,
+  rejectPartnerBooking,
+  customizePartnerBooking,
+  startPartnerTrip,
+  completePartnerTrip,
+  partnerCheckinCheckpoint,
+  getPartnerReviews,
+  getPartnerParticipations,
+  respondToParticipation,
+  inviteSupportingProvider,
+  removeSupportingProvider,
   ExperienceItem,
   CulturalTraditionDto,
   HotelItem,
@@ -86,7 +108,20 @@ import {
   HotelBookingDto,
   PartnerHotelAnalyticsDto,
   HotelInventoryCalendarDto,
+  ExperienceBooking,
+  PartnerReview,
+  ExperienceSupportingProvider,
 } from '@/lib/api';
+
+import PartnerOverviewTab from '@/components/partner/PartnerOverviewTab';
+import PartnerRequestsTab from '@/components/partner/PartnerRequestsTab';
+import PartnerBookingsTab from '@/components/partner/PartnerBookingsTab';
+import PartnerTripsTab from '@/components/partner/PartnerTripsTab';
+import PartnerParticipationsTab from '@/components/partner/PartnerParticipationsTab';
+import PartnerPaymentsTab from '@/components/partner/PartnerPaymentsTab';
+import PartnerReviewsTab from '@/components/partner/PartnerReviewsTab';
+import PartnerProfileTab from '@/components/partner/PartnerProfileTab';
+import PartnerVerificationTab from '@/components/partner/PartnerVerificationTab';
 
 const CULTURAL_CATEGORIES = [
   'Handicraft / Artisan',
@@ -120,6 +155,20 @@ const HOTEL_CATEGORIES = [
   { value: 'ASHRAM_DHARAMSHALA', label: 'Ashram / Dharamshala' },
 ];
 
+export type DashboardTab =
+  | 'OVERVIEW'
+  | 'REQUESTS'
+  | 'BOOKINGS'
+  | 'TRIPS'
+  | 'EXPERIENCES'
+  | 'CULTURE'
+  | 'PARTICIPATIONS'
+  | 'HOTELS'
+  | 'PAYMENTS'
+  | 'REVIEWS'
+  | 'PROFILE'
+  | 'VERIFICATION';
+
 export default function PartnerDashboardPage() {
   const { user, partnerDetails, token, role, isAuthenticated, openAuthModal } = useAuth();
 
@@ -132,10 +181,33 @@ export default function PartnerDashboardPage() {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'EXPERIENCES' | 'CULTURE' | 'HOTELS'>('HOTELS');
+  const [activeTab, setActiveTab] = useState<DashboardTab>('OVERVIEW');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED' | 'REJECTED'>('ALL');
   const [submittingExpId, setSubmittingExpId] = useState<string | null>(null);
   const [traditionSearch, setTraditionSearch] = useState<string>('');
+
+  // Experience Bookings & Trip Operations State
+  const [bookings, setBookings] = useState<ExperienceBooking[]>([]);
+  const [loadingBookings, setLoadingBookings] = useState<boolean>(true);
+
+  // Supporting Participations State
+  const [participations, setParticipations] = useState<ExperienceSupportingProvider[]>([]);
+  const [loadingParticipations, setLoadingParticipations] = useState<boolean>(true);
+
+  // Verified Reviews State
+  const [reviews, setReviews] = useState<PartnerReview[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState<boolean>(true);
+
+  // Supporting Provider Invite Modal State
+  const [supportingInviteModalOpen, setSupportingInviteModalOpen] = useState<boolean>(false);
+  const [selectedExpForSupportingInvite, setSelectedExpForSupportingInvite] = useState<ExperienceItem | null>(null);
+  const [supportingFormData, setSupportingFormData] = useState({
+    providerName: '',
+    providerType: 'ARTISAN',
+    roleDescription: 'Supporting Cultural Masterclass Partner',
+    notes: '',
+  });
+  const [submittingSupportingInvite, setSubmittingSupportingInvite] = useState<boolean>(false);
 
   // Hotels state
   const [hotels, setHotels] = useState<HotelItem[]>([]);
@@ -350,13 +422,215 @@ export default function PartnerDashboardPage() {
     }
   }, []);
 
+  const loadBookings = useCallback(async () => {
+    if (!token) return;
+    setLoadingBookings(true);
+    try {
+      const res = await getPartnerExperienceBookings(token);
+      if (res.success && res.data) {
+        setBookings(res.data);
+      }
+    } catch (err: unknown) {
+      console.error('Error loading partner bookings:', err);
+    } finally {
+      setLoadingBookings(false);
+    }
+  }, [token]);
+
+  const loadParticipations = useCallback(async () => {
+    if (!token) return;
+    setLoadingParticipations(true);
+    try {
+      const res = await getPartnerParticipations(token);
+      if (res.success && res.data) {
+        setParticipations(res.data);
+      }
+    } catch (err: unknown) {
+      console.error('Error loading partner participations:', err);
+    } finally {
+      setLoadingParticipations(false);
+    }
+  }, [token]);
+
+  const loadReviews = useCallback(async () => {
+    if (!token) return;
+    setLoadingReviews(true);
+    try {
+      const res = await getPartnerReviews(token);
+      if (res.success && res.data) {
+        setReviews(res.data);
+      }
+    } catch (err: unknown) {
+      console.error('Error loading partner reviews:', err);
+    } finally {
+      setLoadingReviews(false);
+    }
+  }, [token]);
+
   useEffect(() => {
     if (isAuthenticated && role === 'PARTNER') {
       loadExperiences();
       loadHotels();
       loadTraditions();
+      loadBookings();
+      loadParticipations();
+      loadReviews();
     }
-  }, [isAuthenticated, role, loadExperiences, loadHotels, loadTraditions]);
+  }, [
+    isAuthenticated,
+    role,
+    loadExperiences,
+    loadHotels,
+    loadTraditions,
+    loadBookings,
+    loadParticipations,
+    loadReviews,
+  ]);
+
+  // Booking & Trip Handlers
+  const handleAcceptBooking = async (bookingId: string) => {
+    if (!token) return;
+    try {
+      const res = await acceptPartnerBooking(bookingId, token);
+      if (res.success) {
+        setActionSuccess('Booking accepted! Tourist notified.');
+        loadBookings();
+      } else {
+        setActionError(res.message || 'Failed to accept booking');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Error accepting booking');
+    }
+  };
+
+  const handleRejectBooking = async (bookingId: string, reason?: string) => {
+    if (!token) return;
+    try {
+      const res = await rejectPartnerBooking(bookingId, reason, token);
+      if (res.success) {
+        setActionSuccess('Booking rejected.');
+        loadBookings();
+      } else {
+        setActionError(res.message || 'Failed to reject booking');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Error rejecting booking');
+    }
+  };
+
+  const handleCustomizeBooking = async (bookingId: string, customPrice: number, partnerNotes?: string) => {
+    if (!token) return;
+    try {
+      const res = await customizePartnerBooking(bookingId, customPrice, partnerNotes, token);
+      if (res.success) {
+        setActionSuccess('Custom proposal sent to tourist!');
+        loadBookings();
+      } else {
+        setActionError(res.message || 'Failed to customize proposal');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Error customizing proposal');
+    }
+  };
+
+  const handleStartTrip = async (bookingId: string) => {
+    if (!token) return;
+    try {
+      const res = await startPartnerTrip(bookingId, token);
+      if (res.success) {
+        setActionSuccess('Trip started! Live safety console activated.');
+        loadBookings();
+        setActiveTab('TRIPS');
+      } else {
+        setActionError(res.message || 'Failed to start trip');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Error starting trip');
+    }
+  };
+
+  const handleCompleteTrip = async (bookingId: string) => {
+    if (!token) return;
+    try {
+      const res = await completePartnerTrip(bookingId, token);
+      if (res.success) {
+        setActionSuccess('Trip completed successfully! Final payment released to ledger.');
+        loadBookings();
+      } else {
+        setActionError(res.message || 'Failed to complete trip');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Error completing trip');
+    }
+  };
+
+  const handleCheckin = async (
+    bookingId: string,
+    checkpointName: string,
+    notes?: string,
+    latitude?: number,
+    longitude?: number
+  ) => {
+    if (!token) return;
+    try {
+      const res = await partnerCheckinCheckpoint(bookingId, checkpointName, notes, latitude, longitude, token);
+      if (res.success) {
+        setActionSuccess(`Checkpoint "${checkpointName}" verified and logged!`);
+        loadBookings();
+      } else {
+        setActionError(res.message || 'Failed to record checkpoint');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Error recording checkpoint');
+    }
+  };
+
+  const handleRespondParticipation = async (participationId: string, accept: boolean) => {
+    if (!token) return;
+    try {
+      const res = await respondToParticipation(participationId, accept ? 'ACCEPT' : 'DECLINE', undefined, token);
+      if (res.success) {
+        setActionSuccess(accept ? 'Invitation accepted! Added to itinerary.' : 'Invitation declined.');
+        loadParticipations();
+      } else {
+        setActionError(res.message || 'Failed to respond to invitation');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Error responding to invitation');
+    }
+  };
+
+  // Supporting Invite Handler
+  const handleOpenInviteSupporting = (exp: ExperienceItem) => {
+    setSelectedExpForSupportingInvite(exp);
+    setSupportingFormData({
+      providerName: '',
+      providerType: 'ARTISAN',
+      roleDescription: 'Supporting Cultural Masterclass Partner',
+      notes: `Invited to provide craft demonstration and workshop during ${exp.title}`,
+    });
+    setSupportingInviteModalOpen(true);
+  };
+
+  const handleInviteSupporting = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token || !selectedExpForSupportingInvite) return;
+    setSubmittingSupportingInvite(true);
+    try {
+      const res = await inviteSupportingProvider(selectedExpForSupportingInvite.id, supportingFormData, token);
+      if (res.success) {
+        setActionSuccess('Supporting partner invited successfully!');
+        setSupportingInviteModalOpen(false);
+        loadExperiences();
+      } else {
+        setActionError(res.message || 'Failed to invite partner');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Error inviting partner');
+    } finally {
+      setSubmittingSupportingInvite(false);
+    }
+  };
 
   // Hotel Handlers
   const handleOpenCreateHotel = () => {
@@ -1172,6 +1446,36 @@ export default function PartnerDashboardPage() {
     return traditions.find((t) => t.id === formData.culturalTraditionId);
   }, [traditions, formData.culturalTraditionId]);
 
+  // Profile readiness score
+  const profileCompletion = useMemo(() => {
+    const p = partnerDetails;
+    const checks = [
+      { label: 'Display / Business Name', done: !!(p?.businessName || user?.fullName) },
+      { label: 'City & State Base', done: !!(p?.city && p?.state) },
+      { label: 'Heritage Story / Bio', done: !!(p?.bio && p.bio.length > 15) },
+      { label: 'Spoken Languages', done: !!(p?.languages && p.languages.length > 0) },
+      { label: 'Provider Category Subtype', done: !!p?.partnerSubtype },
+      { label: 'Offerings & Skills', done: !!(p?.partnerSkills && p.partnerSkills.length > 0) },
+      { label: 'Identity Proof Submitted', done: p?.verificationStatus === 'APPROVED' || p?.verificationStatus === 'PENDING' },
+    ];
+    const completed = checks.filter((c) => c.done).length;
+    const total = checks.length;
+    const percentage = Math.round((completed / total) * 100);
+    return { checks, completed, total, percentage };
+  }, [partnerDetails, user]);
+
+  const pendingRequestsCount = useMemo(() => {
+    return bookings.filter((b) => b.status === 'REQUESTED' || b.status === 'PAYMENT_PENDING').length;
+  }, [bookings]);
+
+  const activeTripsCount = useMemo(() => {
+    return bookings.filter((b) => b.status === 'TRIP_STARTED' || b.status === 'IN_PROGRESS').length;
+  }, [bookings]);
+
+  const confirmedBookingsCount = useMemo(() => {
+    return bookings.filter((b) => b.status === 'CONFIRMED' || b.status === 'ACCEPTED').length;
+  }, [bookings]);
+
   // Role Gate
   if (!isAuthenticated || role !== 'PARTNER') {
     return (
@@ -1204,57 +1508,13 @@ export default function PartnerDashboardPage() {
   }
 
   const vStatus = partnerDetails?.verificationStatus || 'PENDING';
+  const isVerifiedPartner = (vStatus as string) === 'APPROVED' || (vStatus as string) === 'VERIFIED';
 
   return (
-    <div className="max-w-6xl mx-auto py-10 px-4 sm:px-6 lg:px-8 space-y-8">
-      {/* Top Banner: Verification Status */}
-      {vStatus === 'PENDING' ? (
-        <div className="p-5 rounded-3xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
-              <Clock className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-amber-950">Partner Account Verification in Progress</h3>
-                <span className="px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 text-[10px] font-extrabold uppercase tracking-wide">
-                  Pending Review
-                </span>
-              </div>
-              <p className="text-xs text-amber-800 mt-0.5 leading-relaxed">
-                Your partner profile has been submitted to local authorities. You can register properties, cultural workshops, and tour listings while account verification is underway.
-              </p>
-            </div>
-          </div>
-          <Link
-            href="/partner/profile"
-            className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold transition-colors flex-shrink-0"
-          >
-            Review Profile
-          </Link>
-        </div>
-      ) : vStatus === 'APPROVED' ? (
-        <div className="p-5 rounded-3xl bg-emerald-50 border border-emerald-200 flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
-            <CheckCircle className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-bold text-emerald-950">Verified Partner Account</h3>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900 text-[10px] font-extrabold uppercase">
-                Verified
-              </span>
-            </div>
-            <p className="text-xs text-emerald-800 mt-0.5">
-              Your profile carries the official YatraSetu verified trust seal across destination listings.
-            </p>
-          </div>
-        </div>
-      ) : null}
-
+    <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
       {/* Global Action Feedback Alert */}
       {actionSuccess && (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-medium flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-medium flex items-center justify-between shadow-sm animate-fadeIn">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
             <span>{actionSuccess}</span>
@@ -1267,7 +1527,7 @@ export default function PartnerDashboardPage() {
 
       {/* Global Action Error Alert */}
       {actionError && (
-        <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-900 text-xs font-medium flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-900 text-xs font-medium flex items-center justify-between shadow-sm animate-fadeIn">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
             <span>{actionError}</span>
@@ -1278,204 +1538,302 @@ export default function PartnerDashboardPage() {
         </div>
       )}
 
-      {/* Header Info */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#171717] tracking-tight">
-            {partnerDetails?.businessName || user?.fullName}&apos;s Partner Hub
-          </h1>
-          <p className="text-xs sm:text-sm text-[#64748B] flex items-center gap-2 mt-1">
-            <span className="font-semibold text-[#0F766E]">{partnerDetails?.partnerSubtype || 'HOTEL / LOCAL HOST'}</span>
-            {partnerDetails?.city && (
-              <>
-                <span>•</span>
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                  {partnerDetails.city}, {partnerDetails.state}
+      {/* Header Info & Provider Identity Shell */}
+      <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-[#0F766E]/10 text-[#0F766E] flex items-center justify-center font-bold text-xl shrink-0">
+              {(partnerDetails?.businessName || user?.fullName || 'P')[0].toUpperCase()}
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-bold text-[#171717] tracking-tight">
+                  {partnerDetails?.businessName || user?.fullName}
+                </h1>
+                {isVerifiedPartner ? (
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> YatraSetu Verified
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-bold flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 text-amber-600" /> Verification In Progress
+                  </span>
+                )}
+              </div>
+
+              <div className="text-xs text-slate-500 flex items-center gap-3 mt-1.5 flex-wrap">
+                <span className="font-semibold text-[#0F766E] bg-teal-50 px-2 py-0.5 rounded-md">
+                  {partnerDetails?.partnerSubtype?.replace(/_/g, ' ') || 'CERTIFIED LOCAL PROVIDER'}
                 </span>
-              </>
+                {partnerDetails?.city && (
+                  <span className="flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                    {partnerDetails.city}, {partnerDetails.state}
+                  </span>
+                )}
+                {reviews.length > 0 && (
+                  <span className="flex items-center gap-1 text-amber-600 font-bold">
+                    <Star className="w-3.5 h-3.5 fill-amber-400" />
+                    {(reviews.reduce((s, r) => s + (r.rating || 5), 0) / reviews.length).toFixed(1)} ({reviews.length} reviews)
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center flex-wrap gap-2">
+            <button
+              onClick={handleOpenCreateHotel}
+              className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5"
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              Register Stay
+            </button>
+            <button
+              onClick={() => handleOpenCreate('Handicraft / Artisan')}
+              className="px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5"
+            >
+              <Palette className="w-3.5 h-3.5" />
+              Add Craft Masterclass
+            </button>
+            <button
+              onClick={() => handleOpenCreate('Heritage Tour')}
+              className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Create Tour
+            </button>
+          </div>
+        </div>
+
+        {/* Profile Readiness Bar */}
+        <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3 flex-1 max-w-md">
+            <span className="font-bold text-slate-700 shrink-0">Profile Readiness:</span>
+            <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-[#0F766E] h-2 rounded-full transition-all duration-500"
+                style={{ width: `${profileCompletion.percentage}%` }}
+              />
+            </div>
+            <span className="font-bold text-[#0F766E] shrink-0">{profileCompletion.percentage}%</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {profileCompletion.percentage < 100 ? (
+              <button
+                onClick={() => setActiveTab('PROFILE')}
+                className="text-xs text-[#0F766E] hover:underline font-bold flex items-center gap-1"
+              >
+                Complete Remaining Details <ChevronRight className="w-3 h-3" />
+              </button>
+            ) : (
+              <span className="text-emerald-700 font-bold flex items-center gap-1 text-[11px]">
+                <CheckCircle2 className="w-3.5 h-3.5" /> Profile 100% Complete & Discoverable
+              </span>
             )}
-          </p>
-        </div>
-
-        <div className="flex items-center flex-wrap gap-2">
-          <button
-            onClick={handleOpenCreateHotel}
-            className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5"
-          >
-            <Building2 className="w-4 h-4" />
-            Register Property
-          </button>
-          <button
-            onClick={() => handleOpenCreate('Handicraft / Artisan')}
-            className="px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5"
-          >
-            <Palette className="w-4 h-4" />
-            Add Cultural Experience
-          </button>
-          <button
-            onClick={() => handleOpenCreate('Heritage Tour')}
-            className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5"
-          >
-            <Plus className="w-4 h-4" />
-            Create Tour
-          </button>
-          <Link
-            href="/partner/profile"
-            className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#171717] text-xs font-semibold transition-colors shadow-sm flex items-center gap-1.5"
-          >
-            <Briefcase className="w-4 h-4" />
-            Profile
-          </Link>
-        </div>
-      </div>
-
-      {/* Metric Cards - Real Data Counts */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-1">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-            My Properties &amp; Stays
-          </span>
-          <div className="text-2xl font-extrabold text-indigo-700">{hotels.length}</div>
-          <span className="text-[10px] text-slate-500 font-medium">
-            {hotels.filter((h) => h.verificationStatus === 'VERIFIED').length} Verified • {hotels.filter((h) => h.verificationStatus === 'PENDING_REVIEW').length} In Review
-          </span>
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-1">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-            Verified Partner Stays
-          </span>
-          <div className="text-2xl font-extrabold text-emerald-600">
-            {hotels.filter((h) => h.verificationStatus === 'VERIFIED').length}
           </div>
-          <span className="text-[10px] text-emerald-700 font-medium">YatraSetu Trust Badge</span>
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-1">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-            Experiences &amp; Tours
-          </span>
-          <div className="text-2xl font-extrabold text-teal-700">{experiences.length}</div>
-          <span className="text-[10px] text-teal-700 font-medium">
-            {culturalListings.length} Cultural • {regularListings.length} Tours
-          </span>
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-1">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-            Pending Verifications
-          </span>
-          <div className="text-2xl font-extrabold text-amber-600">
-            {hotels.filter((h) => h.verificationStatus === 'PENDING_REVIEW').length +
-              experiences.filter((e) => e.verificationStatus === 'PENDING_REVIEW').length}
-          </div>
-          <span className="text-[10px] text-amber-700">Awaiting Authority Review</span>
         </div>
       </div>
 
-      {/* Tabs: Hotels / Stays vs Tours & Experiences vs Local Culture & Artisans */}
-      <div className="flex items-center space-x-3 border-b border-slate-200 pb-3 overflow-x-auto">
-        <button
-          onClick={() => {
-            setActiveTab('HOTELS');
-            setStatusFilter('ALL');
-          }}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 flex-shrink-0 ${
-            activeTab === 'HOTELS'
-              ? 'bg-indigo-600 text-white shadow-sm'
-              : 'text-stone-600 hover:bg-stone-100'
-          }`}
-        >
-          <Building2 className="w-4 h-4" />
-          <span>My Properties &amp; Stays ({hotels.length})</span>
-        </button>
-        <button
-          onClick={() => {
-            setActiveTab('EXPERIENCES');
-            setStatusFilter('ALL');
-          }}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 flex-shrink-0 ${
-            activeTab === 'EXPERIENCES'
-              ? 'bg-amber-500 text-stone-950 shadow-sm'
-              : 'text-stone-600 hover:bg-stone-100'
-          }`}
-        >
-          <Compass className="w-4 h-4" />
-          <span>Tours &amp; Sightseeing ({regularListings.length})</span>
-        </button>
-        <button
-          onClick={() => {
-            setActiveTab('CULTURE');
-            setStatusFilter('ALL');
-          }}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 flex-shrink-0 ${
-            activeTab === 'CULTURE'
-              ? 'bg-teal-700 text-white shadow-sm'
-              : 'text-stone-600 hover:bg-stone-100'
-          }`}
-        >
-          <Palette className="w-4 h-4" />
-          <span>Culture &amp; Artisan Masterclasses ({culturalListings.length})</span>
-        </button>
+      {/* Modern Tab Bar */}
+      <div className="border-b border-slate-200">
+        <nav className="flex space-x-2 overflow-x-auto pb-2 scrollbar-none">
+          {[
+            { key: 'OVERVIEW', label: 'Overview', icon: BarChart3, count: null },
+            { key: 'REQUESTS', label: 'Custom Requests', icon: Sparkles, count: pendingRequestsCount },
+            { key: 'BOOKINGS', label: 'Bookings', icon: Calendar, count: bookings.length },
+            { key: 'TRIPS', label: 'Live Trips', icon: Navigation, count: activeTripsCount },
+            { key: 'EXPERIENCES', label: 'Tours', icon: Compass, count: regularListings.length },
+            { key: 'CULTURE', label: 'Crafts & Culture', icon: Palette, count: culturalListings.length },
+            { key: 'PARTICIPATIONS', label: 'Collaborations', icon: Handshake, count: participations.length },
+            { key: 'HOTELS', label: 'Stays & Hotels', icon: Building2, count: hotels.length },
+            { key: 'PAYMENTS', label: 'Milestone Ledger', icon: CreditCard, count: null },
+            { key: 'REVIEWS', label: 'Guest Reviews', icon: Star, count: reviews.length },
+            { key: 'PROFILE', label: 'Profile', icon: Briefcase, count: null },
+            { key: 'VERIFICATION', label: 'Verification', icon: ShieldCheck, count: null },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => {
+                  setActiveTab(tab.key as DashboardTab);
+                  setStatusFilter('ALL');
+                }}
+                className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
+                  isActive
+                    ? 'bg-[#0F766E] text-white shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{tab.label}</span>
+                {tab.count !== null && tab.count > 0 && (
+                  <span
+                    className={`px-1.5 py-0.2 rounded-full text-[10px] font-extrabold ${
+                      isActive ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-800'
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
       </div>
 
-      {/* Lifecycle Status Filter Pills */}
-      <div className="flex flex-wrap items-center gap-2 text-xs">
-        <span className="text-[11px] font-semibold text-slate-400 mr-1">Status:</span>
-        {(
-          [
-            {
-              key: 'ALL',
-              label: `All (${activeTab === 'HOTELS' ? hotels.length : currentTabListings.length})`,
-            },
-            {
-              key: 'DRAFT',
-              label: `Drafts (${
-                activeTab === 'HOTELS'
-                  ? hotels.filter((h) => !h.verificationStatus || h.verificationStatus === 'UNVERIFIED').length
-                  : currentTabListings.filter((e) => e.status === 'DRAFT' || e.verificationStatus === 'UNVERIFIED').length
-              })`,
-            },
-            {
-              key: 'PENDING_REVIEW',
-              label: `Under Review (${
-                activeTab === 'HOTELS'
-                  ? hotels.filter((h) => h.verificationStatus === 'PENDING_REVIEW').length
-                  : currentTabListings.filter((e) => e.verificationStatus === 'PENDING_REVIEW').length
-              })`,
-            },
-            {
-              key: 'PUBLISHED',
-              label: `Verified (${
-                activeTab === 'HOTELS'
-                  ? hotels.filter((h) => h.verificationStatus === 'VERIFIED').length
-                  : currentTabListings.filter((e) => e.verificationStatus === 'VERIFIED').length
-              })`,
-            },
-            {
-              key: 'REJECTED',
-              label: `Needs Revision (${
-                activeTab === 'HOTELS'
-                  ? hotels.filter((h) => h.verificationStatus === 'REJECTED').length
-                  : currentTabListings.filter((e) => e.verificationStatus === 'REJECTED').length
-              })`,
-            },
-          ] as const
-        ).map((pill) => (
-          <button
-            key={pill.key}
-            onClick={() => setStatusFilter(pill.key)}
-            className={`px-3 py-1 rounded-lg font-semibold transition-colors ${
-              statusFilter === pill.key
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            {pill.label}
-          </button>
-        ))}
-      </div>
+      {/* ===================== TAB RENDERERS ===================== */}
+
+      {/* 1. OVERVIEW TAB */}
+      {activeTab === 'OVERVIEW' && (
+        <PartnerOverviewTab
+          providerType={partnerDetails?.partnerSubtype || 'GUIDE'}
+          partnerName={partnerDetails?.businessName || user?.fullName || 'Local Partner'}
+          location={`${partnerDetails?.city || ''}${partnerDetails?.state ? ', ' + partnerDetails.state : ''}`}
+          verificationStatus={vStatus}
+          profileCompletion={profileCompletion}
+          experiences={experiences}
+          hotels={hotels}
+          bookings={bookings}
+          participations={participations}
+          reviews={reviews}
+          onNavigateTab={(tab) => setActiveTab(tab as DashboardTab)}
+          onOpenCreateExperience={() => handleOpenCreate('Heritage Tour')}
+          onOpenCreateHotel={() => handleOpenCreateHotel()}
+        />
+      )}
+
+      {/* 2. CUSTOM REQUESTS TAB */}
+      {activeTab === 'REQUESTS' && (
+        <PartnerRequestsTab
+          bookings={bookings}
+          onAccept={handleAcceptBooking}
+          onReject={(bookingId, reason) => handleRejectBooking(bookingId, reason)}
+          onCustomize={(bookingId, itinerary, customPrice) =>
+            handleCustomizeBooking(bookingId, customPrice, itinerary)
+          }
+          refreshBookings={loadBookings}
+        />
+      )}
+
+      {/* 3. BOOKINGS TAB */}
+      {activeTab === 'BOOKINGS' && (
+        <PartnerBookingsTab
+          bookings={bookings}
+          onStartTrip={handleStartTrip}
+          onCompleteTrip={handleCompleteTrip}
+          refreshBookings={loadBookings}
+        />
+      )}
+
+      {/* 4. LIVE TRIPS CONSOLE */}
+      {activeTab === 'TRIPS' && (
+        <PartnerTripsTab
+          bookings={bookings}
+          onStartTrip={handleStartTrip}
+          onCompleteTrip={handleCompleteTrip}
+          onCheckin={async (bookingId, checkpointId, notes) => {
+            await handleCheckin(bookingId, checkpointId, notes);
+          }}
+          refreshBookings={loadBookings}
+        />
+      )}
+
+      {/* 5. PARTICIPATIONS (SUPPORTING COLLABORATION) TAB */}
+      {activeTab === 'PARTICIPATIONS' && (
+        <PartnerParticipationsTab
+          participations={participations}
+          onRespond={async (id, action, notes) => {
+            await handleRespondParticipation(id, action === 'ACCEPT');
+          }}
+          refreshParticipations={loadParticipations}
+        />
+      )}
+
+      {/* 6. PAYMENTS & MILESTONE LEDGER TAB */}
+      {activeTab === 'PAYMENTS' && <PartnerPaymentsTab bookings={bookings} />}
+
+      {/* 7. GUEST REVIEWS TAB */}
+      {activeTab === 'REVIEWS' && <PartnerReviewsTab reviews={reviews} />}
+
+      {/* 8. PROFILE SETTINGS TAB */}
+      {activeTab === 'PROFILE' && (
+        <PartnerProfileTab
+          partnerDetails={partnerDetails}
+          user={user}
+          token={token}
+          onRefreshProfile={() => {
+            if (typeof window !== 'undefined') window.location.reload();
+          }}
+        />
+      )}
+
+      {/* 9. VERIFICATION TAB */}
+      {activeTab === 'VERIFICATION' && (
+        <PartnerVerificationTab verificationStatus={vStatus} partnerDetails={partnerDetails} />
+      )}
+
+      {/* Lifecycle Status Filter Pills for EXPERIENCES & HOTELS */}
+      {(activeTab === 'HOTELS' || activeTab === 'EXPERIENCES' || activeTab === 'CULTURE') && (
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-[11px] font-semibold text-slate-400 mr-1">Status Filter:</span>
+          {(
+            [
+              {
+                key: 'ALL',
+                label: `All (${activeTab === 'HOTELS' ? hotels.length : currentTabListings.length})`,
+              },
+              {
+                key: 'DRAFT',
+                label: `Drafts (${
+                  activeTab === 'HOTELS'
+                    ? hotels.filter((h) => !h.verificationStatus || h.verificationStatus === 'UNVERIFIED').length
+                    : currentTabListings.filter((e) => e.status === 'DRAFT' || e.verificationStatus === 'UNVERIFIED').length
+                })`,
+              },
+              {
+                key: 'PENDING_REVIEW',
+                label: `Under Review (${
+                  activeTab === 'HOTELS'
+                    ? hotels.filter((h) => h.verificationStatus === 'PENDING_REVIEW').length
+                    : currentTabListings.filter((e) => e.verificationStatus === 'PENDING_REVIEW').length
+                })`,
+              },
+              {
+                key: 'PUBLISHED',
+                label: `Verified (${
+                  activeTab === 'HOTELS'
+                    ? hotels.filter((h) => h.verificationStatus === 'VERIFIED').length
+                    : currentTabListings.filter((e) => e.verificationStatus === 'VERIFIED').length
+                })`,
+              },
+              {
+                key: 'REJECTED',
+                label: `Needs Revision (${
+                  activeTab === 'HOTELS'
+                    ? hotels.filter((h) => h.verificationStatus === 'REJECTED').length
+                    : currentTabListings.filter((e) => e.verificationStatus === 'REJECTED').length
+                })`,
+              },
+            ] as const
+          ).map((pill) => (
+            <button
+              key={pill.key}
+              onClick={() => setStatusFilter(pill.key)}
+              className={`px-3 py-1 rounded-lg font-semibold transition-colors ${
+                statusFilter === pill.key
+                  ? 'bg-slate-900 text-white shadow-sm'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              {pill.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* HOTELS TAB CONTENT */}
       {activeTab === 'HOTELS' && (
@@ -3771,6 +4129,98 @@ export default function PartnerDashboardPage() {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Supporting Provider Invite Modal */}
+      {supportingInviteModalOpen && selectedExpForSupportingInvite && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-lg w-full p-6 sm:p-8 shadow-2xl relative my-8">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+              <div>
+                <h3 className="text-lg font-bold text-stone-900">Invite Supporting Cultural Partner</h3>
+                <p className="text-xs text-stone-500">
+                  For listing: <span className="font-semibold text-[#0F766E]">{selectedExpForSupportingInvite.title}</span>
+                </p>
+              </div>
+              <button
+                onClick={() => setSupportingInviteModalOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleInviteSupporting} className="space-y-4 text-xs">
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Partner / Provider Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={supportingFormData.providerName}
+                  onChange={(e) => setSupportingFormData({ ...supportingFormData, providerName: e.target.value })}
+                  placeholder="e.g. Master Weaver Rameshwar / Heritage Haveli Host"
+                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-stone-900 focus:border-[#0F766E] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Partner Role / Category *</label>
+                <select
+                  value={supportingFormData.providerType}
+                  onChange={(e) => setSupportingFormData({ ...supportingFormData, providerType: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-stone-900 focus:border-[#0F766E] focus:outline-none"
+                >
+                  <option value="ARTISAN">Master Artisan (Craft Demonstration / Workshop)</option>
+                  <option value="LOCAL_BUSINESS">Local Cultural Business / Shop</option>
+                  <option value="HOTEL">Hotel / Heritage Homestay Partner</option>
+                  <option value="GUIDE">Specialist Supporting Guide</option>
+                  <option value="RESTAURANT">Heritage Culinary Partner</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Role Description &amp; Contribution *</label>
+                <input
+                  type="text"
+                  required
+                  value={supportingFormData.roleDescription}
+                  onChange={(e) => setSupportingFormData({ ...supportingFormData, roleDescription: e.target.value })}
+                  placeholder="e.g. Conducts 45-min live loom weaving workshop"
+                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-stone-900 focus:border-[#0F766E] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Invitation Notes &amp; Circuit Details</label>
+                <textarea
+                  rows={3}
+                  value={supportingFormData.notes}
+                  onChange={(e) => setSupportingFormData({ ...supportingFormData, notes: e.target.value })}
+                  placeholder="Add details regarding timing, group size, and cultural collaboration..."
+                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-stone-900 focus:border-[#0F766E] focus:outline-none leading-relaxed"
+                />
+              </div>
+
+              <div className="flex items-center justify-end space-x-2 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setSupportingInviteModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-stone-600 hover:bg-slate-50 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingSupportingInvite}
+                  className="px-5 py-2 rounded-xl font-bold bg-[#0F766E] hover:bg-[#0D9488] text-white shadow disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  {submittingSupportingInvite ? 'Sending Invite...' : 'Send Partner Invitation'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

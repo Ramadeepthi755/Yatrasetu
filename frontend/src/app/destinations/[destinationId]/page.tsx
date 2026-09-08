@@ -38,17 +38,23 @@ import {
 import {
   getDestinationDetail,
   getDestinationHosts,
+  getRecommendedGuides,
   getDestinationExperiences,
   getDestinationTravelers,
+  getHotels,
   DestinationDetail,
   LocalHost,
+  RecommendedGuide,
   ExperienceItem,
   TravelerDiscovery,
+  HotelItem,
 } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import { PoiCard } from '@/components/explore/PoiCard';
 import { HotelCard } from '@/components/explore/HotelCard';
 import TravelBuddyCard from '@/components/travel-connect/TravelBuddyCard';
 import { LocalHostCard } from '@/components/explore/LocalHostCard';
+import { RecommendedGuideCard } from '@/components/explore/RecommendedGuideCard';
 import { ExperienceCard } from '@/components/explore/ExperienceCard';
 import { MapView, MapMarker } from '@/components/map/MapView';
 import { FamousFoodSection } from '@/components/destination/FamousFoodSection';
@@ -59,15 +65,19 @@ import { TravelAgenciesSection } from '@/components/destination/TravelAgenciesSe
 import { WeatherSection } from '@/components/destination/WeatherSection';
 import { ProvenanceBadge } from '@/components/destination/ProvenanceBadge';
 import { DestinationLocalCultureSection } from '@/components/destination/LocalCultureSection';
+import { EcosystemEmptyState } from '@/components/destination/EcosystemEmptyState';
 
 export default function DestinationDetailPage() {
   const params = useParams();
   const router = useRouter();
   const destinationId = params.destinationId as string;
+  const { isAuthenticated } = useAuth();
 
   const [destination, setDestination] = useState<DestinationDetail | null>(null);
   const [hosts, setHosts] = useState<LocalHost[]>([]);
+  const [recommendedGuides, setRecommendedGuides] = useState<RecommendedGuide[]>([]);
   const [experiences, setExperiences] = useState<ExperienceItem[]>([]);
+  const [hotels, setHotels] = useState<HotelItem[]>([]);
   const [travelers, setTravelers] = useState<TravelerDiscovery[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,21 +85,34 @@ export default function DestinationDetailPage() {
   const [imageError, setImageError] = useState(false);
   const [modalFeature, setModalFeature] = useState<string | null>(null);
 
+  const handleProtectedAction = (targetPath: string) => {
+    if (!isAuthenticated) {
+      router.push(`/login?redirect=${encodeURIComponent(targetPath)}`);
+    } else {
+      router.push(targetPath);
+    }
+  };
+
   useEffect(() => {
     async function loadDestination() {
       if (!destinationId) return;
       setLoading(true);
       setError(null);
       try {
-        const [destRes, hostsRes, expRes, travRes] = await Promise.allSettled([
+        const [destRes, hostsRes, recGuidesRes, expRes, travRes, hotelsRes] = await Promise.allSettled([
           getDestinationDetail(destinationId),
           getDestinationHosts(destinationId),
+          getRecommendedGuides(destinationId),
           getDestinationExperiences(destinationId),
           getDestinationTravelers(destinationId, 6),
+          getHotels({ destinationId, size: 6 }),
         ]);
 
         if (destRes.status === 'fulfilled' && destRes.value.success && destRes.value.data) {
           setDestination(destRes.value.data);
+          if (destRes.value.data.nearbyHotels && destRes.value.data.nearbyHotels.length > 0) {
+            setHotels(destRes.value.data.nearbyHotels);
+          }
         } else {
           setError('Destination not found.');
         }
@@ -98,8 +121,19 @@ export default function DestinationDetailPage() {
           setHosts(hostsRes.value.data);
         }
 
+        if (recGuidesRes.status === 'fulfilled' && recGuidesRes.value.success && recGuidesRes.value.data) {
+          setRecommendedGuides(recGuidesRes.value.data);
+        }
+
         if (expRes.status === 'fulfilled' && expRes.value.success && expRes.value.data) {
           setExperiences(expRes.value.data);
+        }
+
+        if (hotelsRes.status === 'fulfilled' && hotelsRes.value.success && hotelsRes.value.data) {
+          const fetchedHotels = hotelsRes.value.data.content || [];
+          if (fetchedHotels.length > 0) {
+            setHotels(fetchedHotels);
+          }
         }
 
         if (travRes.status === 'fulfilled' && travRes.value.success && travRes.value.data) {
@@ -526,31 +560,39 @@ export default function DestinationDetailPage() {
               destinationName={destination.destinationName}
             />
 
-            {/* Local People & Guides Section */}
-            {hosts.length > 0 && (
-              <section id="local-people">
-                <div className="flex items-center justify-between mb-6">
+            {/* Local People & Recommended Guides Section (Tasks 3, 4, 10) */}
+            {(recommendedGuides.length > 0 || hosts.length > 0) && (
+              <section id="local-people" className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold mb-2">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                      Place-Specific Explainable Recommendations
+                    </div>
                     <h2 className="text-2xl font-bold text-stone-900 flex items-center">
                       <HeartHandshake className="h-6 w-6 mr-2 text-teal-700" />
-                      Local People & Verified Hosts ({hosts.length})
+                      Recommended Guides for {destination.destinationName}
                     </h2>
                     <p className="text-xs text-stone-500 mt-0.5">
-                      Connect directly with community storytelling guides and cultural hosts
+                      Ranked by destination service area, authentic verification, local experience, and language compatibility.
                     </p>
                   </div>
                   <Link
                     href={`/local?destinationId=${destination.id}`}
-                    className="text-xs font-bold text-teal-800 hover:text-teal-900"
+                    className="inline-flex items-center self-start sm:self-auto rounded-xl bg-stone-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-stone-800 transition"
                   >
-                    View All Local Guides →
+                    Find My Guide ({hosts.length || recommendedGuides.length}) →
                   </Link>
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                  {hosts.map((host) => (
-                    <LocalHostCard key={host.id} host={host} />
-                  ))}
+                  {recommendedGuides.length > 0
+                    ? recommendedGuides.map((item) => (
+                        <RecommendedGuideCard key={item.guide.id} item={item} />
+                      ))
+                    : hosts.map((host) => (
+                        <LocalHostCard key={host.id} host={host} />
+                      ))}
                 </div>
               </section>
             )}
@@ -566,41 +608,46 @@ export default function DestinationDetailPage() {
               </section>
             )}
 
-            {/* 6. Hotels Nearby */}
-            <section id="hotels">
-              <div className="flex items-center justify-between mb-6">
+            {/* 6. Hotels & Stays Nearby */}
+            <section id="hotels" className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-900 text-xs font-bold mb-2 border border-indigo-100">
+                    <Bed className="w-3.5 h-3.5 text-indigo-700" />
+                    Place-Specific Accommodations
+                  </div>
                   <h2 className="text-2xl font-bold text-stone-900 flex items-center">
                     <Bed className="h-6 w-6 mr-2 text-indigo-900" />
-                    Hotels & Stays Nearby {destination.nearbyHotels && destination.nearbyHotels.length > 0 ? `(${destination.nearbyHotels.length})` : ''}
+                    Hotels & Stays in {destination.destinationName} {hotels.length > 0 ? `(${hotels.length})` : ''}
                   </h2>
                   <p className="text-xs text-stone-500 mt-0.5">
-                    {destination.nearbyHotels && destination.nearbyHotels.length > 0
-                      ? 'Property information available; live availability is not currently provided.'
-                      : 'YatraSetu accommodation coverage is currently unavailable for this destination.'}
+                    Verified heritage palaces, luxury collections, boutique havelis, and authentic homestays.
                   </p>
                 </div>
-                {destination.nearbyHotels && destination.nearbyHotels.length > 0 && (
-                  <Link
-                    href={`/hotels?destinationId=${destination.id}`}
-                    className="text-xs font-bold text-indigo-900 hover:text-indigo-800"
+                {hotels.length > 0 && (
+                  <button
+                    onClick={() => handleProtectedAction(`/hotels?destinationId=${destination.id}`)}
+                    className="inline-flex items-center self-start sm:self-auto rounded-xl bg-indigo-950 px-4 py-2.5 text-xs font-bold text-white hover:bg-indigo-900 transition shadow-sm"
                   >
                     Browse All Stays →
-                  </Link>
+                  </button>
                 )}
               </div>
 
-              {destination.nearbyHotels && destination.nearbyHotels.length > 0 ? (
+              {hotels.length > 0 ? (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {destination.nearbyHotels.map((hotel) => (
+                  {hotels.map((hotel) => (
                     <HotelCard key={hotel.id} hotel={hotel} />
                   ))}
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-6 text-center text-xs text-stone-500">
-                  <p className="font-semibold text-stone-700 mb-1">Accommodation Coverage Notice</p>
-                  YatraSetu accommodation coverage is currently unavailable for this destination. We are onboarding local homestay and hotel partners in this region.
-                </div>
+                <EcosystemEmptyState
+                  title="Verified Stays Onboarding in Progress"
+                  category="Hotel & Homestay"
+                  destinationName={destination.destinationName}
+                  description={`Verified heritage havelis, boutique stays, and homestays for ${destination.destinationName} are currently being audited and onboarded.`}
+                  showPartnerCta={true}
+                />
               )}
             </section>
 

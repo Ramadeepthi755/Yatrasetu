@@ -84,15 +84,7 @@ export function TravelAgenciesSection({ destinationId, destinationName }: Travel
             <span>Retry</span>
           </button>
         </div>
-      ) : agencies.length === 0 ? (
-        <EcosystemEmptyState
-          title="No Authorized Travel Agencies Registered Yet"
-          category="Travel Agency"
-          destinationName={destinationName}
-          description={`We do not fabricate fake agency credentials or tour operators. Authorized travel agencies for ${destinationName} will appear once license verification is complete.`}
-          showPartnerCta={true}
-        />
-      ) : (
+      ) : agencies.length === 0 ? null : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {agencies.map((a) => (
             <div

@@ -44,4 +44,5 @@ public class ExperienceDto {
     private String verificationNotes;
     private String verifiedBy;
     private java.time.Instant verifiedAt;
+    private List<ExperienceSupportingProviderDto> supportingProviders;
 }

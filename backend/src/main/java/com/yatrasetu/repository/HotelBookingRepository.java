@@ -24,6 +24,11 @@ public interface HotelBookingRepository extends JpaRepository<HotelBooking, Stri
 
     List<HotelBooking> findByHotelIdAndBookingStatusOrderByCreatedAtDesc(String hotelId, HotelBookingStatus bookingStatus);
 
+    Optional<HotelBooking> findByQrToken(String qrToken);
+
+    @Query("SELECT b FROM HotelBooking b WHERE b.hotel.owner.id = :ownerId ORDER BY b.createdAt DESC")
+    List<HotelBooking> findByHotelOwnerIdOrderByCreatedAtDesc(@Param("ownerId") String ownerId);
+
     @Query("SELECT b FROM HotelBooking b WHERE b.bookingStatus = :status AND b.expiresAt IS NOT NULL AND b.expiresAt < :cutoff")
     List<HotelBooking> findExpiredPendingBookings(
             @Param("status") HotelBookingStatus status,

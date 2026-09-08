@@ -1,9 +1,8 @@
 package com.yatrasetu.web.rest;
 
+import com.yatrasetu.service.ExperienceBookingService;
 import com.yatrasetu.service.LocalHostService;
-import com.yatrasetu.web.dto.ApiResponse;
-import com.yatrasetu.web.dto.LocalHostDetailDto;
-import com.yatrasetu.web.dto.LocalHostDto;
+import com.yatrasetu.web.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,6 +22,7 @@ import java.util.List;
 public class LocalHostController {
 
     private final LocalHostService localHostService;
+    private final ExperienceBookingService bookingService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<LocalHostDto>>> getAllHosts(
@@ -52,6 +52,13 @@ public class LocalHostController {
                 .data(result)
                 .timestamp(Instant.now())
                 .build());
+    }
+
+    @PostMapping("/match")
+    public ResponseEntity<ApiResponse<GuideMatchResponseDto>> matchGuides(
+            @RequestBody GuideMatchFilterRequest request) {
+        GuideMatchResponseDto matchResult = bookingService.matchGuides(request);
+        return ResponseEntity.ok(ApiResponse.ok("Guide matching performed with explainable reasoning", matchResult));
     }
 
     @GetMapping("/{id}")

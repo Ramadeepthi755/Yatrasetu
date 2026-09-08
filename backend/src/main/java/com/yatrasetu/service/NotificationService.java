@@ -159,6 +159,229 @@ public class NotificationService {
         }
     }
 
+    @Transactional
+    public void sendNotification(User user, String title, String message, String category, String referenceLink) {
+        if (user == null) return;
+        try {
+            notificationRepository.save(Notification.builder()
+                    .id("notif-" + UUID.randomUUID().toString().substring(0, 12))
+                    .user(user)
+                    .title(title)
+                    .message(message)
+                    .category(category != null ? category : "SYSTEM")
+                    .referenceLink(referenceLink)
+                    .read(false)
+                    .createdAt(Instant.now())
+                    .build());
+            log.info("Emitted notification [{}] to user {}: {}", category, user.getEmail(), title);
+        } catch (Exception e) {
+            log.warn("Failed to send notification to user {}: {}", user.getEmail(), e.getMessage());
+        }
+    }
+
+    @Transactional
+    public void emitHotelBookingRequested(HotelBooking booking) {
+        if (booking == null) return;
+        String ref = booking.getBookingReference();
+        String hotelName = booking.getHotel() != null ? booking.getHotel().getHotelName() : "Hotel";
+
+        // Notify Hotel Owner/Partner
+        if (booking.getHotel() != null && booking.getHotel().getOwner() != null) {
+            sendNotification(
+                    booking.getHotel().getOwner(),
+                    "🔔 New Hotel Booking Request",
+                    "New reservation request " + ref + " for " + hotelName + " from " + booking.getGuestName() +
+                            " (" + booking.getCheckIn() + " to " + booking.getCheckOut() + ", " + booking.getNumberOfRooms() + " room(s)).",
+                    "HOTEL_BOOKING_REQUEST",
+                    "/partner/dashboard"
+            );
+        }
+
+        // Notify Traveler
+        if (booking.getTraveler() != null) {
+            sendNotification(
+                    booking.getTraveler(),
+                    "Hotel Booking Requested",
+                    "Your booking request " + ref + " at " + hotelName + " has been submitted and is awaiting hotel confirmation.",
+                    "HOTEL_BOOKING_REQUESTED",
+                    "/trips"
+            );
+        }
+    }
+
+    @Transactional
+    public void emitHotelBookingAccepted(HotelBooking booking) {
+        if (booking == null || booking.getTraveler() == null) return;
+        String ref = booking.getBookingReference();
+        String hotelName = booking.getHotel() != null ? booking.getHotel().getHotelName() : "Hotel";
+
+        sendNotification(
+                booking.getTraveler(),
+                "✓ Hotel Booking Accepted",
+                "Your booking request at " + hotelName + " has been accepted by the property! Please complete payment or review your confirmation pass.",
+                "HOTEL_BOOKING_ACCEPTED",
+                "/bookings/" + ref + "/confirmation"
+        );
+    }
+
+    @Transactional
+    public void emitHotelBookingRejected(HotelBooking booking, String reason) {
+        if (booking == null || booking.getTraveler() == null) return;
+        String ref = booking.getBookingReference();
+        String hotelName = booking.getHotel() != null ? booking.getHotel().getHotelName() : "Hotel";
+
+        sendNotification(
+                booking.getTraveler(),
+                "❌ Hotel Booking Declined",
+                "Your booking request " + ref + " at " + hotelName + " could not be confirmed." +
+                        (reason != null && !reason.isBlank() ? " Reason: " + reason : ""),
+                "HOTEL_BOOKING_REJECTED",
+                "/trips"
+        );
+    }
+
+    @Transactional
+    public void emitHotelCheckinConfirmed(HotelBooking booking) {
+        if (booking == null) return;
+        String ref = booking.getBookingReference();
+        String hotelName = booking.getHotel() != null ? booking.getHotel().getHotelName() : "Hotel";
+
+        if (booking.getTraveler() != null) {
+            sendNotification(
+                    booking.getTraveler(),
+                    "✓ Hotel Check-in Confirmed",
+                    "Welcome to " + hotelName + "! Your QR pass has been verified and check-in is complete.",
+                    "HOTEL_CHECKIN_CONFIRMED",
+                    "/trips"
+            );
+        }
+    }
+
+    @Transactional
+    public void emitHotelStayCompleted(HotelBooking booking) {
+        if (booking == null) return;
+        String ref = booking.getBookingReference();
+        String hotelName = booking.getHotel() != null ? booking.getHotel().getHotelName() : "Hotel";
+
+        if (booking.getTraveler() != null) {
+            sendNotification(
+                    booking.getTraveler(),
+                    "✓ Hotel Stay Completed",
+                    "Thank you for staying at " + hotelName + "! How was your experience? Leave a review to help fellow travelers.",
+                    "HOTEL_STAY_COMPLETED",
+                    "/trips"
+            );
+        }
+    }
+
+    @Transactional
+    public void emitGuideBookingRequested(com.yatrasetu.domain.ExperienceBooking booking) {
+        if (booking == null) return;
+        String ref = booking.getBookingReference();
+        String expTitle = booking.getExperience() != null ? booking.getExperience().getTitle() : "Custom Trip";
+
+        if (booking.getHost() != null && booking.getHost().getUser() != null) {
+            sendNotification(
+                    booking.getHost().getUser(),
+                    "🔔 New Trip Request",
+                    "New trip booking request " + ref + " for '" + expTitle + "' from " +
+                            (booking.getTourist() != null ? booking.getTourist().getFullName() : "Tourist") +
+                            " on " + booking.getBookingDate() + " (" + booking.getGuestCount() + " guest(s)).",
+                    "GUIDE_BOOKING_REQUEST",
+                    "/partner/dashboard"
+            );
+        }
+
+        if (booking.getTourist() != null) {
+            sendNotification(
+                    booking.getTourist(),
+                    "Trip Booking Requested",
+                    "Your request " + ref + " for '" + expTitle + "' has been sent to your local guide.",
+                    "GUIDE_BOOKING_REQUESTED",
+                    "/bookings"
+            );
+        }
+    }
+
+    @Transactional
+    public void emitGuideBookingAccepted(com.yatrasetu.domain.ExperienceBooking booking) {
+        if (booking == null || booking.getTourist() != null) {
+            String expTitle = booking.getExperience() != null ? booking.getExperience().getTitle() : "Custom Trip";
+            sendNotification(
+                    booking.getTourist(),
+                    "✓ Guide Booking Accepted",
+                    "Your guide " + (booking.getHost() != null ? booking.getHost().getName() : "Host") +
+                            " has accepted your request for '" + expTitle + "'! Proceed to complete payment.",
+                    "GUIDE_BOOKING_ACCEPTED",
+                    "/bookings"
+            );
+        }
+    }
+
+    @Transactional
+    public void emitGuideBookingRejected(com.yatrasetu.domain.ExperienceBooking booking, String reason) {
+        if (booking == null || booking.getTourist() == null) return;
+        String expTitle = booking.getExperience() != null ? booking.getExperience().getTitle() : "Custom Trip";
+        sendNotification(
+                booking.getTourist(),
+                "❌ Trip Request Declined",
+                "Your trip request for '" + expTitle + "' was declined." +
+                        (reason != null && !reason.isBlank() ? " Reason: " + reason : ""),
+                "GUIDE_BOOKING_REJECTED",
+                "/bookings"
+        );
+    }
+
+    @Transactional
+    public void emitGuideBookingConfirmed(com.yatrasetu.domain.ExperienceBooking booking) {
+        if (booking == null) return;
+        String expTitle = booking.getExperience() != null ? booking.getExperience().getTitle() : "Trip";
+
+        if (booking.getTourist() != null) {
+            sendNotification(
+                    booking.getTourist(),
+                    "✓ Trip Booking Confirmed",
+                    "Your booking for '" + expTitle + "' is confirmed! Check your meeting point and prepare for your experience.",
+                    "GUIDE_BOOKING_CONFIRMED",
+                    "/bookings"
+            );
+        }
+        if (booking.getHost() != null && booking.getHost().getUser() != null) {
+            sendNotification(
+                    booking.getHost().getUser(),
+                    "✓ Payment Confirmed: " + booking.getBookingReference(),
+                    "Booking " + booking.getBookingReference() + " for '" + expTitle + "' is confirmed and ready for trip day.",
+                    "PARTNER_GUIDE_CONFIRMED",
+                    "/partner/dashboard"
+            );
+        }
+    }
+
+    @Transactional
+    public void emitGuideTripStarted(com.yatrasetu.domain.ExperienceBooking booking) {
+        if (booking == null || booking.getTourist() == null) return;
+        sendNotification(
+                booking.getTourist(),
+                "🚀 Your Live Trip has Started!",
+                "Your guide " + (booking.getHost() != null ? booking.getHost().getName() : "Host") +
+                        " has officially started the trip. Live safety tracking and checkpoint check-ins are active.",
+                "TRIP_STARTED",
+                "/bookings"
+        );
+    }
+
+    @Transactional
+    public void emitGuideTripCompleted(com.yatrasetu.domain.ExperienceBooking booking) {
+        if (booking == null || booking.getTourist() == null) return;
+        sendNotification(
+                booking.getTourist(),
+                "✓ Trip Completed",
+                "Your trip has concluded! Please confirm completion and leave a review for your guide.",
+                "TRIP_COMPLETED",
+                "/bookings"
+        );
+    }
+
     private User resolveUser(String userIdOrEmail) {
         if (userIdOrEmail == null || userIdOrEmail.isBlank()) {
             throw new AccessDeniedException("Authentication required.");

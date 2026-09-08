@@ -1,11 +1,20 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Home, Compass, Sparkles, Users, User, Briefcase, Landmark } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 export default function MobileNav() {
-  const { role, isAuthenticated, openAuthModal } = useAuth();
+  const { role, isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  const handleProtectedClick = (e: React.MouseEvent, path: string) => {
+    if (!isAuthenticated) {
+      e.preventDefault();
+      router.push(`/login?redirect=${encodeURIComponent(path)}`);
+    }
+  };
 
   return (
     <nav
@@ -22,6 +31,7 @@ export default function MobileNav() {
         </Link>
         <Link
           href="/explore"
+          onClick={(e) => handleProtectedClick(e, '/explore')}
           className="flex flex-col items-center justify-center text-slate-300 hover:text-white py-1 px-2 rounded-lg transition-colors"
         >
           <Compass className="w-5 h-5 text-[#F59E0B]" />
@@ -29,6 +39,7 @@ export default function MobileNav() {
         </Link>
         <Link
           href="/plan-trip"
+          onClick={(e) => handleProtectedClick(e, '/plan-trip')}
           className="flex flex-col items-center justify-center text-slate-300 hover:text-white py-1 px-2 rounded-lg transition-colors"
         >
           <Sparkles className="w-5 h-5 text-[#F59E0B]" />
@@ -36,6 +47,7 @@ export default function MobileNav() {
         </Link>
         <Link
           href="/travel-connect"
+          onClick={(e) => handleProtectedClick(e, '/travel-connect')}
           className="flex flex-col items-center justify-center text-slate-300 hover:text-white py-1 px-2 rounded-lg transition-colors"
         >
           <Users className="w-5 h-5 text-[#0F766E]" />
@@ -44,13 +56,13 @@ export default function MobileNav() {
 
         {/* Dynamic Profile / Portal / Sign In */}
         {!isAuthenticated ? (
-          <button
-            onClick={() => openAuthModal()}
+          <Link
+            href="/login"
             className="flex flex-col items-center justify-center text-amber-300 hover:text-amber-200 py-1 px-2 rounded-lg transition-colors"
           >
             <User className="w-5 h-5" />
             <span className="text-[10px] mt-1 font-medium">Sign In</span>
-          </button>
+          </Link>
         ) : role === 'PARTNER' ? (
           <Link
             href="/partner/dashboard"

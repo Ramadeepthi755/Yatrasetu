@@ -1,15 +1,25 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Search, Compass, Filter, RefreshCw, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import { getExperiences, getExperienceCategories, ExperienceItem } from '@/lib/api';
 import { ExperienceCard } from '@/components/explore/ExperienceCard';
 
 export default function ExperiencesCatalogPage() {
+  const router = useRouter();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [experiences, setExperiences] = useState<ExperienceItem[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/login?redirect=/experiences');
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   // Filters
   const [search, setSearch] = useState<string>('');

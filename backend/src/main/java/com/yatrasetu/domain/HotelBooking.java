@@ -131,6 +131,31 @@ public class HotelBooking {
     @Column(name = "cancellation_reason_code", length = 50)
     private CancellationReasonCode cancellationReasonCode;
 
+    @Column(name = "qr_token", length = 120, unique = true)
+    private String qrToken;
+
+    @Column(name = "payment_method", length = 50, nullable = false)
+    @Builder.Default
+    private String paymentMethod = "ONLINE"; // ONLINE, PAY_AT_HOTEL
+
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
+
+    @Column(name = "checked_in_at")
+    private Instant checkedInAt;
+
+    @Column(name = "checked_out_at")
+    private Instant checkedOutAt;
+
+    @Column(name = "review_rating", precision = 3, scale = 1)
+    private BigDecimal reviewRating;
+
+    @Column(name = "review_comment", columnDefinition = "TEXT")
+    private String reviewComment;
+
+    @Column(name = "reviewed_at")
+    private Instant reviewedAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private Instant createdAt = Instant.now();
@@ -141,22 +166,40 @@ public class HotelBooking {
 
     /**
      * Validates state machine transitions:
-     * PENDING_PAYMENT -> CONFIRMED, EXPIRED, CANCELLED
-     * CONFIRMED -> CANCELLED
-     * CANCELLED -> none (terminal)
-     * EXPIRED -> none (terminal)
+     * REQUESTED -> ACCEPTED, PENDING_PAYMENT, CONFIRMED, REJECTED, CANCELLED, EXPIRED
+     * ACCEPTED / PENDING_PAYMENT -> CONFIRMED, CANCELLED, EXPIRED
+     * CONFIRMED -> CHECKED_IN, CANCELLED
+     * CHECKED_IN -> CHECKED_OUT, COMPLETED
+     * CHECKED_OUT -> COMPLETED
+     * CANCELLED, EXPIRED, REJECTED, COMPLETED -> terminal
      */
     public boolean canTransitionTo(HotelBookingStatus targetStatus) {
         if (this.bookingStatus == targetStatus) {
             return true; // Idempotent same-state check
         }
-        if (this.bookingStatus == HotelBookingStatus.PENDING_PAYMENT) {
+        if (this.bookingStatus == HotelBookingStatus.REQUESTED) {
+            return targetStatus == HotelBookingStatus.ACCEPTED ||
+                   targetStatus == HotelBookingStatus.PENDING_PAYMENT ||
+                   targetStatus == HotelBookingStatus.CONFIRMED ||
+                   targetStatus == HotelBookingStatus.REJECTED ||
+                   targetStatus == HotelBookingStatus.CANCELLED ||
+                   targetStatus == HotelBookingStatus.EXPIRED;
+        }
+        if (this.bookingStatus == HotelBookingStatus.ACCEPTED || this.bookingStatus == HotelBookingStatus.PENDING_PAYMENT) {
             return targetStatus == HotelBookingStatus.CONFIRMED ||
                    targetStatus == HotelBookingStatus.CANCELLED ||
                    targetStatus == HotelBookingStatus.EXPIRED;
         }
         if (this.bookingStatus == HotelBookingStatus.CONFIRMED) {
-            return targetStatus == HotelBookingStatus.CANCELLED;
+            return targetStatus == HotelBookingStatus.CHECKED_IN ||
+                   targetStatus == HotelBookingStatus.CANCELLED;
+        }
+        if (this.bookingStatus == HotelBookingStatus.CHECKED_IN) {
+            return targetStatus == HotelBookingStatus.CHECKED_OUT ||
+                   targetStatus == HotelBookingStatus.COMPLETED;
+        }
+        if (this.bookingStatus == HotelBookingStatus.CHECKED_OUT) {
+            return targetStatus == HotelBookingStatus.COMPLETED;
         }
         return false;
     }

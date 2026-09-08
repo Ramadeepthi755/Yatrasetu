@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import {
   Compass,
@@ -21,6 +21,13 @@ import {
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const rawRedirect = searchParams.get('redirect');
+  // Safe redirect validation: must start with single slash, not protocol-relative
+  const targetRedirect = (rawRedirect && rawRedirect.startsWith('/') && !rawRedirect.startsWith('//'))
+    ? rawRedirect
+    : null;
+
   const { login, loginAsDemo } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,7 +46,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(email, password);
-      router.push('/');
+      router.push(targetRedirect || '/');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to sign in. Please verify your credentials.';
       setError(msg);
@@ -53,10 +60,12 @@ export default function LoginPage() {
     setError(null);
     try {
       await loginAsDemo(role);
-      if (role === 'PARTNER') {
-        router.push('/partner/dashboard');
+      if (targetRedirect) {
+        router.push(targetRedirect);
+      } else if (role === 'PARTNER') {
+        router.push('/partner');
       } else if (role === 'GOVERNMENT') {
-        router.push('/government/dashboard');
+        router.push('/government');
       } else {
         router.push('/explore');
       }

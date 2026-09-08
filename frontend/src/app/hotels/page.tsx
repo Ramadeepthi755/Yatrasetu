@@ -1,13 +1,16 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import { Search, Bed, Filter, Map, Grid, RefreshCw, CheckCircle, AlertCircle, X, MapPin, Database, Info } from 'lucide-react';
 import { getHotels, getHotelCategories, HotelItem } from '@/lib/api';
 import { HotelCard } from '@/components/explore/HotelCard';
 import { MapView, MapMarker } from '@/components/map/MapView';
 
 function HotelsDirectoryContent() {
+  const router = useRouter();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   const initialDestinationId = searchParams.get('destinationId') || '';
   const initialCityId = searchParams.get('cityId') || '';
@@ -17,6 +20,13 @@ function HotelsDirectoryContent() {
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      const redirectQuery = initialDestinationId ? `?destinationId=${initialDestinationId}` : '';
+      router.push(`/login?redirect=${encodeURIComponent('/hotels' + redirectQuery)}`);
+    }
+  }, [authLoading, isAuthenticated, router, initialDestinationId]);
 
   // View toggle: 'grid' vs 'map'
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');

@@ -97,67 +97,114 @@ export default function Header() {
             </div>
           </Link>
 
-          {/* Public & Role Navigation Links */}
+          {/* Public & Role Navigation Links with Auth Guards */}
           <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
-            {/* Explore India - Always public */}
+            {/* Explore India */}
             <Link
               href="/explore"
+              onClick={(e) => {
+                if (!isAuthenticated) {
+                  e.preventDefault();
+                  router.push('/login?redirect=/explore');
+                }
+              }}
               className="px-3 py-2 rounded-lg text-sm font-medium text-slate-200 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1.5"
             >
               <Compass className="w-4 h-4 text-[#F59E0B]" />
               Explore
             </Link>
 
-            {/* Plan Trip - Always public */}
+            {/* Plan Trip */}
             <Link
               href="/plan-trip"
+              onClick={(e) => {
+                if (!isAuthenticated) {
+                  e.preventDefault();
+                  router.push('/login?redirect=/plan-trip');
+                }
+              }}
               className="px-3 py-2 rounded-lg text-sm font-medium text-slate-200 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1.5"
             >
               <Sparkles className="w-4 h-4 text-[#F59E0B]" />
               Plan Trip
             </Link>
 
-            {/* Experiences - Always public */}
+            {/* Experiences */}
             <Link
               href="/experiences"
+              onClick={(e) => {
+                if (!isAuthenticated) {
+                  e.preventDefault();
+                  router.push('/login?redirect=/experiences');
+                }
+              }}
               className="px-3 py-2 rounded-lg text-sm font-medium text-slate-200 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1.5"
             >
               <Compass className="w-4 h-4 text-[#F59E0B]" />
               Experiences
             </Link>
 
-            {/* Local People - Always public */}
+            {/* Local People */}
             <Link
               href="/local"
+              onClick={(e) => {
+                if (!isAuthenticated) {
+                  e.preventDefault();
+                  router.push('/login?redirect=/local');
+                }
+              }}
               className="px-3 py-2 rounded-lg text-sm font-medium text-slate-200 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1.5"
             >
               <MapPin className="w-4 h-4 text-[#0F766E]" />
               Local People
             </Link>
 
-            {/* Hotels - Always public */}
+            {/* Hotels */}
             <Link
               href="/hotels"
+              onClick={(e) => {
+                if (!isAuthenticated) {
+                  e.preventDefault();
+                  router.push('/login?redirect=/hotels');
+                }
+              }}
               className="px-3 py-2 rounded-lg text-sm font-medium text-slate-200 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1.5"
             >
               <Bed className="w-4 h-4 text-indigo-300" />
               Hotels
             </Link>
 
-            {/* Travel Connect - Public directory browsing */}
+            {/* Travel Connect */}
             <Link
               href="/travel-connect"
+              onClick={(e) => {
+                if (!isAuthenticated) {
+                  e.preventDefault();
+                  router.push('/login?redirect=/travel-connect');
+                }
+              }}
               className="px-3 py-2 rounded-lg text-sm font-medium text-slate-200 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1.5"
             >
               <Users className="w-4 h-4 text-[#F59E0B]" />
               Connect
             </Link>
 
+            {/* Bookings (Authenticated Users) */}
+            {isAuthenticated && (
+              <Link
+                href="/bookings"
+                className="px-3 py-2 rounded-lg text-sm font-semibold text-amber-200 hover:text-white hover:bg-amber-500/20 border border-amber-500/30 transition-colors flex items-center gap-1.5"
+              >
+                <Briefcase className="w-4 h-4 text-amber-300" />
+                Bookings
+              </Link>
+            )}
+
             {/* Partner specific link */}
             {isAuthenticated && role === 'PARTNER' && (
               <Link
                 href="/partner/dashboard"
-                className="px-3 py-2 rounded-lg text-sm font-semibold text-teal-200 hover:text-white hover:bg-teal-500/20 border border-teal-500/30 transition-colors flex items-center gap-1.5 ml-2"
+                className="px-3 py-2 rounded-lg text-sm font-semibold text-teal-200 hover:text-white hover:bg-teal-500/20 border border-teal-500/30 transition-colors flex items-center gap-1.5 ml-1"
               >
                 <Briefcase className="w-4 h-4 text-teal-300" />
                 Partner Dashboard
@@ -168,7 +215,7 @@ export default function Header() {
             {isAuthenticated && role === 'GOVERNMENT' && (
               <Link
                 href="/government/dashboard"
-                className="px-3 py-2 rounded-lg text-sm font-semibold text-amber-200 hover:text-white hover:bg-amber-500/20 border border-amber-500/30 transition-colors flex items-center gap-1.5 ml-2"
+                className="px-3 py-2 rounded-lg text-sm font-semibold text-amber-200 hover:text-white hover:bg-amber-500/20 border border-amber-500/30 transition-colors flex items-center gap-1.5 ml-1"
               >
                 <Landmark className="w-4 h-4 text-amber-300" />
                 Governance Intelligence
@@ -181,13 +228,13 @@ export default function Header() {
             {!isAuthenticated ? (
               /* GUEST STATE */
               <div className="flex items-center gap-2.5">
-                <button
-                  onClick={() => openAuthModal()}
+                <Link
+                  href="/login"
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs sm:text-sm font-medium text-slate-200 hover:text-white border border-white/10 transition-all shadow-sm"
                 >
                   <UserCircle className="w-4 h-4 text-[#F59E0B]" />
                   <span>Guest • Sign In</span>
-                </button>
+                </Link>
 
                 {/* Get Started dropdown */}
                 <div className="relative" ref={getStartedRef}>
@@ -235,7 +282,7 @@ export default function Header() {
                 </div>
               </div>
             ) : (
-              /* AUTHENTICATED STATE: Account Profile Menu (No arbitrary role switching) */
+              /* AUTHENTICATED STATE: Account Profile Menu */
               <div className="relative" ref={accountMenuRef}>
                 <button
                   onClick={() => setShowAccountMenu(!showAccountMenu)}
@@ -279,6 +326,14 @@ export default function Header() {
                     <div className="py-1">
                       {role === 'TRAVELER' && (
                         <>
+                          <Link
+                            href="/bookings"
+                            onClick={() => setShowAccountMenu(false)}
+                            className="w-full text-left px-4 py-2 hover:bg-white/10 text-slate-200 hover:text-white flex items-center gap-2.5 transition-colors font-medium text-amber-300"
+                          >
+                            <Briefcase className="w-4 h-4 text-amber-400" />
+                            <span>My Bookings & Live Trips</span>
+                          </Link>
                           <Link
                             href="/profile"
                             onClick={() => setShowAccountMenu(false)}

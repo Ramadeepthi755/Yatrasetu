@@ -84,15 +84,7 @@ export function RentalProvidersSection({ destinationId, destinationName }: Renta
             <span>Retry</span>
           </button>
         </div>
-      ) : rentals.length === 0 ? (
-        <EcosystemEmptyState
-          title="No Verified Rental Providers Registered Yet"
-          category="Vehicle Rental"
-          destinationName={destinationName}
-          description={`We do not fabricate fake rental shops, bike models, or tariffs. Authorized rental providers for ${destinationName} will appear as they register and get verified.`}
-          showPartnerCta={true}
-        />
-      ) : (
+      ) : rentals.length === 0 ? null : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {rentals.map((r) => (
             <div

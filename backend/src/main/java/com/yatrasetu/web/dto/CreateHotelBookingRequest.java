@@ -58,4 +58,6 @@ public class CreateHotelBookingRequest {
 
     @Size(max = 100, message = "Idempotency key cannot exceed 100 characters")
     private String idempotencyKey;
+
+    private String paymentMethod; // ONLINE, PAY_AT_HOTEL
 }

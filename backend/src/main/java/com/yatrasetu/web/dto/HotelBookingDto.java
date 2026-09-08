@@ -71,6 +71,14 @@ public class HotelBookingDto {
     private String cancellationReasonCode;
     private String cancellationPolicySnapshot;
     private Integer cancellationDeadlineHours;
+    private String qrToken;
+    private String paymentMethod;
+    private String rejectionReason;
+    private Instant checkedInAt;
+    private Instant checkedOutAt;
+    private BigDecimal reviewRating;
+    private String reviewComment;
+    private Instant reviewedAt;
     private Instant createdAt;
     private Instant updatedAt;
 
