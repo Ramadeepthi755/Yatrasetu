@@ -53,6 +53,12 @@ public class Phase7AiAndTripTest {
     @Autowired
     private UserService userService;
 
+        @Autowired
+        private LocalHostRepository localHostRepository;
+
+        @Autowired
+        private ExperienceRepository experienceRepository;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -61,6 +67,8 @@ public class Phase7AiAndTripTest {
     @BeforeEach
     void setup() {
         tripRepository.deleteAll();
+        experienceRepository.deleteAll();
+                localHostRepository.deleteAll();
         userRepository.deleteAll();
 
         // Seed Users

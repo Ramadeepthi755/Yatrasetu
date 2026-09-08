@@ -27,6 +27,8 @@ interface AuthContextType {
   closeAuthModal: () => void;
   requireAuth: (destination: string, targetRole?: 'TRAVELER' | 'PARTNER' | 'GOVERNMENT') => boolean;
   login: (email: string, password?: string) => Promise<void>;
+  loginWithPhone: (phone: string, name: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   signup: (
     name: string,
     email: string,
@@ -38,6 +40,9 @@ interface AuthContextType {
   updateTravelerProfile: (data: Partial<UserProfile>) => Promise<void>;
   updatePartner: (data: Partial<PartnerProfile>) => Promise<void>;
   loginAsDemo: (role: 'TRAVELER' | 'PARTNER' | 'GOVERNMENT') => Promise<void>;
+  setUserVerification: (status: { aadhaarVerified?: boolean; aadhaarNumber?: string; dgLockerConnected?: boolean }) => void;
+  setGuideVerification: (status: { linkedinUrl?: string; instagramUrl?: string; dgLockerVerified?: boolean; aadhaarLast4?: string; residencyProof?: string; residencyYears?: number }) => void;
+  setHotelVerification: (status: { hotelName?: string; hotelCity?: string; hotelAddress?: string; hotelPhone?: string; hotelEmail?: string; hotelWebsite?: string; hotelType?: string; totalRooms?: string; photos?: string[]; billingReceipts?: string[]; businessProofs?: string[] }) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -183,6 +188,95 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginWithPhone = async (phone: string, name: string) => {
+    setLoading(true);
+    try {
+      const mockJwt = `phone-user-${phone.replace(/[^0-9]/g, '')}`;
+      setToken(mockJwt);
+      const cleanPhone = phone.replace(/[^0-9]/g, '');
+      let profileData: UserProfile;
+      try {
+        const res = await syncUserSession(
+          `phone-${cleanPhone}`,
+          `${cleanPhone}@phone.yatrasetu.in`,
+          name,
+          'TRAVELER',
+          undefined,
+          mockJwt
+        );
+        profileData = res.data;
+      } catch {
+        profileData = {
+          id: `usr-phone-${cleanPhone}`,
+          email: `${cleanPhone}@phone.yatrasetu.in`,
+          fullName: name,
+          role: 'TRAVELER',
+          phone: cleanPhone,
+          verified: false,
+        };
+      }
+      profileData.phone = cleanPhone;
+      setUser(profileData);
+      localStorage.setItem('yatrasetu_auth_user', JSON.stringify(profileData));
+      localStorage.setItem('yatrasetu_auth_token', mockJwt);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loginWithGoogle = async () => {
+    setLoading(true);
+    try {
+      if (isSupabaseConfigured) {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: `${window.location.origin}/explore` },
+        });
+        if (error) throw error;
+      } else {
+        // Mock Google sign-in for demo
+        const mockJwt = `google-user-demo`;
+        setToken(mockJwt);
+        const profileData: UserProfile = {
+          id: 'usr-google-demo',
+          email: 'demo.google@yatrasetu.in',
+          fullName: 'Google User',
+          role: 'TRAVELER',
+          verified: false,
+        };
+        setUser(profileData);
+        localStorage.setItem('yatrasetu_auth_user', JSON.stringify(profileData));
+        localStorage.setItem('yatrasetu_auth_token', mockJwt);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const setUserVerification = (status: { aadhaarVerified?: boolean; aadhaarNumber?: string; dgLockerConnected?: boolean }) => {
+    if (user) {
+      const updated = { ...user, ...status };
+      setUser(updated);
+      localStorage.setItem('yatrasetu_auth_user', JSON.stringify(updated));
+    }
+  };
+
+  const setGuideVerification = (status: { linkedinUrl?: string; instagramUrl?: string; dgLockerVerified?: boolean; aadhaarLast4?: string; residencyProof?: string; residencyYears?: number }) => {
+    if (partnerDetails) {
+      const updated = { ...partnerDetails, ...status };
+      setPartnerDetails(updated);
+      localStorage.setItem('yatrasetu_auth_partner', JSON.stringify(updated));
+    }
+  };
+
+  const setHotelVerification = (status: { hotelName?: string; hotelCity?: string; hotelAddress?: string; hotelPhone?: string; hotelEmail?: string; hotelWebsite?: string; hotelType?: string; totalRooms?: string; photos?: string[]; billingReceipts?: string[]; businessProofs?: string[] }) => {
+    if (partnerDetails) {
+      const updated = { ...partnerDetails, ...status };
+      setPartnerDetails(updated);
+      localStorage.setItem('yatrasetu_auth_partner', JSON.stringify(updated));
+    }
+  };
+
   const signup = async (
     name: string,
     email: string,
@@ -207,16 +301,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         const mockJwt = `auth-${role.toLowerCase()}-${email}`;
         setToken(mockJwt);
-        const res = await syncUserSession(`usr-${Date.now()}`, email, name, role, partnerSubtype, mockJwt);
-        setUser(res.data);
-        localStorage.setItem('yatrasetu_auth_user', JSON.stringify(res.data));
+        let profileData: UserProfile;
+        try {
+          const res = await syncUserSession(`usr-${Date.now()}`, email, name, role, partnerSubtype, mockJwt);
+          profileData = res.data;
+        } catch (error) {
+          console.warn('Backend unavailable during signup; keeping a local pending registration.', error);
+          profileData = {
+            id: `usr-local-${Date.now()}`,
+            email,
+            fullName: name,
+            role,
+            verified: false,
+          };
+        }
+        setUser(profileData);
+        localStorage.setItem('yatrasetu_auth_user', JSON.stringify(profileData));
         localStorage.setItem('yatrasetu_auth_token', mockJwt);
         if (role === 'PARTNER') {
           const pData: PartnerProfile = {
-            id: res.data.id,
-            email: res.data.email,
-            fullName: res.data.fullName,
-            businessName: `${name}'s Services`,
+            id: profileData.id,
+            email: profileData.email,
+            fullName: profileData.fullName,
+            businessName: '',
             role: 'PARTNER',
             partnerSubtype: (partnerSubtype as any) || 'LOCAL_HOST',
             verificationStatus: 'PENDING',
@@ -332,9 +439,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updatePartner = async (data: Partial<PartnerProfile>) => {
-    const res = await updatePartnerProfile(data, token || undefined);
-    setPartnerDetails(res.data);
-    localStorage.setItem('yatrasetu_auth_partner', JSON.stringify(res.data));
+    try {
+      const res = await updatePartnerProfile(data, token || undefined);
+      setPartnerDetails(res.data);
+      localStorage.setItem('yatrasetu_auth_partner', JSON.stringify(res.data));
+    } catch (error) {
+      console.warn('Backend unavailable; saved partner details locally as pending.', error);
+      const localDetails = { ...(partnerDetails || {}), ...data, verificationStatus: 'PENDING' as const } as PartnerProfile;
+      setPartnerDetails(localDetails);
+      localStorage.setItem('yatrasetu_auth_partner', JSON.stringify(localDetails));
+    }
   };
 
   return (
@@ -353,11 +467,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         closeAuthModal,
         requireAuth,
         login,
+        loginWithPhone,
+        loginWithGoogle,
         signup,
         logout,
         updateTravelerProfile,
         updatePartner,
         loginAsDemo,
+        setUserVerification,
+        setGuideVerification,
+        setHotelVerification,
       }}
     >
       {children}

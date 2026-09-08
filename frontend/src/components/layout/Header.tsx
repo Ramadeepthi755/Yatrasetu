@@ -200,6 +200,17 @@ export default function Header() {
               </Link>
             )}
 
+            {/* Dashboard link for Travelers */}
+            {isAuthenticated && role === 'TRAVELER' && (
+              <Link
+                href="/dashboard"
+                className="px-3 py-2 rounded-lg text-sm font-semibold text-indigo-200 hover:text-white hover:bg-indigo-500/20 border border-indigo-500/30 transition-colors flex items-center gap-1.5 ml-1"
+              >
+                <User className="w-4 h-4 text-indigo-300" />
+                Dashboard
+              </Link>
+            )}
+
             {/* Partner specific link */}
             {isAuthenticated && role === 'PARTNER' && (
               <Link

@@ -178,7 +178,6 @@ export default function PartnerOnboardingPage() {
               </label>
               <input
                 type="text"
-                required
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
                 placeholder="e.g. Ramesh Heritage Walks"
@@ -204,6 +203,7 @@ export default function PartnerOnboardingPage() {
                 <option value="ARTISAN">Artisan / Handloom Creator</option>
                 <option value="PHOTOGRAPHER">Travel Photographer</option>
                 <option value="OTHER">Other Tourism Service</option>
+                <option value="OTHER">Travel Agency / Tour Operator</option>
               </select>
             </div>
           </div>
@@ -215,7 +215,6 @@ export default function PartnerOnboardingPage() {
               </label>
               <input
                 type="text"
-                required
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 placeholder="e.g. Hampi, Kochi, Jaipur"
@@ -229,7 +228,6 @@ export default function PartnerOnboardingPage() {
               </label>
               <input
                 type="text"
-                required
                 value={state}
                 onChange={(e) => setState(e.target.value)}
                 placeholder="e.g. Karnataka, Kerala, Rajasthan"

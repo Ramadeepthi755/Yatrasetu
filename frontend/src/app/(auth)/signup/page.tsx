@@ -37,6 +37,7 @@ import {
 } from 'lucide-react';
 
 type SelectedRole = 'TRAVELER' | 'PARTNER' | 'GOVERNMENT';
+type PartnerSubRole = 'GUIDE' | 'HOTEL' | 'OTHER';
 type Step = 1 | 2;
 
 // Traveler options
@@ -319,7 +320,7 @@ export default function SignupPage() {
         console.warn('Profile preference update handled non-blockingly:', profileErr);
       }
 
-      router.push('/explore');
+      router.push('/dashboard');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to complete traveler registration.';
       setError(msg);
@@ -330,15 +331,6 @@ export default function SignupPage() {
 
   // Final Registration for Local Partner
   const handlePartnerRegister = async () => {
-    if (!businessName.trim()) {
-      setError('Please provide your business or service name.');
-      return;
-    }
-    if (!operatingCity.trim()) {
-      setError('Please provide your primary operating city.');
-      return;
-    }
-
     setLoading(true);
     setError(null);
     try {
@@ -370,7 +362,14 @@ export default function SignupPage() {
         console.warn('Partner profile details saved non-blockingly:', partnerErr);
       }
 
-      router.push('/partner/dashboard');
+      // Redirect based on partner subtype
+      if (selectedPartnerType.subtype === 'GUIDE') {
+        router.push('/onboarding/guide');
+      } else if (selectedPartnerType.subtype === 'HOTEL' || selectedPartnerType.subtype === 'HOMESTAY') {
+        router.push('/onboarding/hotel');
+      } else {
+        router.push('/onboarding/partner');
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to complete partner registration.';
       setError(msg);
@@ -468,7 +467,7 @@ export default function SignupPage() {
           {/* ========================================================================= */}
           {/* ROLE SELECTION & STEP 1: ACCOUNT DETAILS                                   */}
           {/* ========================================================================= */}
-          {step === 1 && role !== 'GOVERNMENT' && (
+          {step === 1 && (
             <form onSubmit={handleStep1Submit} className="space-y-6">
               <div>
                 <h1 className="text-2xl font-extrabold text-[#171717] tracking-tight">Create your account</h1>
@@ -483,7 +482,7 @@ export default function SignupPage() {
                   How do you want to use YatraSetu? *
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* Option 1: Traveler */}
+                  {/* Option 1: Tourist / Traveler */}
                   <button
                     type="button"
                     onClick={() => { setRole('TRAVELER'); setError(null); }}
@@ -497,9 +496,9 @@ export default function SignupPage() {
                       <Users className="w-5 h-5" />
                     </div>
                     <div>
-                      <div className="text-sm font-bold text-[#171717]">Traveler</div>
+                      <div className="text-sm font-bold text-[#171717]">Tourist / Traveler</div>
                       <p className="text-[11px] text-[#64748B] mt-0.5 leading-snug">
-                        Explore India, plan trips, connect with locals and travel communities.
+                        Explore India, plan trips, book guides, hotels and restaurants.
                       </p>
                     </div>
                     {role === 'TRAVELER' && (
@@ -509,48 +508,82 @@ export default function SignupPage() {
                     )}
                   </button>
 
-                  {/* Option 2: Local Partner */}
+                  {/* Option 2: Guide */}
                   <button
                     type="button"
-                    onClick={() => { setRole('PARTNER'); setError(null); }}
+                    onClick={() => { setRole('PARTNER'); setSelectedPartnerType(PARTNER_TYPES[0]); setError(null); }}
                     className={`relative p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-2 ${
-                      role === 'PARTNER'
+                      role === 'PARTNER' && selectedPartnerType.subtype === 'GUIDE'
                         ? 'border-[#0F766E] ring-2 ring-[#0F766E]/20 bg-white shadow-sm'
                         : 'border-slate-200 hover:border-slate-300 bg-white'
                     }`}
                   >
                     <div className="w-10 h-10 rounded-xl bg-teal-50 text-[#0F766E] flex items-center justify-center font-bold">
-                      <Briefcase className="w-5 h-5" />
+                      <Compass className="w-5 h-5" />
                     </div>
                     <div>
-                      <div className="text-sm font-bold text-[#171717]">Local Partner</div>
+                      <div className="text-sm font-bold text-[#171717]">Local Guide</div>
                       <p className="text-[11px] text-[#64748B] mt-0.5 leading-snug">
-                        Offer authentic local experiences, stays and tourism services.
+                        Conduct heritage walks, storytelling tours and local experiences.
                       </p>
                     </div>
-                    {role === 'PARTNER' && (
+                    {role === 'PARTNER' && selectedPartnerType.subtype === 'GUIDE' && (
                       <div className="absolute top-3.5 right-3.5 w-5 h-5 rounded-full bg-[#0F766E] flex items-center justify-center">
                         <Check className="w-3 h-3 text-white" />
                       </div>
                     )}
                   </button>
-                </div>
 
-                {/* Government Access Disclaimer / Gateway */}
-                <div className="mt-3 p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <Landmark className="w-4 h-4 text-amber-700 flex-shrink-0" />
-                    <div>
-                      <span className="text-xs font-bold text-amber-950">Government Authority Access</span>
-                      <p className="text-[11px] text-amber-800">Authorized access for Ministry & State Tourism official accounts.</p>
+                  {/* Option 3: Hotel */}
+                  <button
+                    type="button"
+                    onClick={() => { setRole('PARTNER'); setSelectedPartnerType(PARTNER_TYPES.find(p => p.subtype === 'HOTEL') || PARTNER_TYPES[2]); setError(null); }}
+                    className={`relative p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-2 ${
+                      role === 'PARTNER' && selectedPartnerType.subtype === 'HOTEL'
+                        ? 'border-[#312E81] ring-2 ring-[#312E81]/20 bg-white shadow-sm'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    }`}
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+                      <Building2 className="w-5 h-5" />
                     </div>
-                  </div>
+                    <div>
+                      <div className="text-sm font-bold text-[#171717]">Hotel / Stay</div>
+                      <p className="text-[11px] text-[#64748B] mt-0.5 leading-snug">
+                        List your property, manage rooms, rates and bookings.
+                      </p>
+                    </div>
+                    {role === 'PARTNER' && selectedPartnerType.subtype === 'HOTEL' && (
+                      <div className="absolute top-3.5 right-3.5 w-5 h-5 rounded-full bg-[#312E81] flex items-center justify-center">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+                  </button>
+
+                  {/* Option 4: Government */}
                   <button
                     type="button"
                     onClick={() => { setRole('GOVERNMENT'); setError(null); }}
-                    className="px-3 py-1.5 rounded-xl bg-white border border-amber-300 text-xs font-bold text-amber-900 hover:bg-amber-100 transition-colors whitespace-nowrap shadow-sm"
+                    className={`relative p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-2 ${
+                      role === 'GOVERNMENT'
+                        ? 'border-amber-500 ring-2 ring-amber-500/20 bg-white shadow-sm'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    }`}
                   >
-                    Official Portal →
+                    <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold">
+                      <Landmark className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-[#171717]">Government</div>
+                      <p className="text-[11px] text-[#64748B] mt-0.5 leading-snug">
+                        Tourism intelligence, analytics and policy dashboards.
+                      </p>
+                    </div>
+                    {role === 'GOVERNMENT' && (
+                      <div className="absolute top-3.5 right-3.5 w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                    )}
                   </button>
                 </div>
               </div>
@@ -914,7 +947,7 @@ export default function SignupPage() {
               {/* Partner Type Selection */}
               <div className="space-y-3">
                 <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider">
-                  Partner Service Category *
+                        Partner Service Category <span className="text-slate-400 normal-case">(optional)</span>
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {PARTNER_TYPES.map((type) => {
@@ -951,13 +984,12 @@ export default function SignupPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
-                    Business / Service Name *
+                      Business / Service Name <span className="text-slate-400 normal-case">(optional)</span>
                   </label>
                   <div className="relative">
                     <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     <input
                       type="text"
-                      required
                       value={businessName}
                       onChange={(e) => setBusinessName(e.target.value)}
                       placeholder="e.g. Hampi Heritage Walks & Guided Excursions"
@@ -969,7 +1001,7 @@ export default function SignupPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
-                      Operating State *
+                      Operating State <span className="text-slate-400 normal-case">(optional)</span>
                     </label>
                     <select
                       value={operatingState}
@@ -985,13 +1017,12 @@ export default function SignupPage() {
 
                   <div>
                     <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
-                      Primary Operating City *
+                      Primary Operating City <span className="text-slate-400 normal-case">(optional)</span>
                     </label>
                     <div className="relative">
                       <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                       <input
                         type="text"
-                        required
                         value={operatingCity}
                         onChange={(e) => setOperatingCity(e.target.value)}
                         placeholder="e.g. Hampi, Kochi, Jaipur"

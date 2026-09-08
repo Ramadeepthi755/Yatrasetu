@@ -9,6 +9,7 @@ import com.yatrasetu.repository.ProfileRepository;
 import com.yatrasetu.repository.UserRepository;
 import com.yatrasetu.web.dto.*;
 import lombok.RequiredArgsConstructor;
+import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
+    private final EntityManager entityManager;
 
     @Transactional
     public User syncUser(String authUserId, String email, String fullName, Role requestedRole, PartnerSubtype partnerSubtype) {
@@ -84,7 +86,8 @@ public class UserService {
                 .build();
 
         newUser.setProfile(profile);
-        return userRepository.save(newUser);
+        entityManager.persist(newUser);
+        return newUser;
     }
 
     @Transactional(readOnly = true)
