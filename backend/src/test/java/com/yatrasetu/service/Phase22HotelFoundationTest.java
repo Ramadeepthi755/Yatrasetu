@@ -35,6 +35,9 @@ class Phase22HotelFoundationTest {
     @Mock
     private DestinationRepository destinationRepository;
 
+    @Mock
+    private GooglePlacesService googlePlacesService;
+
     @InjectMocks
     private HotelService hotelService;
 
@@ -340,7 +343,7 @@ class Phase22HotelFoundationTest {
         when(hotelRepository.findByDestinationId("dest-155")).thenReturn(List.of());
         when(destinationRepository.findById("dest-155")).thenReturn(Optional.of(fortKochiDest));
         when(hotelRepository.findByCityId("kochi")).thenReturn(List.of());
-        when(hotelRepository.findNearestHotels(9.965, 76.242, 12)).thenReturn(List.of(datasetHotel));
+        when(hotelRepository.findNearestHotels(9.965, 76.242, 50.0, 12)).thenReturn(List.of(datasetHotel));
 
         List<HotelDto> result = hotelService.getHotelsByDestination("dest-155");
 

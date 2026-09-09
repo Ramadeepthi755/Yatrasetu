@@ -137,14 +137,21 @@ export default function PartnerTripsTab({
               <span className="text-xs text-teal-200 font-mono">#{activeTrip.bookingReference}</span>
             </div>
 
-            <button
-              onClick={() => handleComplete(activeTrip.id)}
-              disabled={loadingAction === activeTrip.id}
-              className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-[#0B192C] text-xs font-bold rounded-xl shadow-lg transition-all flex items-center gap-1.5"
-            >
-              <Flag className="w-4 h-4" />
-              {loadingAction === activeTrip.id ? 'Submitting...' : 'Mark Trip as Completed'}
-            </button>
+            {activeTrip.status === 'COMPLETION_PENDING' ? (
+              <span className="px-4 py-2 bg-purple-900/80 border border-purple-400/40 text-purple-200 text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-md">
+                <Info className="w-4 h-4 text-purple-300" />
+                Awaiting Tourist Final Confirmation
+              </span>
+            ) : (
+              <button
+                onClick={() => handleComplete(activeTrip.id)}
+                disabled={loadingAction === activeTrip.id}
+                className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-[#0B192C] text-xs font-bold rounded-xl shadow-lg transition-all flex items-center gap-1.5"
+              >
+                <Flag className="w-4 h-4" />
+                {loadingAction === activeTrip.id ? 'Submitting...' : 'Mark Trip as Completed'}
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

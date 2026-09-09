@@ -34,19 +34,34 @@ public class UserService {
             throw new IllegalArgumentException("Email cannot be empty");
         }
 
+        String normalizedEmail = email.trim().toLowerCase();
+
         Optional<User> existingUser = Optional.empty();
         if (authUserId != null && !authUserId.trim().isEmpty()) {
             existingUser = userRepository.findByAuthUserId(authUserId);
         }
         if (existingUser.isEmpty()) {
-            existingUser = userRepository.findByEmail(email);
+            existingUser = userRepository.findByEmailIgnoreCase(normalizedEmail);
         }
 
         if (existingUser.isPresent()) {
             User user = existingUser.get();
-            if (authUserId != null && user.getAuthUserId() == null) {
+            boolean needsUpdate = false;
+            if (authUserId != null && !authUserId.trim().isEmpty() && (user.getAuthUserId() == null || !authUserId.equals(user.getAuthUserId()))) {
                 user.setAuthUserId(authUserId);
-                userRepository.save(user);
+                needsUpdate = true;
+            }
+            if (fullName != null && !fullName.trim().isEmpty() && (user.getFullName() == null || user.getFullName().equals("Traveler") || user.getFullName().equals("Partner"))) {
+                user.setFullName(fullName.trim());
+                needsUpdate = true;
+            }
+            if (user.getRole() == Role.PARTNER && partnerSubtype != null && (user.getPartnerSubtype() == null || user.getPartnerSubtype() == PartnerSubtype.OTHER)) {
+                user.setPartnerSubtype(partnerSubtype);
+                needsUpdate = true;
+            }
+            if (needsUpdate) {
+                user.setUpdatedAt(Instant.now());
+                user = userRepository.save(user);
             }
             return user;
         }
@@ -62,10 +77,10 @@ public class UserService {
         User newUser = User.builder()
                 .id(userId)
                 .authUserId(authUserId)
-                .email(email)
-                .fullName(fullName != null && !fullName.trim().isEmpty() ? fullName : "Traveler")
+                .email(normalizedEmail)
+                .fullName(fullName != null && !fullName.trim().isEmpty() ? fullName.trim() : (assignedRole == Role.PARTNER ? "Partner" : "Traveler"))
                 .role(assignedRole)
-                .partnerSubtype(assignedRole == Role.PARTNER ? partnerSubtype : null)
+                .partnerSubtype(assignedRole == Role.PARTNER ? (partnerSubtype != null ? partnerSubtype : PartnerSubtype.OTHER) : null)
                 .verificationStatus(assignedRole == Role.PARTNER ? VerificationStatus.PENDING : VerificationStatus.APPROVED)
                 .verified(assignedRole != Role.PARTNER)
                 .active(true)
@@ -103,6 +118,7 @@ public class UserService {
                 .fullName(user.getFullName())
                 .displayName(profile != null && profile.getDisplayName() != null ? profile.getDisplayName() : user.getFullName())
                 .role(user.getRole())
+                .partnerSubtype(user.getPartnerSubtype())
                 .avatarUrl(profile != null ? profile.getProfileImageUrl() : user.getAvatarUrl())
                 .bio(profile != null ? profile.getBio() : null)
                 .phone(profile != null ? profile.getPhone() : user.getPhone())
@@ -176,7 +192,7 @@ public class UserService {
                 .languages(profile != null && profile.getLanguages() != null ? profile.getLanguages() : new ArrayList<>())
                 .partnerSkills(profile != null && profile.getPartnerSkills() != null ? profile.getPartnerSkills() : new ArrayList<>())
                 .verificationStatus(user.getVerificationStatus())
-                .verified(user.getVerificationStatus() == VerificationStatus.APPROVED)
+                .verified(user.getVerificationStatus() == VerificationStatus.APPROVED || user.getVerificationStatus() == VerificationStatus.VERIFIED)
                 .build();
     }
 
@@ -222,7 +238,8 @@ public class UserService {
         long totalTravelers = userRepository.countByRole(Role.TRAVELER);
         long totalPartners = userRepository.countByRole(Role.PARTNER);
         long pendingVerifications = userRepository.countByVerificationStatus(VerificationStatus.PENDING);
-        long approvedPartners = userRepository.countByVerificationStatus(VerificationStatus.APPROVED);
+        long approvedPartners = userRepository.countByVerificationStatus(VerificationStatus.APPROVED)
+                + userRepository.countByVerificationStatus(VerificationStatus.VERIFIED);
 
         return GovernmentOverviewDto.builder()
                 .authority("Ministry of Tourism & State Tourism Boards (Aggregated View)")

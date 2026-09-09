@@ -24,6 +24,7 @@ public class LocalHostService {
 
     private final LocalHostRepository localHostRepository;
     private final ExperienceRepository experienceRepository;
+    private final com.yatrasetu.repository.DestinationRepository destinationRepository;
 
     @Transactional(readOnly = true)
     public Page<LocalHostDto> getAllHosts(
@@ -72,8 +73,27 @@ public class LocalHostService {
 
     @Transactional(readOnly = true)
     public List<LocalHostDto> getHostsByDestination(String destinationId) {
-        return localHostRepository.findByDestinationId(destinationId)
-                .stream()
+        List<LocalHost> hosts = localHostRepository.findByDestinationId(destinationId);
+        if (hosts.isEmpty()) {
+            Optional<com.yatrasetu.domain.Destination> destOpt = destinationRepository.findById(destinationId);
+            if (destOpt.isPresent()) {
+                com.yatrasetu.domain.Destination dest = destOpt.get();
+                if (dest.getCity() != null) {
+                    hosts = localHostRepository.findByCityId(dest.getCity().getId());
+                }
+                if (hosts.isEmpty() && dest.getNearestMajorCity() != null && !dest.getNearestMajorCity().isBlank()) {
+                    String major = dest.getNearestMajorCity().toLowerCase().trim();
+                    hosts = localHostRepository.findAll().stream()
+                            .filter(h -> (h.getCity() != null && h.getCity().getCityName() != null && h.getCity().getCityName().toLowerCase().contains(major))
+                                    || (h.getCity() != null && h.getCity().getId() != null && h.getCity().getId().toLowerCase().contains(major)))
+                            .collect(Collectors.toList());
+                }
+                if (hosts.isEmpty() && dest.getState() != null) {
+                    hosts = localHostRepository.findByStateId(dest.getState().getId());
+                }
+            }
+        }
+        return hosts.stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }

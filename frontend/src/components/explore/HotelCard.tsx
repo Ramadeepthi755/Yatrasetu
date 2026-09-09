@@ -1,8 +1,6 @@
-'use client';
-
 import React from 'react';
 import Link from 'next/link';
-import { Bed, Star, MapPin, IndianRupee, ShieldCheck, Clock, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Bed, Star, MapPin, IndianRupee, ShieldCheck, Clock, CheckCircle2, ArrowRight, ExternalLink, Info } from 'lucide-react';
 import { HotelItem } from '@/lib/api';
 
 interface HotelCardProps {
@@ -13,7 +11,8 @@ export function HotelCard({ hotel }: HotelCardProps) {
   const isPartner = hotel.isPartnerProperty;
   const isVerifiedPartner = isPartner && hotel.verificationStatus === 'VERIFIED';
   const isPendingPartner = isPartner && hotel.verificationStatus === 'PENDING_REVIEW';
-  const isLiveApi = hotel.sourceType === 'LIVE_API';
+  const isGooglePlaces = hotel.sourceType === 'GOOGLE_PLACES' || hotel.inventoryType === 'GOOGLE_PLACES_DISCOVERY';
+  const isDirectBookable = isPartner || (hotel.bookabilityStatus === 'BOOKABLE');
 
   return (
     <div className="flex flex-col justify-between rounded-3xl border border-stone-200/90 bg-white p-5 shadow-xs transition-all duration-300 hover:shadow-md hover:border-indigo-300 group">
@@ -46,6 +45,13 @@ export function HotelCard({ hotel }: HotelCardProps) {
                   >
                     <Clock className="h-3 w-3 mr-0.5 text-amber-600" />
                     In Review
+                  </span>
+                ) : isGooglePlaces ? (
+                  <span
+                    className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700 border border-slate-200"
+                  >
+                    <ExternalLink className="h-3 w-3 mr-0.5 text-slate-500" />
+                    Google Places
                   </span>
                 ) : isPartner ? (
                   <span
@@ -91,28 +97,61 @@ export function HotelCard({ hotel }: HotelCardProps) {
               </span>
             ))}
         </div>
+
+        {isGooglePlaces && (
+          <div className="mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50/80 border border-amber-200/60 text-[11px] text-amber-900 font-medium">
+            <Info className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+            <span>Direct booking is currently unavailable for this property.</span>
+          </div>
+        )}
       </div>
 
       <div className="mt-5 flex items-center justify-between border-t border-stone-100 pt-3.5 text-xs">
         <div>
-          <span className="text-stone-400 text-[10px] uppercase font-semibold tracking-wider block">
-            {isPartner ? 'Partner Direct Rate' : isLiveApi ? 'Live Channel Rate' : 'Verified Indicative Rate'}
-          </span>
-          <p className="text-base font-extrabold text-stone-900 flex items-center mt-0.5">
-            <IndianRupee className="h-4 w-4 text-stone-700" />
-            {Number(hotel.pricePerNight).toLocaleString('en-IN')}
-            <span className="text-xs font-normal text-stone-500 ml-1">/ night</span>
-          </p>
+          {hotel.pricePerNight ? (
+            <>
+              <span className="text-stone-400 text-[10px] uppercase font-semibold tracking-wider block">
+                {isPartner ? 'Partner Direct Rate' : 'Indicative Rate'}
+              </span>
+              <p className="text-base font-extrabold text-stone-900 flex items-center mt-0.5">
+                <IndianRupee className="h-4 w-4 text-stone-700" />
+                {Number(hotel.pricePerNight).toLocaleString('en-IN')}
+                <span className="text-xs font-normal text-stone-500 ml-1">/ night</span>
+              </p>
+            </>
+          ) : (
+            <span className="text-stone-400 text-[11px]">Pricing on property request</span>
+          )}
         </div>
 
-        <Link
-          href={`/hotels/${hotel.id}`}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-950 px-3.5 py-2 text-xs font-bold text-white transition-colors hover:bg-indigo-900 shadow-2xs"
-        >
-          <span>View Stays</span>
-          <ArrowRight className="w-3 h-3 text-amber-400" />
-        </Link>
+        <div className="flex items-center gap-2">
+          {hotel.officialWebsite && (
+            <a
+              href={hotel.officialWebsite}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-2 text-xs font-bold transition-colors"
+              title="View on Google Maps"
+            >
+              <ExternalLink className="w-3 h-3" />
+              <span>Maps</span>
+            </a>
+          )}
+
+          <Link
+            href={`/hotels/${hotel.id}`}
+            className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold text-white transition-colors shadow-2xs ${
+              isDirectBookable
+                ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                : 'bg-indigo-950 hover:bg-indigo-900'
+            }`}
+          >
+            <span>{isDirectBookable ? 'Book Hotel' : 'View Details'}</span>
+            <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
       </div>
     </div>
   );
 }
+

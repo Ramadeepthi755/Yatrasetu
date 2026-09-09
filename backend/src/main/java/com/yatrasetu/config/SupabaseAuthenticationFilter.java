@@ -56,13 +56,25 @@ public class SupabaseAuthenticationFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7).trim();
             if (!token.isEmpty()) {
                 try {
-                    if (token.startsWith("mock-")) {
+                    if (token.startsWith("mock-") || token.startsWith("auth-") || token.startsWith("phone-") || token.startsWith("google-")) {
                         // Profile-gated: Mock tokens strictly forbidden in production
                         if (isDevOrTest) {
-                            String[] mockParts = token.split("-", 3);
-                            if (mockParts.length >= 3) {
-                                email = mockParts[2];
-                                authUserId = "auth-" + email;
+                            if (token.startsWith("phone-")) {
+                                String cleanPhone = token.replace("phone-user-", "").replace("phone-", "");
+                                email = cleanPhone + "@phone.yatrasetu.in";
+                                authUserId = "phone-" + cleanPhone;
+                            } else if (token.equals("google-user-demo")) {
+                                email = "demo.google@yatrasetu.in";
+                                authUserId = "usr-google-demo";
+                            } else {
+                                String[] mockParts = token.split("-", 3);
+                                if (mockParts.length >= 3) {
+                                    email = mockParts[2];
+                                    authUserId = "auth-" + email;
+                                } else if (mockParts.length == 2) {
+                                    email = mockParts[1];
+                                    authUserId = "auth-" + email;
+                                }
                             }
                         } else {
                             log.warn("Mock token rejected in production profile: {}", request.getRequestURI());
@@ -125,27 +137,34 @@ public class SupabaseAuthenticationFilter extends OncePerRequestFilter {
 
         // 3. Resolve authenticated application user and set SecurityContext
         if (email != null || authUserId != null) {
-            Optional<User> userOpt = Optional.empty();
-            if (authUserId != null) {
-                userOpt = userRepository.findByAuthUserId(authUserId);
-            }
-            if (userOpt.isEmpty() && email != null) {
-                userOpt = userRepository.findByEmail(email);
-            }
+            try {
+                Optional<User> userOpt = Optional.empty();
+                if (authUserId != null && !authUserId.trim().isEmpty()) {
+                    userOpt = userRepository.findByAuthUserId(authUserId);
+                }
+                if (userOpt.isEmpty() && email != null && !email.trim().isEmpty()) {
+                    userOpt = userRepository.findByEmail(email.trim());
+                    if (userOpt.isEmpty()) {
+                        userOpt = userRepository.findByEmailIgnoreCase(email.trim());
+                    }
+                }
 
-            if (userOpt.isPresent()) {
-                User user = userOpt.get();
-                UserPrincipal principal = UserPrincipal.builder()
-                        .userId(user.getId())
-                        .authUserId(user.getAuthUserId())
-                        .email(user.getEmail())
-                        .role(user.getRole()) // ROLE IS TRUSTED FROM SERVER DB
-                        .build();
+                if (userOpt.isPresent()) {
+                    User user = userOpt.get();
+                    UserPrincipal principal = UserPrincipal.builder()
+                            .userId(user.getId())
+                            .authUserId(user.getAuthUserId())
+                            .email(user.getEmail())
+                            .role(user.getRole()) // ROLE IS TRUSTED FROM SERVER DB
+                            .build();
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            } catch (Exception e) {
+                log.warn("Error resolving authenticated user context on {}: {}", request.getRequestURI(), e.getMessage());
             }
         }
 

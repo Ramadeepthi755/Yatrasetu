@@ -201,4 +201,35 @@ public class HotelBookingController {
                 .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
                 .body(pdfBytes);
     }
+
+    /**
+     * Submit a verified review for a completed stay.
+     */
+    @PostMapping("/api/v1/bookings/{bookingReference}/review")
+    @PreAuthorize("hasRole('TRAVELER')")
+    public ResponseEntity<ApiResponse<HotelBookingDto>> submitReview(
+            @PathVariable("bookingReference") String bookingReference,
+            @Valid @RequestBody com.yatrasetu.web.dto.HotelReviewRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.<HotelBookingDto>builder()
+                            .success(false)
+                            .message("Authentication required")
+                            .timestamp(Instant.now())
+                            .build());
+        }
+
+        HotelBookingDto reviewed = bookingService.submitHotelReview(
+                bookingReference, request.getRating(), request.getComment(), principal.getUserId());
+
+        return ResponseEntity.ok(ApiResponse.<HotelBookingDto>builder()
+                .success(true)
+                .message("Review submitted successfully. Thank you for your feedback!")
+                .data(reviewed)
+                .timestamp(Instant.now())
+                .build());
+    }
 }
+

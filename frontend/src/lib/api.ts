@@ -32,6 +32,7 @@ export interface UserProfile {
   fullName: string;
   displayName?: string;
   role: 'TRAVELER' | 'PARTNER' | 'GOVERNMENT';
+  partnerSubtype?: 'LOCAL_HOST' | 'GUIDE' | 'EXPERIENCE_PROVIDER' | 'RESTAURANT' | 'HOTEL' | 'HOMESTAY' | 'ARTISAN' | 'PHOTOGRAPHER' | 'OTHER' | string;
   avatarUrl?: string;
   bio?: string;
   phone?: string;
@@ -865,7 +866,8 @@ export async function syncUserSession(
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || `Failed to sync user session (${res.status})`);
+    const msg = errorData.data?.message || errorData.message || (errorData.data?.validationErrors ? Object.values(errorData.data.validationErrors).join(', ') : null);
+    throw new Error(msg || `Failed to sync user session (${res.status})`);
   }
   return res.json();
 }
@@ -877,7 +879,8 @@ export async function getMyProfile(token?: string): Promise<ApiResponse<UserProf
   const res = await fetch(`${API_BASE_URL}/profile/me`, { headers, cache: 'no-store' });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Failed to fetch profile: ${res.status}`);
+    const msg = err.data?.message || err.message;
+    throw new Error(msg || `Failed to fetch profile: ${res.status}`);
   }
   return res.json();
 }
@@ -899,7 +902,8 @@ export async function updateMyProfile(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Failed to update profile: ${res.status}`);
+    const msg = err.data?.message || err.message || (err.data?.validationErrors ? Object.values(err.data.validationErrors).join(', ') : null);
+    throw new Error(msg || `Failed to update profile: ${res.status}`);
   }
   return res.json();
 }
@@ -911,7 +915,8 @@ export async function getPartnerProfile(token?: string): Promise<ApiResponse<Par
   const res = await fetch(`${API_BASE_URL}/partner/profile/me`, { headers, cache: 'no-store' });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Failed to fetch partner profile: ${res.status}`);
+    const msg = err.data?.message || err.message;
+    throw new Error(msg || `Failed to fetch partner profile: ${res.status}`);
   }
   return res.json();
 }
@@ -933,7 +938,8 @@ export async function updatePartnerProfile(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Failed to update partner profile: ${res.status}`);
+    const msg = err.data?.message || err.message || (err.data?.validationErrors ? Object.values(err.data.validationErrors).join(', ') : null);
+    throw new Error(msg || `Failed to update partner profile: ${res.status}`);
   }
   return res.json();
 }
@@ -3247,7 +3253,17 @@ export async function getPartnerHotelAnalytics(
   return res.json();
 }
 
-export type HotelBookingStatus = 'PENDING_PAYMENT' | 'CONFIRMED' | 'CANCELLED' | 'EXPIRED';
+export type HotelBookingStatus = 
+  | 'REQUESTED'
+  | 'ACCEPTED'
+  | 'REJECTED'
+  | 'PENDING_PAYMENT' 
+  | 'CONFIRMED' 
+  | 'CHECKED_IN'
+  | 'CHECKED_OUT'
+  | 'COMPLETED'
+  | 'CANCELLED' 
+  | 'EXPIRED';
 export type HotelPaymentStatus = 'UNPAID' | 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
 
 export interface HotelBookingAllocationDto {
@@ -3307,6 +3323,14 @@ export interface HotelBookingDto {
   cancellationReasonCode?: string;
   cancellationPolicySnapshot?: string;
   cancellationDeadlineHours?: number;
+  qrToken?: string;
+  paymentMethod?: 'ONLINE' | 'PAY_AT_HOTEL' | string;
+  rejectionReason?: string;
+  checkedInAt?: string;
+  checkedOutAt?: string;
+  reviewRating?: number;
+  reviewComment?: string;
+  reviewedAt?: string;
   createdAt: string;
   updatedAt: string;
   allocations?: HotelBookingAllocationDto[];
@@ -3326,11 +3350,23 @@ export interface CreateHotelBookingRequest {
   guestPhone: string;
   specialRequests?: string;
   idempotencyKey?: string;
+  paymentMethod?: 'ONLINE' | 'PAY_AT_HOTEL' | string;
 }
 
 export interface CancelHotelBookingRequest {
   reason?: string;
   reasonCode?: string;
+}
+
+export interface NotificationDto {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  category: string;
+  referenceLink?: string;
+  read: boolean;
+  createdAt: string;
 }
 
 export async function createHotelBooking(
@@ -3404,9 +3440,43 @@ export async function getPartnerHotelBookings(
   return res.json();
 }
 
-export async function cancelHotelBooking(
+export async function getAllPartnerHotelBookings(
+  token: string
+): Promise<ApiResponse<HotelBookingDto[]>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/bookings`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch all partner bookings: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function acceptPartnerHotelBooking(
   bookingReference: string,
-  options?: { reason?: string; reasonCode?: string },
+  token: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/bookings/${encodeURIComponent(bookingReference)}/accept`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to accept booking: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function rejectPartnerHotelBooking(
+  bookingReference: string,
+  reason?: string,
   token?: string
 ): Promise<ApiResponse<HotelBookingDto>> {
   const headers: Record<string, string> = {
@@ -3415,18 +3485,165 @@ export async function cancelHotelBooking(
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  const res = await fetch(`${API_BASE_URL}/bookings/${encodeURIComponent(bookingReference)}/cancel`, {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/bookings/${encodeURIComponent(bookingReference)}/reject`, {
     method: 'POST',
     headers,
-    body: JSON.stringify(options || {}),
+    body: JSON.stringify({ reason }),
     cache: 'no-store',
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Failed to cancel booking: ${res.status}`);
+    throw new Error(err.message || `Failed to reject booking: ${res.status}`);
   }
   return res.json();
 }
+
+export async function verifyPartnerHotelQr(
+  tokenString: string,
+  token: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/verify-qr`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ token: tokenString }),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to verify QR token: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function checkinPartnerHotelGuest(
+  bookingReference: string,
+  token: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/bookings/${encodeURIComponent(bookingReference)}/checkin`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to check in guest: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function checkoutPartnerHotelGuest(
+  bookingReference: string,
+  token: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/bookings/${encodeURIComponent(bookingReference)}/checkout`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to check out guest: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function submitHotelReview(
+  bookingReference: string,
+  rating: number,
+  comment: string,
+  token: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/${encodeURIComponent(bookingReference)}/review`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ rating, comment }),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to submit review: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getNotifications(
+  unreadOnly = false,
+  token: string
+): Promise<ApiResponse<NotificationDto[]>> {
+  const res = await fetch(`${API_BASE_URL}/notifications?unreadOnly=${unreadOnly}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch notifications: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getUnreadNotificationsCount(
+  token: string
+): Promise<ApiResponse<{ unreadCount: number }>> {
+  const res = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch unread count: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function markNotificationAsRead(
+  notificationId: string,
+  token: string
+): Promise<ApiResponse<NotificationDto>> {
+  const res = await fetch(`${API_BASE_URL}/notifications/${encodeURIComponent(notificationId)}/read`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to mark notification as read: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function markAllNotificationsAsRead(
+  token: string
+): Promise<ApiResponse<{ updatedCount: number }>> {
+  const res = await fetch(`${API_BASE_URL}/notifications/read-all`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to mark all notifications as read: ${res.status}`);
+  }
+  return res.json();
+}
+
 
 export interface CreatePaymentOrderResponse {
   bookingReference: string;
@@ -3650,53 +3867,23 @@ export async function getMyNotifications(
   return res.json();
 }
 
-export async function getUnreadNotificationCount(
+export async function cancelHotelBooking(
+  bookingReference: string,
+  payload: { reason: string; reasonCode?: string },
   token: string
-): Promise<ApiResponse<{ unreadCount: number }>> {
-  const res = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-    cache: 'no-store',
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Failed to fetch unread count: ${res.status}`);
-  }
-  return res.json();
-}
-
-export async function markNotificationAsRead(
-  notificationId: string,
-  token: string
-): Promise<ApiResponse<void>> {
-  const res = await fetch(`${API_BASE_URL}/notifications/${encodeURIComponent(notificationId)}/read`, {
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/hotels/bookings/${encodeURIComponent(bookingReference)}/cancel`, {
     method: 'POST',
     headers: {
+      'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
+    body: JSON.stringify(payload),
     cache: 'no-store',
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Failed to mark notification as read: ${res.status}`);
-  }
-  return res.json();
-}
-
-export async function markAllNotificationsAsRead(
-  token: string
-): Promise<ApiResponse<void>> {
-  const res = await fetch(`${API_BASE_URL}/notifications/read-all`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-    cache: 'no-store',
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Failed to mark all notifications as read: ${res.status}`);
+    throw new Error(err.message || `Failed to cancel hotel booking: ${res.status}`);
   }
   return res.json();
 }
@@ -3768,6 +3955,8 @@ export interface ExperienceBooking {
     | 'ACCEPTED' 
     | 'PAYMENT_PENDING' 
     | 'CONFIRMED' 
+    | 'TRAVELER_CHECKED_IN'
+    | 'GUIDE_CHECKED_IN'
     | 'TRIP_STARTED' 
     | 'IN_PROGRESS' 
     | 'COMPLETION_PENDING' 
@@ -3892,6 +4081,25 @@ export async function getExperienceBookingById(id: string, token: string): Promi
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.message || `Failed to fetch booking details: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function createExperiencePaymentOrder(
+  id: string,
+  token: string
+): Promise<ApiResponse<CreatePaymentOrderResponse>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/experience/${encodeURIComponent(id)}/payment/order`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to create experience payment order: ${res.status}`);
   }
   return res.json();
 }

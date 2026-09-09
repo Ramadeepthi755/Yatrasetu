@@ -33,6 +33,7 @@ public class PartnerParticipationController {
     private final LocalHostRepository hostRepository;
     private final UserRepository userRepository;
     private final HotelRepository hotelRepository;
+    private final com.yatrasetu.service.NotificationService notificationService;
 
     @GetMapping("/participations")
     public ResponseEntity<ApiResponse<List<ExperienceSupportingProviderDto>>> getMyParticipations(
@@ -90,6 +91,13 @@ public class PartnerParticipationController {
         sp.setUpdatedAt(Instant.now());
 
         ExperienceSupportingProvider saved = supportingProviderRepository.save(sp);
+
+        try {
+            notificationService.emitSupportingProviderResponded(saved);
+        } catch (Exception e) {
+            log.warn("Failed to emit notification for supporting provider response: {}", e.getMessage());
+        }
+
         return ResponseEntity.ok(ApiResponse.ok("Participation status updated to " + sp.getStatus(), toDto(saved)));
     }
 
@@ -136,6 +144,13 @@ public class PartnerParticipationController {
                 .build();
 
         ExperienceSupportingProvider saved = supportingProviderRepository.save(sp);
+
+        try {
+            notificationService.emitSupportingProviderInvited(saved);
+        } catch (Exception e) {
+            log.warn("Failed to emit notification for invited supporting provider: {}", e.getMessage());
+        }
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Supporting provider invited successfully", toDto(saved)));
     }

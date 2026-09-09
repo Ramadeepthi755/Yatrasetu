@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, getDefaultDashboardForRole, SihDemoAccountKey } from '@/context/AuthContext';
 import {
   Compass,
   Lock,
@@ -19,6 +19,8 @@ import {
   MapPin,
   Users,
   Star,
+  Building2,
+  Palette,
 } from 'lucide-react';
 
 type AuthMethod = 'email' | 'phone' | 'google';
@@ -32,21 +34,20 @@ export default function LoginPage() {
     ? rawRedirect
     : null;
 
-  const { login, loginWithPhone, loginWithGoogle, loginAsDemo } = useAuth();
+  const { login, loginWithPhone, loginWithGoogle, loginAsSihDemo } = useAuth();
   const [authMethod, setAuthMethod] = useState<AuthMethod>('email');
-  
+
   // Email fields
-  const { login, loginAsDemo } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  
+
   // Phone fields
   const [phoneName, setPhoneName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  
+
   const [loading, setLoading] = useState(false);
-  const [demoLoadingRole, setDemoLoadingRole] = useState<string | null>(null);
+  const [demoLoadingKey, setDemoLoadingKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -58,8 +59,9 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      await login(email, password);
-      router.push(targetRedirect || '/');
+      const profile = await login(email, password);
+      const destination = targetRedirect || getDefaultDashboardForRole(profile?.role);
+      router.push(destination);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to sign in.';
       setError(msg);
@@ -82,8 +84,9 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      await loginWithPhone(cleaned, phoneName.trim());
-      router.push(targetRedirect || '/');
+      const profile = await loginWithPhone(cleaned, phoneName.trim());
+      const destination = targetRedirect || getDefaultDashboardForRole(profile?.role);
+      router.push(destination);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to sign in with phone.';
       setError(msg);
@@ -97,7 +100,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await loginWithGoogle();
-      router.push(targetRedirect || '/');
+      router.push(targetRedirect || '/dashboard');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Google sign-in failed.';
       setError(msg);
@@ -106,25 +109,21 @@ export default function LoginPage() {
     }
   };
 
-  const handleDemoLogin = async (role: 'TRAVELER' | 'PARTNER' | 'GOVERNMENT') => {
-    setDemoLoadingRole(role);
+  const handleSihDemoLogin = async (
+    key: SihDemoAccountKey,
+    targetRoute: string
+  ) => {
+    setDemoLoadingKey(key);
     setError(null);
     try {
-      await loginAsDemo(role);
-      if (targetRedirect) {
-        router.push(targetRedirect);
-      } else if (role === 'PARTNER') {
-        router.push('/partner');
-      } else if (role === 'GOVERNMENT') {
-        router.push('/government');
-      } else {
-        router.push('/explore');
-      }
+      const profile = await loginAsSihDemo(key);
+      const destination = targetRedirect || (profile?.role === 'PARTNER' ? '/partner/dashboard' : profile?.role === 'GOVERNMENT' ? '/government/dashboard' : targetRoute || '/dashboard');
+      router.push(destination);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Demo login failed';
+      const msg = err instanceof Error ? err.message : 'SIH Demo sign-in failed.';
       setError(msg);
     } finally {
-      setDemoLoadingRole(null);
+      setDemoLoadingKey(null);
     }
   };
 
@@ -134,8 +133,82 @@ export default function LoginPage() {
     { id: 'google' as const, label: 'Google', icon: Compass },
   ];
 
+  const sihAccounts = [
+    {
+      key: 'TOURIST' as const,
+      roleBadge: 'TOURIST',
+      label: 'SIH Demo Tourist',
+      email: 'tourist@yatrasetu.demo',
+      sub: 'Explorer Persona • Real-time Trip & Hotel Bookings',
+      targetRoute: '/explore',
+      icon: Compass,
+      textColor: 'text-amber-700',
+      bgClass: 'bg-amber-50/80 hover:bg-amber-50 border-amber-200/90 hover:border-amber-400',
+      iconBg: 'bg-amber-100',
+      iconColor: 'text-[#F59E0B]',
+      badgeBg: 'bg-amber-200/80 text-amber-900',
+    },
+    {
+      key: 'GUIDE' as const,
+      roleBadge: 'GUIDE (host-5)',
+      label: 'Ravi Kumar',
+      email: 'ravi.guide@yatrasetu.demo',
+      sub: 'Heritage & Temple Guide • Tirupati Seshachalam Walk',
+      targetRoute: '/partner/dashboard',
+      icon: Briefcase,
+      textColor: 'text-[#0F766E]',
+      bgClass: 'bg-teal-50/70 hover:bg-teal-50 border-teal-200/90 hover:border-teal-400',
+      iconBg: 'bg-teal-100',
+      iconColor: 'text-[#0F766E]',
+      badgeBg: 'bg-teal-200/80 text-teal-900',
+    },
+    {
+      key: 'CULTURE_HOST' as const,
+      roleBadge: 'ARTISAN (host-45)',
+      label: 'Smt. Lakshmi Prasanna',
+      email: 'lakshmi.host@yatrasetu.demo',
+      sub: 'Kalamkari Craft Custodian • Experience Collaborations',
+      targetRoute: '/partner/dashboard',
+      icon: Palette,
+      textColor: 'text-purple-700',
+      bgClass: 'bg-purple-50/70 hover:bg-purple-50 border-purple-200/90 hover:border-purple-400',
+      iconBg: 'bg-purple-100',
+      iconColor: 'text-purple-600',
+      badgeBg: 'bg-purple-200/80 text-purple-900',
+    },
+    {
+      key: 'HOTEL_PROVIDER' as const,
+      roleBadge: 'HOTEL PARTNER',
+      label: 'Srinivasa Rao',
+      email: 'tirupati.hotel@yatrasetu.demo',
+      sub: 'Tirupati Grand Residency Provider • Reservations & QR Check-in',
+      targetRoute: '/partner/dashboard',
+      icon: Building2,
+      textColor: 'text-blue-700',
+      bgClass: 'bg-blue-50/70 hover:bg-blue-50 border-blue-200/90 hover:border-blue-400',
+      iconBg: 'bg-blue-100',
+      iconColor: 'text-blue-600',
+      badgeBg: 'bg-blue-200/80 text-blue-900',
+    },
+    {
+      key: 'TRANSPORT' as const,
+      roleBadge: 'TRANSPORT (host-125)',
+      label: 'Arjun Varma',
+      email: 'arjun.travels@yatrasetu.demo',
+      sub: 'Arjun Travels • Regional Transport & Sightseeing Logistics',
+      targetRoute: '/partner/dashboard',
+      icon: Compass,
+      textColor: 'text-emerald-700',
+      bgClass: 'bg-emerald-50/70 hover:bg-emerald-50 border-emerald-200/90 hover:border-emerald-400',
+      iconBg: 'bg-emerald-100',
+      iconColor: 'text-emerald-600',
+      badgeBg: 'bg-emerald-200/80 text-emerald-900',
+    },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
+      {/* Left decorative showcase banner */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-[#1E1B4B] via-[#312E81] to-[#1E1B4B] overflow-hidden flex-col justify-between p-12">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#F59E0B_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-[#F59E0B]/10 blur-3xl pointer-events-none" />
@@ -190,6 +263,7 @@ export default function LoginPage() {
         </div>
       </div>
 
+      {/* Right Login Form Container */}
       <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-10 bg-[#FFFBF5]">
         <div className="w-full max-w-md space-y-6">
           <div className="lg:hidden flex items-center gap-3 justify-center">
@@ -292,7 +366,7 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                disabled={loading || Boolean(demoLoadingRole)}
+                disabled={loading || Boolean(demoLoadingKey)}
                 className="w-full py-3.5 px-4 bg-[#312E81] hover:bg-[#1E1B4B] text-white font-semibold rounded-xl text-sm shadow-md shadow-[#312E81]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
               >
                 {loading ? (
@@ -302,7 +376,7 @@ export default function LoginPage() {
                   </>
                 ) : (
                   <>
-                    Sign In with Email
+                    Sign In
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                   </>
                 )}
@@ -314,7 +388,7 @@ export default function LoginPage() {
             <form className="space-y-4 animate-fade-in-up" onSubmit={handlePhoneSubmit}>
               <div>
                 <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1.5">
-                  Your Name
+                  Your Full Name
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -325,7 +399,7 @@ export default function LoginPage() {
                     required
                     value={phoneName}
                     onChange={(e) => setPhoneName(e.target.value)}
-                    placeholder="Enter your full name"
+                    placeholder="e.g. Rahul Sharma"
                     className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none transition-all shadow-sm"
                   />
                 </div>
@@ -333,14 +407,11 @@ export default function LoginPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1.5">
-                  Phone Number
+                  Mobile Number (India +91)
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <Phone className="w-4 h-4" />
-                  </div>
-                  <div className="absolute inset-y-0 left-10 flex items-center pointer-events-none text-sm text-slate-500 font-medium">
-                    +91
                   </div>
                   <input
                     type="tel"
@@ -349,31 +420,24 @@ export default function LoginPage() {
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     placeholder="9876543210"
                     maxLength={10}
-                    className="w-full pl-[4.5rem] pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none transition-all shadow-sm"
+                    className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none transition-all shadow-sm"
                   />
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1.5">No OTP verification required for now</p>
               </div>
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || Boolean(demoLoadingKey)}
                 className="w-full py-3.5 px-4 bg-[#312E81] hover:bg-[#1E1B4B] text-white font-semibold rounded-xl text-sm shadow-md shadow-[#312E81]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
               >
                 {loading ? (
                   <>
-                    <span className="w-4 h-4 border-2 border-slate-300 border-t-[#312E81] rounded-full animate-spin" />
-                    Connecting...
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Signing in...
                   </>
                 ) : (
                   <>
-                    <svg className="w-5 h-5" viewBox="0 0 24 24">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                    </svg>
-                    Continue with Phone
+                    Sign In with Phone
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                   </>
                 )}
@@ -383,105 +447,68 @@ export default function LoginPage() {
 
           {authMethod === 'google' && (
             <div className="space-y-4 animate-fade-in-up">
-              <div className="text-center space-y-3 py-4">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center">
-                  <svg className="w-8 h-8" viewBox="0 0 24 24">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                  </svg>
-                </div>
-                <p className="text-sm text-slate-500">Sign in with your Google account for quick access</p>
-              </div>
-
               <button
                 type="button"
                 onClick={handleGoogleLogin}
-                disabled={loading}
-                className="w-full py-3.5 px-4 bg-white hover:bg-slate-50 text-[#171717] font-semibold rounded-xl text-sm border border-slate-200 shadow-sm transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading || Boolean(demoLoadingKey)}
+                className="w-full py-3.5 px-4 bg-white hover:bg-slate-50 border border-slate-200 text-[#171717] font-semibold rounded-xl text-sm shadow-sm transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
               >
-                {loading ? (
-                  <>
-                    <span className="w-4 h-4 border-2 border-slate-300 border-t-[#312E81] rounded-full animate-spin" />
-                    Connecting...
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5" viewBox="0 0 24 24">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                    </svg>
-                    Continue with Google
-                  </>
-                )}
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                  />
+                </svg>
+                <span>Continue with Google</span>
               </button>
             </div>
           )}
 
+          {/* Divider */}
           <div className="flex items-center gap-3">
             <div className="flex-1 border-t border-slate-200" />
-            <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">or try demo</span>
+            <span className="text-[11px] font-bold uppercase tracking-widest text-[#312E81]">SIH Grand Finale Demo Profiles</span>
             <div className="flex-1 border-t border-slate-200" />
           </div>
 
+          {/* Demo accounts */}
           <div className="space-y-2.5">
-            {[
-              {
-                role: 'TRAVELER' as const,
-                label: 'Traveler Demo',
-                sub: 'Aditi Sharma • Explorer persona',
-                icon: Compass,
-                textColor: 'text-amber-700',
-                bgClass: 'bg-amber-50/80 hover:bg-amber-50 border-slate-200 hover:border-amber-400',
-                iconBg: 'bg-amber-100',
-                iconColor: 'text-[#F59E0B]',
-              },
-              {
-                role: 'PARTNER' as const,
-                label: 'Local Partner Demo',
-                sub: 'Rajesh Guide • Host & Guide portal',
-                icon: Briefcase,
-                textColor: 'text-[#0F766E]',
-                bgClass: 'bg-teal-50/60 hover:bg-teal-50 border-slate-200 hover:border-teal-400',
-                iconBg: 'bg-teal-100',
-                iconColor: 'text-[#0F766E]',
-              },
-              {
-                role: 'GOVERNMENT' as const,
-                label: 'Government Authority Demo',
-                sub: 'Director General • Tourism analytics',
-                icon: Landmark,
-                textColor: 'text-[#312E81]',
-                bgClass: 'bg-indigo-50/60 hover:bg-indigo-50 border-slate-200 hover:border-indigo-400',
-                iconBg: 'bg-indigo-100',
-                iconColor: 'text-[#312E81]',
-              },
-            ].map(({ role, label, sub, icon: Icon, textColor, bgClass, iconBg, iconColor }) => (
+            {sihAccounts.map(({ key, roleBadge, label, email: accEmail, sub, targetRoute, icon: Icon, textColor, bgClass, iconBg, iconColor, badgeBg }) => (
               <button
-                key={role}
+                key={key}
                 type="button"
-                onClick={() => handleDemoLogin(role)}
-                disabled={loading || Boolean(demoLoadingRole)}
-                className={`w-full p-3 rounded-2xl border ${bgClass} text-left transition-all flex items-center justify-between group disabled:opacity-50 disabled:cursor-not-allowed`}
+                onClick={() => handleSihDemoLogin(key, targetRoute)}
+                disabled={loading || Boolean(demoLoadingKey)}
+                className={`w-full p-3.5 rounded-2xl border ${bgClass} text-left transition-all flex items-center justify-between group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-xl ${iconBg} flex items-center justify-center group-hover:scale-105 transition-transform`}>
-                    <Icon className={`w-4 h-4 ${iconColor}`} />
+                  <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center group-hover:scale-105 transition-transform flex-shrink-0`}>
+                    <Icon className={`w-5 h-5 ${iconColor}`} />
                   </div>
-                  <div>
-                    <div className="text-xs font-bold text-[#171717] flex items-center gap-1.5">
-                      {label}
-                      <span className="text-[10px] px-1.5 rounded bg-slate-100 text-slate-500 font-medium">Demo</span>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-[#171717] flex items-center gap-2 flex-wrap">
+                      <span>{label}</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${badgeBg}`}>{roleBadge}</span>
                     </div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">{sub}</div>
+                    <div className="text-[11px] text-slate-500 font-medium truncate mt-0.5">{sub}</div>
+                    <div className="text-[10px] text-slate-400 font-mono mt-0.5">{accEmail}</div>
                   </div>
                 </div>
-                <span className={`text-xs font-bold ${textColor} group-hover:translate-x-0.5 transition-transform`}>
-                  {demoLoadingRole === role ? (
-                    <span className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin inline-block" />
+                <span className={`text-xs font-bold ${textColor} group-hover:translate-x-0.5 transition-transform flex-shrink-0 ml-2`}>
+                  {demoLoadingKey === key ? (
+                    <span className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin inline-block" />
                   ) : (
                     <ArrowRight className="w-4 h-4" />
                   )}
@@ -490,7 +517,9 @@ export default function LoginPage() {
             ))}
           </div>
 
-          <p className="text-[11px] text-center text-slate-400 leading-relaxed">Demo accounts are for platform exploration only.</p>
+          <p className="text-[11px] text-center text-slate-400 leading-relaxed">
+            Demo accounts are for platform exploration only.
+          </p>
         </div>
       </div>
     </div>

@@ -4,6 +4,8 @@ import com.yatrasetu.config.UserPrincipal;
 import com.yatrasetu.domain.*;
 import com.yatrasetu.repository.*;
 import com.yatrasetu.web.dto.*;
+import com.yatrasetu.service.payment.PaymentProvider;
+import com.yatrasetu.web.dto.payment.CreatePaymentOrderResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,131 @@ public class ExperienceBookingService {
     private final ExperienceSupportingProviderRepository supportingProviderRepository;
     private final BookingMessageRepository bookingMessageRepository;
     private final LocalHostService localHostService;
+    private final NotificationService notificationService;
+    private final PaymentProvider paymentProvider;
+
+    @Transactional
+    public CreatePaymentOrderResponse createPaymentOrder(String bookingId, UserPrincipal principal) {
+        ExperienceBooking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found with ID: " + bookingId));
+
+        boolean isAuthorized = (booking.getTourist() != null && booking.getTourist().getId().equals(principal.getUserId())) ||
+                (booking.getTourist() != null && booking.getTourist().getAuthUserId() != null && booking.getTourist().getAuthUserId().equals(principal.getUserId())) ||
+                (booking.getTourist() != null && booking.getTourist().getEmail() != null && booking.getTourist().getEmail().equalsIgnoreCase(principal.getEmail())) ||
+                principal.getRole() == Role.GOVERNMENT;
+
+        if (!isAuthorized) {
+            throw new org.springframework.security.access.AccessDeniedException("Only the tourist who made the booking can initiate payment.");
+        }
+
+        if ("REJECTED".equals(booking.getStatus()) || "CANCELLED".equals(booking.getStatus())) {
+            throw new IllegalStateException("Cannot initiate payment for a " + booking.getStatus() + " booking.");
+        }
+
+        if ("CONFIRMED".equals(booking.getStatus()) && "PAID".equals(booking.getPaymentStatus())) {
+            throw new IllegalStateException("Booking is already paid and confirmed.");
+        }
+
+        BigDecimal amount = booking.getTotalAmount() != null ? booking.getTotalAmount() : BigDecimal.ZERO;
+        long amountInPaise = amount.multiply(BigDecimal.valueOf(100)).longValue();
+        String currency = booking.getCurrency() != null ? booking.getCurrency() : "INR";
+        String keyId = (paymentProvider != null && paymentProvider.isAvailable()) ? paymentProvider.getPublicKeyId() : "rzp_test_yatrasetudemo";
+
+        String expTitle = (booking.getExperience() != null && booking.getExperience().getTitle() != null)
+                ? booking.getExperience().getTitle()
+                : "Heritage & Culture Experience";
+
+        String orderId;
+        if (paymentProvider != null && paymentProvider.isAvailable()) {
+            try {
+                PaymentProvider.ProviderOrderResult orderResult = paymentProvider.createOrder(
+                        booking.getBookingReference(),
+                        amount,
+                        currency,
+                        Map.of("bookingReference", booking.getBookingReference(), "experienceTitle", expTitle)
+                );
+                orderId = orderResult.providerOrderId();
+            } catch (Exception e) {
+                log.warn("Payment provider order creation failed: {}. Falling back to standard checkout order id.", e.getMessage());
+                orderId = "order_exp_" + UUID.randomUUID().toString().substring(0, 10);
+            }
+        } else {
+            orderId = (booking.getRazorpayOrderId() != null && !booking.getRazorpayOrderId().isBlank())
+                    ? booking.getRazorpayOrderId()
+                    : "order_exp_" + UUID.randomUUID().toString().substring(0, 10);
+        }
+
+        booking.setRazorpayOrderId(orderId);
+        bookingRepository.save(booking);
+
+        return CreatePaymentOrderResponse.builder()
+                .bookingReference(booking.getBookingReference())
+                .provider("RAZORPAY")
+                .providerOrderId(orderId)
+                .keyId(keyId)
+                .amount(amount)
+                .amountInPaise(amountInPaise)
+                .currency(currency)
+                .experienceTitle(expTitle)
+                .guestName(booking.getTourist() != null ? booking.getTourist().getFullName() : "Tourist")
+                .guestEmail(booking.getTourist() != null ? booking.getTourist().getEmail() : "")
+                .guestPhone(booking.getTourist() != null ? booking.getTourist().getPhone() : "")
+                .status("CREATED")
+                .build();
+    }
+
+    @Transactional
+    public ExperienceBookingDto confirmPayment(String bookingId, String razorpayOrderId, String razorpayPaymentId, String signature, UserPrincipal principal) {
+        ExperienceBooking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found with ID: " + bookingId));
+
+        boolean isTourist = (booking.getTourist() != null && booking.getTourist().getId().equals(principal.getUserId())) ||
+                (booking.getTourist() != null && booking.getTourist().getAuthUserId() != null && booking.getTourist().getAuthUserId().equals(principal.getUserId())) ||
+                (booking.getTourist() != null && booking.getTourist().getEmail() != null && booking.getTourist().getEmail().equalsIgnoreCase(principal.getEmail()));
+        boolean isHost = booking.getHost() != null && booking.getHost().getUser() != null && (
+                booking.getHost().getUser().getId().equals(principal.getUserId()) ||
+                (booking.getHost().getUser().getAuthUserId() != null && booking.getHost().getUser().getAuthUserId().equals(principal.getUserId())) ||
+                (booking.getHost().getUser().getEmail() != null && booking.getHost().getUser().getEmail().equalsIgnoreCase(principal.getEmail()))
+        );
+        boolean isGovernmentOrAdmin = principal.getRole() == Role.GOVERNMENT;
+
+        if (!isTourist && !isHost && !isGovernmentOrAdmin) {
+            throw new org.springframework.security.access.AccessDeniedException("Unauthorized payment confirmation on booking.");
+        }
+
+        if ("CONFIRMED".equals(booking.getStatus()) || "IN_PROGRESS".equals(booking.getStatus()) || "COMPLETED".equals(booking.getStatus()) || "REVIEWED".equals(booking.getStatus())) {
+            return toDto(booking); // Idempotent return if already confirmed/paid
+        }
+
+        if ("REJECTED".equals(booking.getStatus()) || "CANCELLED".equals(booking.getStatus())) {
+            throw new IllegalStateException("Cannot process payment for a " + booking.getStatus() + " booking.");
+        }
+
+        if (paymentProvider != null && paymentProvider.isAvailable()) {
+            boolean validSig = paymentProvider.verifyPaymentSignature(razorpayOrderId, razorpayPaymentId, signature);
+            if (!validSig) {
+                throw new IllegalArgumentException("Cryptographic payment signature verification failed.");
+            }
+        }
+
+        booking.setPaymentMethod("ONLINE");
+        booking.setRazorpayOrderId(razorpayOrderId != null ? razorpayOrderId : "order_" + UUID.randomUUID().toString().substring(0, 8));
+        booking.setRazorpayPaymentId(razorpayPaymentId != null ? razorpayPaymentId : "pay_" + UUID.randomUUID().toString().substring(0, 8));
+        booking.setRazorpaySignature(signature != null ? signature : "sig_verified");
+        booking.setPaymentStatus("PAID");
+        booking.setStatus("CONFIRMED");
+        booking.setUpdatedAt(Instant.now());
+
+        ExperienceBooking saved = bookingRepository.save(booking);
+
+        try {
+            notificationService.emitGuideBookingConfirmed(saved);
+        } catch (Exception e) {
+            log.warn("Failed to emit notification for confirmed payment: {}", e.getMessage());
+        }
+
+        return toDto(saved);
+    }
 
     @Transactional
     public ExperienceBookingDto createBooking(CreateExperienceBookingRequest request, UserPrincipal principal) {
@@ -43,7 +170,16 @@ public class ExperienceBookingService {
 
         Experience experience = null;
         if (request.getExperienceId() != null && !request.getExperienceId().trim().isEmpty()) {
-            experience = experienceRepository.findById(request.getExperienceId()).orElse(null);
+            experience = experienceRepository.findById(request.getExperienceId())
+                    .orElseThrow(() -> new IllegalArgumentException("Experience not found with ID: " + request.getExperienceId()));
+            
+            if (experience.getIsActive() != null && !experience.getIsActive()) {
+                throw new IllegalArgumentException("This experience is currently not active for booking.");
+            }
+
+            if (experience.getHost() != null) {
+                host = experience.getHost();
+            }
         }
 
         Destination destination = null;
@@ -55,14 +191,32 @@ public class ExperienceBookingService {
             destination = host.getDestination();
         }
 
-        BigDecimal calculatedAmount = request.getTotalAmount();
-        if (calculatedAmount == null || calculatedAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            if (experience != null && experience.getPricePerPerson() != null) {
-                calculatedAmount = experience.getPricePerPerson().multiply(BigDecimal.valueOf(request.getGuestCount()));
-            } else if (host.getPricePerHour() != null) {
-                calculatedAmount = host.getPricePerHour().multiply(BigDecimal.valueOf(3)); // Default 3h session
-            } else {
-                calculatedAmount = BigDecimal.valueOf(1000);
+        int guestCount = (request.getGuestCount() != null && request.getGuestCount() > 0) ? request.getGuestCount() : 1;
+        if (guestCount > 50) {
+            throw new IllegalArgumentException("Guest count cannot exceed 50");
+        }
+
+        // Authoritative Server-Side Pricing (Do not trust client-supplied total amount)
+        BigDecimal calculatedAmount;
+        if (experience != null && experience.getPricePerPerson() != null) {
+            calculatedAmount = experience.getPricePerPerson().multiply(BigDecimal.valueOf(guestCount));
+        } else if (host.getPricePerHour() != null) {
+            calculatedAmount = host.getPricePerHour().multiply(BigDecimal.valueOf(3)); // Default 3h session
+        } else {
+            calculatedAmount = BigDecimal.valueOf(1000);
+        }
+
+        // Duplicate submission prevention: check for existing active request within the last 60 seconds
+        Instant recentCutoff = Instant.now().minus(60, ChronoUnit.SECONDS);
+        List<ExperienceBooking> existingRecent = bookingRepository.findByTouristIdOrderByCreatedAtDesc(tourist.getId());
+        for (ExperienceBooking eb : existingRecent) {
+            if ("REQUESTED".equals(eb.getStatus()) &&
+                    eb.getCreatedAt() != null && eb.getCreatedAt().isAfter(recentCutoff) &&
+                    ((experience != null && eb.getExperience() != null && experience.getId().equals(eb.getExperience().getId())) ||
+                     (experience == null && eb.getHost() != null && host.getId().equals(eb.getHost().getId()))) &&
+                    Objects.equals(eb.getBookingDate(), request.getBookingDate())) {
+                log.info("Returning existing duplicate booking request {} within throttle window", eb.getBookingReference());
+                return toDto(eb);
             }
         }
 
@@ -78,7 +232,7 @@ public class ExperienceBookingService {
                 .bookingType(request.getBookingType() != null ? request.getBookingType() : "PREDEFINED")
                 .bookingDate(request.getBookingDate())
                 .startTime(request.getStartTime() != null ? request.getStartTime() : "09:00 AM")
-                .guestCount(request.getGuestCount() != null ? request.getGuestCount() : 1)
+                .guestCount(guestCount)
                 .totalAmount(calculatedAmount)
                 .currency("INR")
                 .status("REQUESTED")
@@ -93,6 +247,12 @@ public class ExperienceBookingService {
 
         // Generate standard safety checkpoints
         generateCheckpoints(savedBooking);
+
+        try {
+            notificationService.emitGuideBookingRequested(savedBooking);
+        } catch (Exception e) {
+            log.warn("Failed to emit notification for guide booking request: {}", e.getMessage());
+        }
 
         return toDto(savedBooking);
     }
@@ -183,9 +343,21 @@ public class ExperienceBookingService {
             throw new org.springframework.security.access.AccessDeniedException("Access denied: You do not own this booking.");
         }
 
+        if (!"REQUESTED".equals(booking.getStatus())) {
+            throw new IllegalStateException("Booking cannot be accepted because it is currently in status: " + booking.getStatus());
+        }
+
         booking.setStatus("PAYMENT_PENDING");
         booking.setUpdatedAt(Instant.now());
-        return toDto(bookingRepository.save(booking));
+        ExperienceBooking saved = bookingRepository.save(booking);
+
+        try {
+            notificationService.emitGuideBookingAccepted(saved);
+        } catch (Exception e) {
+            log.warn("Failed to emit notification for accepted guide booking: {}", e.getMessage());
+        }
+
+        return toDto(saved);
     }
 
     @Transactional
@@ -198,10 +370,22 @@ public class ExperienceBookingService {
             throw new org.springframework.security.access.AccessDeniedException("Access denied: You do not own this booking.");
         }
 
+        if (!"REQUESTED".equals(booking.getStatus()) && !"PAYMENT_PENDING".equals(booking.getStatus())) {
+            throw new IllegalStateException("Booking cannot be rejected because it is currently in status: " + booking.getStatus());
+        }
+
         booking.setStatus("REJECTED");
         booking.setNotes(reason != null ? "Rejected by host: " + reason : "Rejected by host");
         booking.setUpdatedAt(Instant.now());
-        return toDto(bookingRepository.save(booking));
+        ExperienceBooking saved = bookingRepository.save(booking);
+
+        try {
+            notificationService.emitGuideBookingRejected(saved, reason);
+        } catch (Exception e) {
+            log.warn("Failed to emit notification for rejected guide booking: {}", e.getMessage());
+        }
+
+        return toDto(saved);
     }
 
     @Transactional
@@ -214,6 +398,10 @@ public class ExperienceBookingService {
             throw new org.springframework.security.access.AccessDeniedException("Access denied: You do not own this booking.");
         }
 
+        if (!"REQUESTED".equals(booking.getStatus()) && !"PAYMENT_PENDING".equals(booking.getStatus())) {
+            throw new IllegalStateException("Booking cannot be customized because it is currently in status: " + booking.getStatus());
+        }
+
         if (itinerary != null && !itinerary.trim().isEmpty()) {
             booking.setCustomItinerary(itinerary.trim());
         }
@@ -222,23 +410,15 @@ public class ExperienceBookingService {
         }
         booking.setStatus("PAYMENT_PENDING");
         booking.setUpdatedAt(Instant.now());
-        return toDto(bookingRepository.save(booking));
-    }
+        ExperienceBooking saved = bookingRepository.save(booking);
 
-    @Transactional
-    public ExperienceBookingDto confirmPayment(String bookingId, String razorpayOrderId, String razorpayPaymentId, String signature, UserPrincipal principal) {
-        ExperienceBooking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new IllegalArgumentException("Booking not found with ID: " + bookingId));
+        try {
+            notificationService.emitGuideBookingAccepted(saved);
+        } catch (Exception e) {
+            log.warn("Failed to emit notification for customized guide booking: {}", e.getMessage());
+        }
 
-        booking.setPaymentMethod("ONLINE");
-        booking.setRazorpayOrderId(razorpayOrderId != null ? razorpayOrderId : "order_" + UUID.randomUUID().toString().substring(0, 8));
-        booking.setRazorpayPaymentId(razorpayPaymentId != null ? razorpayPaymentId : "pay_" + UUID.randomUUID().toString().substring(0, 8));
-        booking.setRazorpaySignature(signature != null ? signature : "sig_verified");
-        booking.setPaymentStatus("PAID");
-        booking.setStatus("CONFIRMED");
-        booking.setUpdatedAt(Instant.now());
-
-        return toDto(bookingRepository.save(booking));
+        return toDto(saved);
     }
 
     @Transactional
@@ -248,6 +428,14 @@ public class ExperienceBookingService {
 
         if (!booking.getTourist().getId().equals(principal.getUserId())) {
             throw new org.springframework.security.access.AccessDeniedException("Access denied: You do not own this booking.");
+        }
+
+        if ("CONFIRMED".equals(booking.getStatus()) || "IN_PROGRESS".equals(booking.getStatus()) || "COMPLETED".equals(booking.getStatus())) {
+            return toDto(booking);
+        }
+
+        if ("REJECTED".equals(booking.getStatus()) || "CANCELLED".equals(booking.getStatus())) {
+            throw new IllegalStateException("Cannot select cash payment for a " + booking.getStatus() + " booking.");
         }
 
         BigDecimal total = booking.getTotalAmount() != null ? booking.getTotalAmount() : BigDecimal.ZERO;
@@ -263,7 +451,15 @@ public class ExperienceBookingService {
         booking.setStatus("CONFIRMED");
         booking.setUpdatedAt(Instant.now());
 
-        return toDto(bookingRepository.save(booking));
+        ExperienceBooking saved = bookingRepository.save(booking);
+
+        try {
+            notificationService.emitGuideBookingConfirmed(saved);
+        } catch (Exception e) {
+            log.warn("Failed to emit notification for confirmed cash booking: {}", e.getMessage());
+        }
+
+        return toDto(saved);
     }
 
     @Transactional
@@ -303,9 +499,39 @@ public class ExperienceBookingService {
             throw new org.springframework.security.access.AccessDeniedException("Access denied: You do not own this booking.");
         }
 
-        booking.setStatus("IN_PROGRESS");
-        booking.setUpdatedAt(Instant.now());
-        return toDto(bookingRepository.save(booking));
+        if (!"CONFIRMED".equals(booking.getStatus()) && !"TRAVELER_CHECKED_IN".equals(booking.getStatus()) && !"GUIDE_CHECKED_IN".equals(booking.getStatus())) {
+            throw new IllegalStateException("Trip can only be started from a confirmed or checked-in status. Current status: " + booking.getStatus());
+        }
+
+        if ("TRAVELER_CHECKED_IN".equals(booking.getStatus())) {
+            booking.setStatus("IN_PROGRESS");
+            booking.setUpdatedAt(Instant.now());
+            // Mark start checkpoint completed
+            List<TripCheckin> checkins = checkinRepository.findByBookingIdOrderByCreatedAtAsc(bookingId);
+            checkins.stream().filter(c -> "START".equalsIgnoreCase(c.getCheckpointType())).findFirst().ifPresent(c -> {
+                c.setStatus("COMPLETED");
+                c.setCheckedInAt(Instant.now());
+                checkinRepository.save(c);
+            });
+            ExperienceBooking saved = bookingRepository.save(booking);
+            try {
+                notificationService.emitGuideTripStarted(saved);
+            } catch (Exception e) {
+                log.warn("Failed to emit notification for started trip: {}", e.getMessage());
+            }
+            return toDto(saved);
+        } else {
+            booking.setStatus("GUIDE_CHECKED_IN");
+            booking.setUpdatedAt(Instant.now());
+            List<TripCheckin> checkins = checkinRepository.findByBookingIdOrderByCreatedAtAsc(bookingId);
+            checkins.stream().filter(c -> "START".equalsIgnoreCase(c.getCheckpointType())).findFirst().ifPresent(c -> {
+                c.setStatus("GUIDE_CHECKED_IN");
+                c.setCheckedInAt(Instant.now());
+                checkinRepository.save(c);
+            });
+            ExperienceBooking saved = bookingRepository.save(booking);
+            return toDto(saved);
+        }
     }
 
     @Transactional
@@ -313,23 +539,44 @@ public class ExperienceBookingService {
         TripCheckin checkin = checkinRepository.findById(checkpointId)
                 .orElseThrow(() -> new IllegalArgumentException("Checkpoint not found with ID: " + checkpointId));
 
-        checkin.setStatus("COMPLETED");
+        ExperienceBooking booking = checkin.getBooking();
+        if (!booking.getTourist().getId().equals(principal.getUserId())) {
+            throw new org.springframework.security.access.AccessDeniedException("Unauthorized: Only the tourist can perform tourist check-in.");
+        }
+
         checkin.setCheckedInAt(Instant.now());
         checkin.setLatitude(lat);
         checkin.setLongitude(lng);
         if (notes != null) checkin.setNotes(notes);
 
-        TripCheckin saved = checkinRepository.save(checkin);
-
-        // Update booking state if all completed
-        ExperienceBooking booking = checkin.getBooking();
-        List<TripCheckin> allCheckins = checkinRepository.findByBookingIdOrderByCreatedAtAsc(bookingId);
-        boolean allDone = allCheckins.stream().allMatch(c -> "COMPLETED".equals(c.getStatus()));
-        if (allDone && !"COMPLETED".equals(booking.getStatus()) && !"REVIEWED".equals(booking.getStatus())) {
-            booking.setStatus("COMPLETION_PENDING");
-            bookingRepository.save(booking);
+        if ("START".equalsIgnoreCase(checkin.getCheckpointType())) {
+            if ("GUIDE_CHECKED_IN".equals(booking.getStatus())) {
+                checkin.setStatus("COMPLETED");
+                booking.setStatus("IN_PROGRESS");
+                booking.setUpdatedAt(Instant.now());
+                bookingRepository.save(booking);
+                try {
+                    notificationService.emitGuideTripStarted(booking);
+                } catch (Exception e) {
+                    log.warn("Failed to emit notification for trip started: {}", e.getMessage());
+                }
+            } else {
+                checkin.setStatus("TRAVELER_CHECKED_IN");
+                booking.setStatus("TRAVELER_CHECKED_IN");
+                booking.setUpdatedAt(Instant.now());
+                bookingRepository.save(booking);
+            }
+        } else {
+            checkin.setStatus("COMPLETED");
+            List<TripCheckin> allCheckins = checkinRepository.findByBookingIdOrderByCreatedAtAsc(bookingId);
+            boolean allDone = allCheckins.stream().allMatch(c -> "COMPLETED".equals(c.getStatus()) || c.getId().equals(checkpointId));
+            if (allDone && !"COMPLETED".equals(booking.getStatus()) && !"REVIEWED".equals(booking.getStatus())) {
+                booking.setStatus("COMPLETION_PENDING");
+                bookingRepository.save(booking);
+            }
         }
 
+        TripCheckin saved = checkinRepository.save(checkin);
         return toCheckinDto(saved);
     }
 
@@ -343,9 +590,25 @@ public class ExperienceBookingService {
             throw new org.springframework.security.access.AccessDeniedException("Access denied: You do not own this booking.");
         }
 
+        if ("COMPLETION_PENDING".equals(booking.getStatus()) || "COMPLETED".equals(booking.getStatus()) || "REVIEWED".equals(booking.getStatus())) {
+            return toDto(booking);
+        }
+
+        if (!"IN_PROGRESS".equals(booking.getStatus()) && !"TRIP_STARTED".equals(booking.getStatus())) {
+            throw new IllegalStateException("Trip completion can only be marked for an active trip in progress. Current status: " + booking.getStatus());
+        }
+
         booking.setStatus("COMPLETION_PENDING");
         booking.setUpdatedAt(Instant.now());
-        return toDto(bookingRepository.save(booking));
+        ExperienceBooking saved = bookingRepository.save(booking);
+
+        try {
+            notificationService.emitGuideMarkedCompletionPending(saved);
+        } catch (Exception e) {
+            log.warn("Failed to emit notification for completion pending: {}", e.getMessage());
+        }
+
+        return toDto(saved);
     }
 
     @Transactional
@@ -361,19 +624,37 @@ public class ExperienceBookingService {
         TripCheckin checkin = checkinRepository.findById(checkpointId)
                 .orElseThrow(() -> new IllegalArgumentException("Checkpoint not found with ID: " + checkpointId));
 
-        checkin.setStatus("COMPLETED");
         checkin.setCheckedInAt(Instant.now());
         if (notes != null) checkin.setNotes(notes);
 
-        TripCheckin saved = checkinRepository.save(checkin);
-
-        List<TripCheckin> allCheckins = checkinRepository.findByBookingIdOrderByCreatedAtAsc(bookingId);
-        boolean allDone = allCheckins.stream().allMatch(c -> "COMPLETED".equals(c.getStatus()));
-        if (allDone && !"COMPLETED".equals(booking.getStatus()) && !"REVIEWED".equals(booking.getStatus())) {
-            booking.setStatus("COMPLETION_PENDING");
-            bookingRepository.save(booking);
+        if ("START".equalsIgnoreCase(checkin.getCheckpointType())) {
+            if ("TRAVELER_CHECKED_IN".equals(booking.getStatus())) {
+                checkin.setStatus("COMPLETED");
+                booking.setStatus("IN_PROGRESS");
+                booking.setUpdatedAt(Instant.now());
+                bookingRepository.save(booking);
+                try {
+                    notificationService.emitGuideTripStarted(booking);
+                } catch (Exception e) {
+                    log.warn("Failed to emit notification for trip started: {}", e.getMessage());
+                }
+            } else {
+                checkin.setStatus("GUIDE_CHECKED_IN");
+                booking.setStatus("GUIDE_CHECKED_IN");
+                booking.setUpdatedAt(Instant.now());
+                bookingRepository.save(booking);
+            }
+        } else {
+            checkin.setStatus("COMPLETED");
+            List<TripCheckin> allCheckins = checkinRepository.findByBookingIdOrderByCreatedAtAsc(bookingId);
+            boolean allDone = allCheckins.stream().allMatch(c -> "COMPLETED".equals(c.getStatus()) || c.getId().equals(checkpointId));
+            if (allDone && !"COMPLETED".equals(booking.getStatus()) && !"REVIEWED".equals(booking.getStatus())) {
+                booking.setStatus("COMPLETION_PENDING");
+                bookingRepository.save(booking);
+            }
         }
 
+        TripCheckin saved = checkinRepository.save(checkin);
         return toCheckinDto(saved);
     }
 
@@ -401,13 +682,11 @@ public class ExperienceBookingService {
 
     @Transactional
     public TripSafetyIncidentDto triggerSos(String bookingId, String details, BigDecimal lat, BigDecimal lng, UserPrincipal principal) {
+        ExperienceBooking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found with ID: " + bookingId));
+
         User user = userRepository.findById(principal.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
-        ExperienceBooking booking = null;
-        if (bookingId != null && !bookingId.trim().isEmpty()) {
-            booking = bookingRepository.findById(bookingId).orElse(null);
-        }
 
         TripSafetyIncident incident = TripSafetyIncident.builder()
                 .id(UUID.randomUUID().toString())
@@ -436,17 +715,73 @@ public class ExperienceBookingService {
         ExperienceBooking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found with ID: " + bookingId));
 
+        User tourist = booking.getTourist();
+        boolean isTouristOwner = tourist != null && (
+                (tourist.getId() != null && tourist.getId().equals(principal.getUserId())) ||
+                (principal.getAuthUserId() != null && principal.getAuthUserId().equals(tourist.getAuthUserId())) ||
+                (principal.getEmail() != null && tourist.getEmail() != null && principal.getEmail().equalsIgnoreCase(tourist.getEmail()))
+        );
+
+        if (!isTouristOwner) {
+            throw new org.springframework.security.access.AccessDeniedException("Only the tourist who booked this trip can confirm completion.");
+        }
+
+        // Idempotency: If already completed or reviewed, return existing DTO safely
+        if ("COMPLETED".equals(booking.getStatus()) || "REVIEWED".equals(booking.getStatus())) {
+            return toDto(booking);
+        }
+
+        // Valid transition states: COMPLETION_PENDING, IN_PROGRESS, TRIP_STARTED
+        if (!"COMPLETION_PENDING".equals(booking.getStatus()) &&
+            !"IN_PROGRESS".equals(booking.getStatus()) &&
+            !"TRIP_STARTED".equals(booking.getStatus())) {
+            throw new IllegalStateException("Trip completion can only be confirmed for an active or completion-pending trip. Current status: " + booking.getStatus());
+        }
+
+        // For CASH bookings, update final milestone state
+        if ("CASH".equalsIgnoreCase(booking.getPaymentMethod())) {
+            if (!Boolean.TRUE.equals(booking.getCashMilestone2Paid())) {
+                booking.setCashMilestone2Paid(true);
+                booking.setCashMilestone2PaidAt(Instant.now());
+                booking.setPaymentStatus("PAID");
+            }
+        }
+
+        // Complete any pending checkins
+        List<TripCheckin> checkins = checkinRepository.findByBookingIdOrderByCreatedAtAsc(bookingId);
+        if (checkins != null) {
+            for (TripCheckin c : checkins) {
+                if (!"COMPLETED".equals(c.getStatus())) {
+                    c.setStatus("COMPLETED");
+                    if (c.getCheckedInAt() == null) {
+                        c.setCheckedInAt(Instant.now());
+                    }
+                    checkinRepository.save(c);
+                }
+            }
+        }
+
         booking.setStatus("COMPLETED");
         booking.setUpdatedAt(Instant.now());
 
-        // Increment host experience count
-        LocalHost host = booking.getHost();
-        if (host != null) {
-            host.setExperienceCount(host.getExperienceCount() != null ? host.getExperienceCount() + 1 : 1);
-            hostRepository.save(host);
+        // Increment host experience count safely without triggering PostgreSQL array column updates
+        if (booking.getHost() != null && booking.getHost().getId() != null) {
+            try {
+                hostRepository.incrementExperienceCount(booking.getHost().getId());
+            } catch (Exception e) {
+                log.warn("Failed to increment host experience count: {}", e.getMessage());
+            }
         }
 
-        return toDto(bookingRepository.save(booking));
+        ExperienceBooking saved = bookingRepository.save(booking);
+
+        try {
+            notificationService.emitTouristConfirmedTripCompletion(saved);
+        } catch (Exception e) {
+            log.warn("Failed to emit notification for completed trip: {}", e.getMessage());
+        }
+
+        return toDto(saved);
     }
 
     @Transactional
@@ -455,18 +790,27 @@ public class ExperienceBookingService {
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found with ID: " + bookingId));
 
         User user = userRepository.findById(principal.getUserId())
+                .or(() -> userRepository.findByAuthUserId(principal.getUserId()))
+                .or(() -> userRepository.findByEmailIgnoreCase(principal.getEmail()))
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        if (booking.getTourist() != null && !booking.getTourist().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("Only the guest who booked and completed this trip can submit a review.");
+        User tourist = booking.getTourist();
+        boolean isAuthorizedTourist = tourist != null && (
+                tourist.getId().equals(user.getId()) ||
+                (tourist.getAuthUserId() != null && tourist.getAuthUserId().equals(user.getAuthUserId())) ||
+                (tourist.getEmail() != null && tourist.getEmail().equalsIgnoreCase(user.getEmail()))
+        );
+
+        if (!isAuthorizedTourist) {
+            throw new org.springframework.security.access.AccessDeniedException("Only the guest who booked and completed this trip can submit a review.");
         }
 
         if ("REVIEWED".equals(booking.getStatus()) || reviewRepository.findByBookingId(bookingId).isPresent()) {
             throw new IllegalStateException("A review has already been submitted for this verified booking.");
         }
 
-        if (!"COMPLETED".equals(booking.getStatus()) && !"COMPLETION_PENDING".equals(booking.getStatus())) {
-            throw new IllegalArgumentException("Reviews can only be submitted after trip completion.");
+        if (!"COMPLETED".equals(booking.getStatus())) {
+            throw new IllegalStateException("Reviews can only be submitted after trip completion.");
         }
 
         ExperienceReview review = ExperienceReview.builder()
@@ -484,11 +828,16 @@ public class ExperienceBookingService {
 
         reviewRepository.save(review);
 
-        // Update Host Average Rating
-        Double avgRating = reviewRepository.calculateAverageRatingForHost(booking.getHost().getId());
-        if (avgRating != null) {
-            booking.getHost().setRating(BigDecimal.valueOf(avgRating).setScale(1, java.math.RoundingMode.HALF_UP));
-            hostRepository.save(booking.getHost());
+        // Update Host Average Rating safely
+        if (booking.getHost() != null && booking.getHost().getId() != null) {
+            Double avgRating = reviewRepository.calculateAverageRatingForHost(booking.getHost().getId());
+            if (avgRating != null) {
+                try {
+                    hostRepository.updateRating(booking.getHost().getId(), BigDecimal.valueOf(avgRating).setScale(1, java.math.RoundingMode.HALF_UP));
+                } catch (Exception e) {
+                    log.warn("Failed to update host rating: {}", e.getMessage());
+                }
+            }
         }
 
         booking.setStatus("REVIEWED");
@@ -602,11 +951,21 @@ public class ExperienceBookingService {
     @Transactional(readOnly = true)
     public List<RecommendedGuideDto> recommendGuidesForDestination(String destinationId, List<String> interests, List<String> languages) {
         List<LocalHost> hosts = hostRepository.findByDestinationId(destinationId);
-        if (hosts.isEmpty()) {
-            // Fallback: search by destination city
-            Optional<Destination> destOpt = destinationRepository.findById(destinationId);
-            if (destOpt.isPresent() && destOpt.get().getCity() != null) {
-                hosts = hostRepository.findByCityId(destOpt.get().getCity().getId());
+        Optional<Destination> destOpt = destinationRepository.findById(destinationId);
+        if (hosts.isEmpty() && destOpt.isPresent()) {
+            Destination dest = destOpt.get();
+            if (dest.getCity() != null) {
+                hosts = hostRepository.findByCityId(dest.getCity().getId());
+            }
+            if (hosts.isEmpty() && dest.getNearestMajorCity() != null && !dest.getNearestMajorCity().isBlank()) {
+                String majorCity = dest.getNearestMajorCity().toLowerCase().trim();
+                hosts = hostRepository.findAll().stream()
+                        .filter(h -> (h.getCity() != null && h.getCity().getCityName() != null && h.getCity().getCityName().toLowerCase().contains(majorCity))
+                                || (h.getCity() != null && h.getCity().getId() != null && h.getCity().getId().toLowerCase().contains(majorCity)))
+                        .collect(Collectors.toList());
+            }
+            if (hosts.isEmpty() && dest.getState() != null) {
+                hosts = hostRepository.findByStateId(dest.getState().getId());
             }
         }
 
@@ -745,7 +1104,7 @@ public class ExperienceBookingService {
                     .collect(Collectors.toList());
         }
 
-        boolean isTripActiveOrConfirmed = List.of("CONFIRMED", "TRIP_STARTED", "IN_PROGRESS", "COMPLETION_PENDING", "COMPLETED")
+        boolean isTripActiveOrConfirmed = List.of("CONFIRMED", "TRAVELER_CHECKED_IN", "GUIDE_CHECKED_IN", "TRIP_STARTED", "IN_PROGRESS", "COMPLETION_PENDING", "COMPLETED")
                 .contains(b.getStatus());
 
         String hostPhone = null;
@@ -762,9 +1121,10 @@ public class ExperienceBookingService {
         String destId = b.getDestination() != null ? b.getDestination().getId() : "";
         String cityId = b.getHost() != null && b.getHost().getCity() != null ? b.getHost().getCity().getId() : "";
 
-        if ("dest-136".equalsIgnoreCase(destId) || "tirupati".equalsIgnoreCase(cityId)) {
-            meetingPointName = "Kapila Theertham Main Entrance, Seshachalam Foothills";
-            meetingPointAddress = "Kapila Theertham Road, Tirupati, Andhra Pradesh 517501";
+        if ("dest-136".equalsIgnoreCase(destId) || "tirupati".equalsIgnoreCase(cityId) ||
+                (b.getExperience() != null && "exp-tirupati-temple-walk".equalsIgnoreCase(b.getExperience().getId()))) {
+            meetingPointName = "Kapila Theertham Main Entrance, Tirupati";
+            meetingPointAddress = "Kapila Theertham Road, Alipiri Foot Hills, Tirupati, Andhra Pradesh 517507";
             meetingPointLat = BigDecimal.valueOf(13.6521);
             meetingPointLng = BigDecimal.valueOf(79.4267);
         } else if ("dest-14".equalsIgnoreCase(destId) || "hampi".equalsIgnoreCase(cityId)) {

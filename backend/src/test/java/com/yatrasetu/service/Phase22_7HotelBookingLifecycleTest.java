@@ -302,7 +302,7 @@ public class Phase22_7HotelBookingLifecycleTest {
                 travelerA.getId()
         );
 
-        assertThat(booking.getBookingStatus()).isEqualTo(HotelBookingStatus.PENDING_PAYMENT);
+        assertThat(booking.getBookingStatus()).isEqualTo(HotelBookingStatus.REQUESTED);
         assertThat(booking.getAllocations()).hasSize(3);
         assertThat(booking.getAllocations()).allMatch(a -> "ACTIVE".equals(a.getStatus()));
 
@@ -620,8 +620,8 @@ public class Phase22_7HotelBookingLifecycleTest {
 
         List<HotelBookingStatusHistory> historyAfterCreate = statusHistoryRepository.findByBookingIdOrderByCreatedAtAsc(booking.getId());
         assertThat(historyAfterCreate).hasSize(1);
-        assertThat(historyAfterCreate.get(0).getNewStatus()).isEqualTo(HotelBookingStatus.PENDING_PAYMENT);
-        assertThat(historyAfterCreate.get(0).getReason()).isEqualTo("BOOKING_CREATED");
+        assertThat(historyAfterCreate.get(0).getNewStatus()).isEqualTo(HotelBookingStatus.REQUESTED);
+        assertThat(historyAfterCreate.get(0).getReason()).isEqualTo("BOOKING_REQUESTED");
         assertThat(historyAfterCreate.get(0).getActorUser().getId()).isEqualTo(travelerA.getId());
 
         // Cancel booking
@@ -636,7 +636,7 @@ public class Phase22_7HotelBookingLifecycleTest {
 
         List<HotelBookingStatusHistory> historyAfterCancel = statusHistoryRepository.findByBookingIdOrderByCreatedAtAsc(booking.getId());
         assertThat(historyAfterCancel).hasSize(2);
-        assertThat(historyAfterCancel.get(1).getPreviousStatus()).isEqualTo(HotelBookingStatus.PENDING_PAYMENT);
+        assertThat(historyAfterCancel.get(1).getPreviousStatus()).isEqualTo(HotelBookingStatus.REQUESTED);
         assertThat(historyAfterCancel.get(1).getNewStatus()).isEqualTo(HotelBookingStatus.CANCELLED);
         assertThat(historyAfterCancel.get(1).getReason()).contains("User cancelled from dashboard");
         assertThat(historyAfterCancel.get(1).getActorUser().getId()).isEqualTo(travelerA.getId());

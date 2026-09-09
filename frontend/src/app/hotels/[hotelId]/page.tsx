@@ -28,6 +28,8 @@ import {
   ChevronDown,
   ChevronUp,
   X,
+  Clock,
+  CreditCard,
 } from 'lucide-react';
 import {
   getHotelById,
@@ -88,6 +90,7 @@ export default function HotelDetailPage() {
   const [guestEmail, setGuestEmail] = useState<string>('');
   const [guestPhone, setGuestPhone] = useState<string>('');
   const [specialRequests, setSpecialRequests] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<'ONLINE' | 'PAY_AT_HOTEL'>('ONLINE');
   const [submittingBooking, setSubmittingBooking] = useState<boolean>(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [createdBooking, setCreatedBooking] = useState<HotelBookingDto | null>(null);
@@ -134,6 +137,7 @@ export default function HotelDetailPage() {
     setGuestEmail(user?.email || '');
     setGuestPhone(user?.phone || '');
     setSpecialRequests('');
+    setPaymentMethod('ONLINE');
     setBookingError(null);
     setCreatedBooking(null);
     setBookingModalOpen(true);
@@ -180,6 +184,7 @@ export default function HotelDetailPage() {
       guestEmail: guestEmail.trim(),
       guestPhone: guestPhone.trim(),
       specialRequests: specialRequests.trim() || undefined,
+      paymentMethod,
       idempotencyKey,
     };
 
@@ -199,6 +204,7 @@ export default function HotelDetailPage() {
       setSubmittingBooking(false);
     }
   };
+
 
   useEffect(() => {
     if (!hotelId) return;
@@ -1001,83 +1007,72 @@ export default function HotelDetailPage() {
 
             {/* If booking created successfully -> Show Confirmation Screen */}
             {createdBooking ? (
-              <div className="space-y-5 text-center py-2">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto shadow-sm">
-                  <CheckCircle className="w-8 h-8" />
+              <div className="text-center py-6 space-y-4">
+                <div className="w-14 h-14 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                  <CheckCircle className="w-8 h-8 text-amber-600" />
                 </div>
 
-                <div className="space-y-1">
-                  <h4 className="text-lg font-black text-stone-900">Reservation Created Successfully!</h4>
-                  <p className="text-xs text-stone-600 max-w-md mx-auto">
-                    Your room allocation is confirmed in the database with status <strong className="text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">PENDING_PAYMENT</strong>.
+                <div>
+                  <h3 className="text-lg font-extrabold text-stone-900">Booking Request Submitted</h3>
+                  <p className="text-xs text-stone-500 mt-1">
+                    Your reservation request is in <span className="font-bold text-amber-700">REQUESTED</span> status.
                   </p>
                 </div>
 
-                {/* Booking Reference Box */}
-                <div className="rounded-2xl bg-stone-50 p-4 border border-stone-200 text-left space-y-2 text-xs">
-                  <div className="flex justify-between items-center pb-2 border-b border-stone-200">
-                    <span className="text-stone-500">Booking Reference:</span>
-                    <span className="font-mono font-black text-stone-900 text-sm bg-white px-2 py-1 rounded-md border border-stone-300">
-                      {createdBooking.bookingReference}
-                    </span>
+                <div className="rounded-2xl bg-amber-500/10 p-5 border border-amber-500/30 text-left space-y-3">
+                  <div className="flex items-center gap-2 text-amber-900 font-bold text-xs sm:text-sm">
+                    <Clock className="w-4 h-4 text-amber-600" />
+                    <span>Provider Notification Sent 🔔</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-stone-500">Stay Window:</span>
-                    <span className="font-semibold text-stone-900">
-                      {createdBooking.checkIn} → {createdBooking.checkOut} ({createdBooking.numberOfNights} Nights)
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-stone-500">Rooms & Capacity:</span>
-                    <span className="font-semibold text-stone-900">
-                      {createdBooking.numberOfRooms} Room(s) · {createdBooking.adults} Adult(s)
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-stone-500">Booking Status:</span>
-                    <span className="font-bold text-amber-700">{createdBooking.bookingStatus}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-stone-500">Payment Status:</span>
-                    <span className="font-bold text-stone-700">{createdBooking.paymentStatus}</span>
-                  </div>
-                  <div className="flex justify-between pt-2 border-t border-stone-200 font-bold text-stone-900 text-sm">
-                    <span>Total Amount:</span>
-                    <span className="flex items-center text-teal-800">
-                      <IndianRupee className="w-3.5 h-3.5" />
-                      {Number(createdBooking.totalAmount).toLocaleString('en-IN')}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Honest Tax & Payment Boundary Notice */}
-                <div className="rounded-xl bg-amber-50 p-3.5 border border-amber-200 text-left text-[11px] text-amber-950 leading-relaxed space-y-1">
-                  <p className="font-bold flex items-center gap-1 text-amber-900">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    Payment & Tax Transparency
+                  <p className="text-xs text-stone-700 leading-relaxed">
+                    We have notified the property partner at <strong className="text-stone-900">{createdBooking.hotelName}</strong>. Once the partner accepts your request:
                   </p>
-                  <p>
-                    {createdBooking.pricingDisclosure || 'Applicable taxes/fees are not currently configured/included.'}
-                  </p>
-                  <p className="text-amber-800 font-medium">
-                    Payment processing will be integrated in Phase 22.7. Your reservation is safely held.
-                  </p>
+                  <ul className="text-xs text-stone-600 space-y-1 list-disc list-inside">
+                    {createdBooking.paymentMethod === 'PAY_AT_HOTEL' ? (
+                      <>
+                        <li>Your booking status will become <strong className="text-stone-900">CONFIRMED</strong>.</li>
+                        <li>Your secure QR Check-in Pass will be unlocked automatically.</li>
+                        <li>Payment is settled directly at the hotel reception upon check-in.</li>
+                      </>
+                    ) : (
+                      <>
+                        <li>You&apos;ll receive an in-app notification with payment instructions.</li>
+                        <li>Complete online payment via Razorpay to confirm and receive your QR Pass.</li>
+                      </>
+                    )}
+                  </ul>
+                  <div className="rounded-xl bg-white p-3 border border-amber-200/80 space-y-1.5 text-xs">
+                    <div className="flex justify-between text-stone-600">
+                      <span>Booking Reference:</span>
+                      <span className="font-mono font-bold text-stone-900">{createdBooking.bookingReference}</span>
+                    </div>
+                    <div className="flex justify-between text-stone-600">
+                      <span>Payment Method:</span>
+                      <span className="font-semibold text-stone-900">
+                        {createdBooking.paymentMethod === 'PAY_AT_HOTEL' ? 'Pay at Hotel (Cash / UPI)' : 'Online Payment (Razorpay)'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-stone-600">
+                      <span>Total Tariff:</span>
+                      <span className="font-bold text-stone-900">₹{createdBooking.totalAmount?.toLocaleString('en-IN')}</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
                   <Link
-                    href="/trips"
-                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-indigo-900 hover:bg-indigo-950 text-white text-xs font-bold rounded-xl shadow-md transition"
+                    href={`/bookings/${createdBooking.bookingReference}/confirmation`}
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-md transition"
                   >
-                    <span>View in My Trips</span>
+                    <span>Track Booking Status &amp; QR Pass</span>
                     <ArrowLeft className="w-4 h-4 rotate-180" />
                   </Link>
-                  <button
-                    onClick={handleCloseBookingModal}
-                    className="w-full px-5 py-3 border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-bold rounded-xl transition"
+                  <Link
+                    href="/bookings"
+                    className="w-full inline-flex items-center justify-center px-5 py-3 border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-bold rounded-xl transition"
                   >
-                    Done
-                  </button>
+                    All My Bookings
+                  </Link>
                 </div>
               </div>
             ) : (
@@ -1213,6 +1208,56 @@ export default function HotelDetailPage() {
                   </div>
                 </div>
 
+                {/* Payment Option Selection */}
+                <div className="space-y-2 pt-2 border-t border-stone-100">
+                  <label className="block text-xs font-bold text-stone-900 uppercase tracking-wider">
+                    Payment Preference
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('ONLINE')}
+                      className={`p-3 rounded-2xl border text-left transition ${
+                        paymentMethod === 'ONLINE'
+                          ? 'border-indigo-600 bg-indigo-50/70 ring-2 ring-indigo-600/20'
+                          : 'border-stone-200 bg-stone-50/60 hover:bg-stone-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-xs text-stone-900 flex items-center gap-1.5">
+                          <CreditCard className="w-4 h-4 text-indigo-700" />
+                          Pay Online
+                        </span>
+                        {paymentMethod === 'ONLINE' && <CheckCircle className="w-4 h-4 text-indigo-600" />}
+                      </div>
+                      <p className="text-[11px] text-stone-600 leading-snug">
+                        Pay securely via Razorpay once the property partner accepts. QR Check-in Pass issued immediately upon payment.
+                      </p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('PAY_AT_HOTEL')}
+                      className={`p-3 rounded-2xl border text-left transition ${
+                        paymentMethod === 'PAY_AT_HOTEL'
+                          ? 'border-teal-600 bg-teal-50/70 ring-2 ring-teal-600/20'
+                          : 'border-stone-200 bg-stone-50/60 hover:bg-stone-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-xs text-stone-900 flex items-center gap-1.5">
+                          <IndianRupee className="w-4 h-4 text-teal-700" />
+                          Pay at Hotel
+                        </span>
+                        {paymentMethod === 'PAY_AT_HOTEL' && <CheckCircle className="w-4 h-4 text-teal-600" />}
+                      </div>
+                      <p className="text-[11px] text-stone-600 leading-snug">
+                        Zero advance payment. Once accepted, reservation is confirmed with QR Pass. Pay cash/UPI directly at reception.
+                      </p>
+                    </button>
+                  </div>
+                </div>
+
                 {/* Immutable Price Snapshot Calculation */}
                 {(() => {
                   const nights = Math.max(1, (new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / (1000 * 60 * 60 * 24));
@@ -1271,12 +1316,12 @@ export default function HotelDetailPage() {
                     {submittingBooking ? (
                       <>
                         <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>Reserving Inventory...</span>
+                        <span>Sending Request to Hotel...</span>
                       </>
                     ) : (
                       <>
                         <CheckCircle className="w-4 h-4" />
-                        <span>Confirm Reservation (Status: PENDING_PAYMENT)</span>
+                        <span>Submit Booking Request (Status: REQUESTED)</span>
                       </>
                     )}
                   </button>
@@ -1288,4 +1333,5 @@ export default function HotelDetailPage() {
       )}
     </div>
   );
+
 }

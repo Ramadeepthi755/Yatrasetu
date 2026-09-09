@@ -52,6 +52,8 @@ import {
   FileCheck,
   ChevronRight,
   Handshake,
+  QrCode,
+  Loader2,
 } from 'lucide-react';
 import {
   getPartnerExperiences,
@@ -78,6 +80,12 @@ import {
   deactivatePartnerRatePlan,
   deletePartnerRatePlan,
   getPartnerHotelBookings,
+  getAllPartnerHotelBookings,
+  acceptPartnerHotelBooking,
+  rejectPartnerHotelBooking,
+  verifyPartnerHotelQr,
+  checkinPartnerHotelGuest,
+  checkoutPartnerHotelGuest,
   getPartnerHotelAnalytics,
   getPartnerHotelInventoryCalendar,
   getPartnerExperienceBookings,
@@ -265,18 +273,138 @@ export default function PartnerDashboardPage() {
   const [selectedHotelForBookings, setSelectedHotelForBookings] = useState<HotelItem | null>(null);
   const [partnerBookingsList, setPartnerBookingsList] = useState<HotelBookingDto[]>([]);
   const [loadingPartnerBookings, setLoadingPartnerBookings] = useState<boolean>(false);
+  const [allHotelBookings, setAllHotelBookings] = useState<HotelBookingDto[]>([]);
+  const [loadingAllHotelBookings, setLoadingAllHotelBookings] = useState<boolean>(false);
 
-  // Partner Hotel Analytics State (Phase 22.10)
-  const [analyticsModalOpen, setAnalyticsModalOpen] = useState<boolean>(false);
+  const loadAllHotelBookings = useCallback(async () => {
+    if (!token) return;
+    setLoadingAllHotelBookings(true);
+    try {
+      const res = await getAllPartnerHotelBookings(token);
+      if (res.success && res.data) {
+        setAllHotelBookings(res.data);
+      }
+    } catch (err: unknown) {
+      console.error('Failed to load all partner hotel bookings:', err);
+    } finally {
+      setLoadingAllHotelBookings(false);
+    }
+  }, [token]);
+
+  // QR Verification & Check-in Modal State
+  const [verifyQrModalOpen, setVerifyQrModalOpen] = useState<boolean>(false);
+  const [qrInputToken, setQrInputToken] = useState<string>('');
+  const [qrVerifiedBooking, setQrVerifiedBooking] = useState<HotelBookingDto | null>(null);
+  const [qrVerifying, setQrVerifying] = useState<boolean>(false);
+  const [qrCheckinLoading, setQrCheckinLoading] = useState<boolean>(false);
+  const [qrError, setQrError] = useState<string | null>(null);
+
+  // Analytics State
   const [selectedHotelForAnalytics, setSelectedHotelForAnalytics] = useState<HotelItem | null>(null);
-  const [hotelAnalytics, setHotelAnalytics] = useState<PartnerHotelAnalyticsDto | null>(null);
+  const [analyticsModalOpen, setAnalyticsModalOpen] = useState<boolean>(false);
   const [loadingAnalytics, setLoadingAnalytics] = useState<boolean>(false);
+  const [hotelAnalytics, setHotelAnalytics] = useState<PartnerHotelAnalyticsDto | null>(null);
 
-  // Partner Inventory Calendar State (Phase 22.10)
-  const [inventoryCalendarModalOpen, setInventoryCalendarModalOpen] = useState<boolean>(false);
+  // Inventory Calendar State
   const [selectedRoomForCalendar, setSelectedRoomForCalendar] = useState<HotelRoomTypeItem | null>(null);
-  const [calendarData, setCalendarData] = useState<HotelInventoryCalendarDto[]>([]);
+  const [inventoryCalendarModalOpen, setInventoryCalendarModalOpen] = useState<boolean>(false);
   const [loadingCalendar, setLoadingCalendar] = useState<boolean>(false);
+  const [calendarData, setCalendarData] = useState<HotelInventoryCalendarDto[] | null>(null);
+
+  // Hotel Booking Actions
+  const handleAcceptHotelReservation = async (bookingRef: string) => {
+    if (!token) return;
+    try {
+      const res = await acceptPartnerHotelBooking(bookingRef, token);
+      if (res.success) {
+        setActionSuccess(`Reservation ${bookingRef} accepted! Tourist notified.`);
+        loadAllHotelBookings();
+        if (selectedHotelForBookings) handleOpenPartnerBookings(selectedHotelForBookings);
+      }
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : 'Failed to accept hotel reservation');
+    }
+  };
+
+  const handleRejectHotelReservation = async (bookingRef: string) => {
+    if (!token) return;
+    const reason = prompt('Reason for declining this reservation request:');
+    if (reason === null) return;
+    try {
+      const res = await rejectPartnerHotelBooking(bookingRef, reason, token);
+      if (res.success) {
+        setActionSuccess(`Reservation ${bookingRef} declined.`);
+        loadAllHotelBookings();
+        if (selectedHotelForBookings) handleOpenPartnerBookings(selectedHotelForBookings);
+      }
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : 'Failed to decline reservation');
+    }
+  };
+
+  const handleDirectHotelCheckin = async (bookingRef: string) => {
+    if (!token) return;
+    try {
+      const res = await checkinPartnerHotelGuest(bookingRef, token);
+      if (res.success) {
+        setActionSuccess(`Guest checked in successfully for reservation ${bookingRef}!`);
+        loadAllHotelBookings();
+        if (selectedHotelForBookings) handleOpenPartnerBookings(selectedHotelForBookings);
+      }
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : 'Check-in failed');
+    }
+  };
+
+  const handleDirectHotelCheckout = async (bookingRef: string) => {
+    if (!token) return;
+    try {
+      const res = await checkoutPartnerHotelGuest(bookingRef, token);
+      if (res.success) {
+        setActionSuccess(`Guest check-out completed for reservation ${bookingRef}. Stay concluded.`);
+        loadAllHotelBookings();
+        if (selectedHotelForBookings) handleOpenPartnerBookings(selectedHotelForBookings);
+      }
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : 'Check-out failed');
+    }
+  };
+
+  const handleVerifyQrSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token || !qrInputToken.trim()) return;
+    setQrVerifying(true);
+    setQrError(null);
+    setQrVerifiedBooking(null);
+    try {
+      const res = await verifyPartnerHotelQr(qrInputToken.trim(), token);
+      if (res.success && res.data) {
+        setQrVerifiedBooking(res.data);
+      }
+    } catch (err: unknown) {
+      setQrError(err instanceof Error ? err.message : 'QR Token verification failed. Invalid or expired token.');
+    } finally {
+      setQrVerifying(false);
+    }
+  };
+
+  const handleConfirmQrCheckin = async () => {
+    if (!token || !qrVerifiedBooking) return;
+    setQrCheckinLoading(true);
+    try {
+      const res = await checkinPartnerHotelGuest(qrVerifiedBooking.bookingReference, token);
+      if (res.success && res.data) {
+        setQrVerifiedBooking(res.data);
+        setActionSuccess(`Check-in verified & confirmed for ${res.data.guestName}!`);
+        loadAllHotelBookings();
+        if (selectedHotelForBookings) handleOpenPartnerBookings(selectedHotelForBookings);
+      }
+    } catch (err: unknown) {
+      setQrError(err instanceof Error ? err.message : 'Failed to complete check-in');
+    } finally {
+      setQrCheckinLoading(false);
+    }
+  };
 
   const handleOpenPartnerBookings = async (h: HotelItem) => {
     if (!token) return;
@@ -473,8 +601,29 @@ export default function PartnerDashboardPage() {
       loadHotels();
       loadTraditions();
       loadBookings();
+      loadAllHotelBookings();
       loadParticipations();
       loadReviews();
+
+      const interval = setInterval(() => {
+        loadBookings();
+        loadAllHotelBookings();
+        loadHotels();
+        loadExperiences();
+      }, 4000);
+
+      const handleFocus = () => {
+        loadBookings();
+        loadAllHotelBookings();
+        loadHotels();
+        loadExperiences();
+      };
+      window.addEventListener('focus', handleFocus);
+
+      return () => {
+        clearInterval(interval);
+        window.removeEventListener('focus', handleFocus);
+      };
     }
   }, [
     isAuthenticated,
@@ -483,6 +632,7 @@ export default function PartnerDashboardPage() {
     loadHotels,
     loadTraditions,
     loadBookings,
+    loadAllHotelBookings,
     loadParticipations,
     loadReviews,
   ]);
@@ -1509,6 +1659,7 @@ export default function PartnerDashboardPage() {
 
   const vStatus = partnerDetails?.verificationStatus || 'PENDING';
   const isVerifiedPartner = (vStatus as string) === 'APPROVED' || (vStatus as string) === 'VERIFIED';
+  const isHotelPartner = partnerDetails?.partnerSubtype === 'HOTEL' || user?.partnerSubtype === 'HOTEL';
 
   return (
     <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
@@ -1639,7 +1790,15 @@ export default function PartnerDashboardPage() {
       {/* Modern Tab Bar */}
       <div className="border-b border-slate-200">
         <nav className="flex space-x-2 overflow-x-auto pb-2 scrollbar-none">
-          {[
+          {(isHotelPartner ? [
+            { key: 'OVERVIEW', label: 'Overview', icon: BarChart3, count: null },
+            { key: 'BOOKINGS', label: 'Hotel Reservations', icon: Calendar, count: allHotelBookings.length },
+            { key: 'HOTELS', label: 'Stays & Properties', icon: Building2, count: hotels.length },
+            { key: 'PAYMENTS', label: 'Milestone Ledger', icon: CreditCard, count: null },
+            { key: 'REVIEWS', label: 'Guest Reviews', icon: Star, count: reviews.length },
+            { key: 'PROFILE', label: 'Profile', icon: Briefcase, count: null },
+            { key: 'VERIFICATION', label: 'Verification', icon: ShieldCheck, count: null },
+          ] : [
             { key: 'OVERVIEW', label: 'Overview', icon: BarChart3, count: null },
             { key: 'REQUESTS', label: 'Custom Requests', icon: Sparkles, count: pendingRequestsCount },
             { key: 'BOOKINGS', label: 'Bookings', icon: Calendar, count: bookings.length },
@@ -1647,12 +1806,11 @@ export default function PartnerDashboardPage() {
             { key: 'EXPERIENCES', label: 'Tours', icon: Compass, count: regularListings.length },
             { key: 'CULTURE', label: 'Crafts & Culture', icon: Palette, count: culturalListings.length },
             { key: 'PARTICIPATIONS', label: 'Collaborations', icon: Handshake, count: participations.length },
-            { key: 'HOTELS', label: 'Stays & Hotels', icon: Building2, count: hotels.length },
             { key: 'PAYMENTS', label: 'Milestone Ledger', icon: CreditCard, count: null },
             { key: 'REVIEWS', label: 'Guest Reviews', icon: Star, count: reviews.length },
             { key: 'PROFILE', label: 'Profile', icon: Briefcase, count: null },
             { key: 'VERIFICATION', label: 'Verification', icon: ShieldCheck, count: null },
-          ].map((tab) => {
+          ]).map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.key;
             return (
@@ -1690,7 +1848,7 @@ export default function PartnerDashboardPage() {
       {/* 1. OVERVIEW TAB */}
       {activeTab === 'OVERVIEW' && (
         <PartnerOverviewTab
-          providerType={partnerDetails?.partnerSubtype || 'GUIDE'}
+          providerType={partnerDetails?.partnerSubtype || user?.partnerSubtype || 'GUIDE'}
           partnerName={partnerDetails?.businessName || user?.fullName || 'Local Partner'}
           location={`${partnerDetails?.city || ''}${partnerDetails?.state ? ', ' + partnerDetails.state : ''}`}
           verificationStatus={vStatus}
@@ -1721,12 +1879,173 @@ export default function PartnerDashboardPage() {
 
       {/* 3. BOOKINGS TAB */}
       {activeTab === 'BOOKINGS' && (
-        <PartnerBookingsTab
-          bookings={bookings}
-          onStartTrip={handleStartTrip}
-          onCompleteTrip={handleCompleteTrip}
-          refreshBookings={loadBookings}
-        />
+        isHotelPartner ? (
+          <div className="space-y-6 animate-fadeIn">
+            {/* Top Bar for Hotel Partner Reservations */}
+            <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <span className="text-[10px] font-bold tracking-wider uppercase text-teal-800 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200">
+                  Property Reservations (Phase 22.6)
+                </span>
+                <h2 className="text-xl font-black text-slate-900 mt-1">Property Bookings & Check-ins</h2>
+                <p className="text-xs text-slate-500">
+                  Live reservations across all your properties with immutable rate plans and automated check-ins.
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setVerifyQrModalOpen(true)}
+                  className="px-4 py-2.5 bg-gradient-to-r from-teal-700 to-emerald-700 hover:from-teal-800 hover:to-emerald-800 text-white text-xs font-bold rounded-2xl shadow-xs transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <QrCode className="w-4 h-4" /> Verify Guest QR
+                </button>
+              </div>
+            </div>
+
+            {/* List / Grid of Hotel Bookings */}
+            {loadingAllHotelBookings ? (
+              <div className="py-16 flex flex-col items-center justify-center gap-3">
+                <div className="w-8 h-8 border-3 border-teal-600 border-t-transparent rounded-full animate-spin" />
+                <p className="text-xs text-slate-500">Loading hotel reservations...</p>
+              </div>
+            ) : allHotelBookings.length === 0 ? (
+              <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-200 p-8 space-y-3">
+                <Calendar className="mx-auto w-12 h-12 text-slate-300" />
+                <h4 className="text-base font-bold text-slate-800">No Reservations Yet</h4>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  When travelers reserve rooms at any of your stays, real-time booking alerts, guest information, and check-in options will appear here automatically.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {allHotelBookings.map((b) => (
+                  <div
+                    key={b.id}
+                    className="rounded-3xl border border-slate-200 bg-white p-5 space-y-4 shadow-xs hover:shadow-sm transition"
+                  >
+                    <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Reference</span>
+                        <div className="font-mono font-black text-sm text-slate-900">{b.bookingReference}</div>
+                        <div className="text-[11px] font-semibold text-teal-800 flex items-center gap-1 mt-0.5">
+                          <Building2 className="w-3.5 h-3.5 text-teal-600" /> {b.hotelName}
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span
+                          className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${
+                            b.bookingStatus === 'CONFIRMED'
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                              : b.bookingStatus === 'CHECKED_IN'
+                              ? 'bg-blue-50 text-blue-800 border-blue-200'
+                              : b.bookingStatus === 'CHECKED_OUT'
+                              ? 'bg-slate-100 text-slate-800 border-slate-200'
+                              : b.bookingStatus === 'PENDING_PAYMENT'
+                              ? 'bg-amber-50 text-amber-800 border-amber-200'
+                              : b.bookingStatus === 'CANCELLED'
+                              ? 'bg-rose-50 text-rose-800 border-rose-200'
+                              : 'bg-stone-100 text-stone-700 border-stone-200'
+                          }`}
+                        >
+                          {b.bookingStatus === 'PENDING_PAYMENT' ? 'PENDING PAYMENT' : b.bookingStatus}
+                        </span>
+                        <span className="text-[10px] font-semibold text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+                          {b.paymentStatus}
+                        </span>
+                      </div>
+                    </div>
+
+                    {b.bookingStatus === 'CANCELLED' && b.cancellationReason && (
+                      <div className="text-[10px] bg-rose-50 border border-rose-100 text-rose-800 p-2.5 rounded-xl">
+                        <span className="font-bold">Cancellation Reason:</span> {b.cancellationReason}
+                      </div>
+                    )}
+
+                    {/* Guest Info (Masked PII) */}
+                    <div className="text-xs space-y-1 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500">Guest:</span>
+                        <span className="font-bold text-slate-900">{b.guestName}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-slate-500">Phone:</span>
+                        <span className="font-mono text-slate-700">{b.guestPhone}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-slate-500">Email:</span>
+                        <span className="font-mono text-slate-700">{b.guestEmail}</span>
+                      </div>
+                    </div>
+
+                    {/* Room & Stay Details */}
+                    <div className="rounded-2xl bg-teal-50/50 p-3 border border-teal-100 text-xs space-y-1">
+                      <div className="font-bold text-slate-900 flex items-center justify-between">
+                        <span>{b.roomTypeName}</span>
+                        <span className="text-teal-800 font-semibold">{b.ratePlanName} ({b.mealPlan || 'EP'})</span>
+                      </div>
+                      <div className="flex justify-between text-[11px] text-slate-600 pt-1 border-t border-teal-100/60">
+                        <span>{b.checkIn} → {b.checkOut}</span>
+                        <span className="font-semibold">{b.numberOfNights} Night(s) · {b.numberOfRooms} Room(s)</span>
+                      </div>
+                    </div>
+
+                    {/* Price Snapshot */}
+                    <div className="flex justify-between items-baseline pt-1 text-xs">
+                      <span className="text-slate-500">Commercial Snapshot:</span>
+                      <span className="text-sm font-black text-slate-900 flex items-center">
+                        <IndianRupee className="w-3.5 h-3.5" />
+                        {Number(b.totalAmount).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+
+                    {/* Direct Action Buttons */}
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+                      {b.bookingStatus === 'CONFIRMED' && (
+                        <button
+                          onClick={() => handleDirectHotelCheckin(b.bookingReference)}
+                          className="flex-1 py-2 px-3 bg-teal-700 hover:bg-teal-800 text-white rounded-xl font-bold text-xs shadow-xs transition flex items-center justify-center gap-1 cursor-pointer"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Check-in Guest
+                        </button>
+                      )}
+                      {b.bookingStatus === 'CHECKED_IN' && (
+                        <button
+                          onClick={() => handleDirectHotelCheckout(b.bookingReference)}
+                          className="flex-1 py-2 px-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs shadow-xs transition flex items-center justify-center gap-1 cursor-pointer"
+                        >
+                          <CheckCircle className="w-3.5 h-3.5" /> Complete Check-out
+                        </button>
+                      )}
+                      {b.bookingStatus === 'PENDING_PAYMENT' && (
+                        <>
+                          <button
+                            onClick={() => handleAcceptHotelReservation(b.bookingReference)}
+                            className="flex-1 py-2 px-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-xs shadow-xs transition flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <Check className="w-3.5 h-3.5" /> Accept
+                          </button>
+                          <button
+                            onClick={() => handleRejectHotelReservation(b.bookingReference)}
+                            className="flex-1 py-2 px-3 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <X className="w-3.5 h-3.5" /> Decline
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <PartnerBookingsTab
+            bookings={bookings}
+            onStartTrip={handleStartTrip}
+            onCompleteTrip={handleCompleteTrip}
+            refreshBookings={loadBookings}
+          />
+        )
       )}
 
       {/* 4. LIVE TRIPS CONSOLE */}
@@ -3750,6 +4069,48 @@ export default function PartnerDashboardPage() {
                           {Number(b.totalAmount).toLocaleString('en-IN')}
                         </span>
                       </div>
+
+                      {/* Hotel Partner Reservation Lifecycle Actions */}
+                      <div className="pt-2 border-t border-slate-200 flex items-center justify-end gap-2 flex-wrap">
+                        {b.bookingStatus === 'REQUESTED' && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleAcceptHotelReservation(b.bookingReference)}
+                              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm flex items-center gap-1"
+                            >
+                              <Check className="w-3.5 h-3.5" /> Accept Request
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleRejectHotelReservation(b.bookingReference)}
+                              className="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 flex items-center gap-1"
+                            >
+                              <X className="w-3.5 h-3.5" /> Decline
+                            </button>
+                          </>
+                        )}
+
+                        {b.bookingStatus === 'CONFIRMED' && (
+                          <button
+                            type="button"
+                            onClick={() => handleDirectHotelCheckin(b.bookingReference)}
+                            className="px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-sm flex items-center gap-1"
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5" /> Check In Guest
+                          </button>
+                        )}
+
+                        {b.bookingStatus === 'CHECKED_IN' && (
+                          <button
+                            type="button"
+                            onClick={() => handleDirectHotelCheckout(b.bookingReference)}
+                            className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-sm flex items-center gap-1"
+                          >
+                            <BedDouble className="w-3.5 h-3.5" /> Check Out Guest
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -3767,10 +4128,149 @@ export default function PartnerDashboardPage() {
               </div>
             )}
 
-            <div className="flex justify-end pt-4 border-t border-slate-100">
+            <div className="flex justify-between items-center pt-4 border-t border-slate-100">
+              <button
+                onClick={() => {
+                  setPartnerBookingsModalOpen(false);
+                  setVerifyQrModalOpen(true);
+                }}
+                className="px-4 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-950 text-xs font-bold border border-indigo-200 flex items-center gap-1.5 transition"
+              >
+                <QrCode className="w-4 h-4 text-indigo-700" />
+                <span>Verify Guest QR Pass</span>
+              </button>
+
               <button
                 onClick={() => setPartnerBookingsModalOpen(false)}
                 className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Hotel Reception QR Scanner / Verifier */}
+      {verifyQrModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6 animate-scaleUp">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-teal-800 bg-teal-50 px-2.5 py-0.5 rounded-md border border-teal-200">
+                  Front Desk Scanner
+                </span>
+                <h3 className="text-xl font-black text-slate-900 mt-1">Scan &amp; Verify Guest QR Pass</h3>
+                <p className="text-xs text-slate-500">Scan or enter the traveler&apos;s digital QR code token or booking reference.</p>
+              </div>
+              <button
+                onClick={() => {
+                  setVerifyQrModalOpen(false);
+                  setQrVerifiedBooking(null);
+                  setQrError(null);
+                  setQrInputToken('');
+                }}
+                className="p-1.5 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Token Input Form */}
+            <form onSubmit={handleVerifyQrSubmit} className="space-y-3">
+              <label className="text-xs font-bold text-slate-900">QR Code Token or Booking Reference:</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={qrInputToken}
+                  onChange={(e) => setQrInputToken(e.target.value)}
+                  placeholder="e.g. YS-HTL-... or paste QR token"
+                  className="flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs font-mono focus:ring-2 focus:ring-indigo-600 focus:outline-none"
+                  required
+                />
+                <button
+                  type="submit"
+                  disabled={qrVerifying || !qrInputToken.trim()}
+                  className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-md flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {qrVerifying ? <Loader2 className="w-4 h-4 animate-spin" /> : <QrCode className="w-4 h-4" />}
+                  <span>Verify Pass</span>
+                </button>
+              </div>
+            </form>
+
+            {qrError && (
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                <span>{qrError}</span>
+              </div>
+            )}
+
+            {/* Verified Booking Card */}
+            {qrVerifiedBooking && (
+              <div className="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-emerald-800 font-extrabold text-xs">
+                    <CheckCircle className="w-4 h-4 text-emerald-600" />
+                    <span>Valid Reservation Matched</span>
+                  </div>
+                  <span className="font-mono text-xs font-black text-slate-900">{qrVerifiedBooking.bookingReference}</span>
+                </div>
+
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Guest Name:</span>
+                    <strong className="text-slate-900">{qrVerifiedBooking.guestName}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Room Type:</span>
+                    <strong className="text-slate-900">{qrVerifiedBooking.roomTypeName}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Stay Dates:</span>
+                    <strong>{qrVerifiedBooking.checkIn} to {qrVerifiedBooking.checkOut} ({qrVerifiedBooking.numberOfNights} Nights)</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Payment Status:</span>
+                    <strong className="text-emerald-700">{qrVerifiedBooking.paymentStatus}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Booking Status:</span>
+                    <span className="font-black text-indigo-700 uppercase">{qrVerifiedBooking.bookingStatus}</span>
+                  </div>
+                </div>
+
+                {qrVerifiedBooking.bookingStatus === 'CONFIRMED' && (
+                  <button
+                    type="button"
+                    onClick={handleConfirmQrCheckin}
+                    disabled={qrCheckinLoading}
+                    className="w-full mt-2 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {qrCheckinLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                    <span>Confirm Reception Check-in</span>
+                  </button>
+                )}
+
+                {qrVerifiedBooking.bookingStatus === 'CHECKED_IN' && (
+                  <div className="p-2.5 rounded-xl bg-indigo-100 text-indigo-950 font-bold text-center text-xs flex items-center justify-center gap-1.5">
+                    <BedDouble className="w-4 h-4 text-indigo-700" />
+                    <span>Guest is currently checked-in at this property.</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex justify-end pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => {
+                  setVerifyQrModalOpen(false);
+                  setQrVerifiedBooking(null);
+                  setQrError(null);
+                  setQrInputToken('');
+                }}
+                className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold"
               >
                 Close
               </button>
@@ -4047,7 +4547,7 @@ export default function PartnerDashboardPage() {
                 <CalendarDays className="mx-auto w-10 h-10 text-slate-300 animate-bounce" />
                 <p>Loading 30-day inventory allocations from authoritative database records...</p>
               </div>
-            ) : calendarData.length === 0 ? (
+            ) : !calendarData || calendarData.length === 0 ? (
               <div className="flex-1 p-10 text-center space-y-3">
                 <AlertCircle className="mx-auto w-10 h-10 text-amber-500" />
                 <h4 className="text-sm font-bold text-slate-800">No Inventory Calendar Data</h4>

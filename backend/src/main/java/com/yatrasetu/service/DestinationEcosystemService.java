@@ -32,10 +32,33 @@ public class DestinationEcosystemService {
 
     @Transactional(readOnly = true)
     public List<FamousFoodDto> getFamousFoods(String destinationId) {
-        return famousFoodRepository.findByDestinationId(destinationId)
+        List<FamousFoodDto> list = famousFoodRepository.findByDestinationId(destinationId)
                 .stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
+
+        if (list.isEmpty()) {
+            destinationRepository.findById(destinationId).ifPresent(dest -> {
+                if (dest.getLocalCuisineMustTry() != null && !dest.getLocalCuisineMustTry().isBlank()) {
+                    String[] items = dest.getLocalCuisineMustTry().split("\\|");
+                    int idx = 1;
+                    for (String item : items) {
+                        String dish = item.trim();
+                        if (dish.isEmpty()) continue;
+                        list.add(FamousFoodDto.builder()
+                                .id("food-" + destinationId + "-" + (idx++))
+                                .destinationId(destinationId)
+                                .dishName(dish)
+                                .description("Authentic regional specialty and must-try local flavor of " + dest.getDestinationName())
+                                .cuisineType(dest.getFoodScene() != null ? dest.getFoodScene() : "Regional Specialty")
+                                .sourceType("DATASET")
+                                .sourceLabel("Dataset")
+                                .build());
+                    }
+                }
+            });
+        }
+        return list;
     }
 
     @Transactional(readOnly = true)

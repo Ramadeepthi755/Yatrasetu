@@ -77,7 +77,13 @@ public interface HotelRepository extends JpaRepository<Hotel, String> {
 
     @Query(value = "SELECT h.* FROM hotels h " +
             "WHERE h.is_active = true AND h.latitude IS NOT NULL AND h.longitude IS NOT NULL AND h.latitude != 0.0 AND h.longitude != 0.0 " +
-            "ORDER BY (6371 * acos(cos(radians(:lat)) * cos(radians(h.latitude)) * cos(radians(h.longitude) - radians(:lng)) + sin(radians(:lat)) * sin(radians(h.latitude)))) ASC " +
+            "AND (6371 * acos(LEAST(1.0, GREATEST(-1.0, cos(radians(:lat)) * cos(radians(h.latitude)) * cos(radians(h.longitude) - radians(:lng)) + sin(radians(:lat)) * sin(radians(h.latitude)))))) <= :maxDistanceKm " +
+            "ORDER BY (6371 * acos(LEAST(1.0, GREATEST(-1.0, cos(radians(:lat)) * cos(radians(h.latitude)) * cos(radians(h.longitude) - radians(:lng)) + sin(radians(:lat)) * sin(radians(h.latitude)))))) ASC " +
             "LIMIT :limit", nativeQuery = true)
-    List<Hotel> findNearestHotels(@Param("lat") double lat, @Param("lng") double lng, @Param("limit") int limit);
+    List<Hotel> findNearestHotels(@Param("lat") double lat, @Param("lng") double lng, @Param("maxDistanceKm") double maxDistanceKm, @Param("limit") int limit);
+
+    default List<Hotel> findNearestHotels(double lat, double lng, int limit) {
+        return findNearestHotels(lat, lng, 50.0, limit);
+    }
 }
+

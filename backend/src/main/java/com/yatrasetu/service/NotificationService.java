@@ -27,6 +27,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final HotelBookingRepository bookingRepository;
+    private final com.yatrasetu.repository.LocalHostRepository localHostRepository;
 
     @Transactional(readOnly = true)
     public List<NotificationDto> getUserNotifications(String userIdOrEmail, boolean unreadOnly) {
@@ -161,8 +162,31 @@ public class NotificationService {
 
     @Transactional
     public void sendNotification(User user, String title, String message, String category, String referenceLink) {
+        sendNotification(user, title, message, category, referenceLink, null);
+    }
+
+    @Transactional
+    public void sendNotification(User user, String title, String message, String category, String referenceLink, String deduplicationKey) {
         if (user == null) return;
         try {
+            // Deduplication Check
+            List<Notification> userNotifs = notificationRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+            boolean alreadySent = userNotifs.stream().anyMatch(n -> {
+                if (category != null && !category.equals(n.getCategory())) {
+                    return false;
+                }
+                if (deduplicationKey != null && !deduplicationKey.isBlank()) {
+                    return (n.getMessage() != null && n.getMessage().contains(deduplicationKey))
+                            || (n.getReferenceLink() != null && n.getReferenceLink().contains(deduplicationKey));
+                }
+                return title != null && title.equals(n.getTitle()) && message != null && message.equals(n.getMessage());
+            });
+
+            if (alreadySent) {
+                log.info("Deduplicated notification [{}] for user {}: {}", category, user.getEmail(), title);
+                return;
+            }
+
             notificationRepository.save(Notification.builder()
                     .id("notif-" + UUID.randomUUID().toString().substring(0, 12))
                     .user(user)
@@ -185,7 +209,7 @@ public class NotificationService {
         String ref = booking.getBookingReference();
         String hotelName = booking.getHotel() != null ? booking.getHotel().getHotelName() : "Hotel";
 
-        // Notify Hotel Owner/Partner
+        // Notify Hotel Owner/Partner (Only for YatraSetu registered partner hotels)
         if (booking.getHotel() != null && booking.getHotel().getOwner() != null) {
             sendNotification(
                     booking.getHotel().getOwner(),
@@ -193,7 +217,8 @@ public class NotificationService {
                     "New reservation request " + ref + " for " + hotelName + " from " + booking.getGuestName() +
                             " (" + booking.getCheckIn() + " to " + booking.getCheckOut() + ", " + booking.getNumberOfRooms() + " room(s)).",
                     "HOTEL_BOOKING_REQUEST",
-                    "/partner/dashboard"
+                    "/partner/dashboard",
+                    ref
             );
         }
 
@@ -204,7 +229,8 @@ public class NotificationService {
                     "Hotel Booking Requested",
                     "Your booking request " + ref + " at " + hotelName + " has been submitted and is awaiting hotel confirmation.",
                     "HOTEL_BOOKING_REQUESTED",
-                    "/trips"
+                    "/trips",
+                    ref
             );
         }
     }
@@ -218,9 +244,10 @@ public class NotificationService {
         sendNotification(
                 booking.getTraveler(),
                 "✓ Hotel Booking Accepted",
-                "Your booking request at " + hotelName + " has been accepted by the property! Please complete payment or review your confirmation pass.",
+                "Your booking request at " + hotelName + " has been accepted by the property! Please complete payment or review your confirmation pass (" + ref + ").",
                 "HOTEL_BOOKING_ACCEPTED",
-                "/bookings/" + ref + "/confirmation"
+                "/bookings/" + ref + "/confirmation",
+                ref
         );
     }
 
@@ -236,7 +263,8 @@ public class NotificationService {
                 "Your booking request " + ref + " at " + hotelName + " could not be confirmed." +
                         (reason != null && !reason.isBlank() ? " Reason: " + reason : ""),
                 "HOTEL_BOOKING_REJECTED",
-                "/trips"
+                "/trips",
+                ref
         );
     }
 
@@ -250,9 +278,10 @@ public class NotificationService {
             sendNotification(
                     booking.getTraveler(),
                     "✓ Hotel Check-in Confirmed",
-                    "Welcome to " + hotelName + "! Your QR pass has been verified and check-in is complete.",
+                    "Welcome to " + hotelName + "! Your QR pass (" + ref + ") has been verified and check-in is complete.",
                     "HOTEL_CHECKIN_CONFIRMED",
-                    "/trips"
+                    "/trips",
+                    ref
             );
         }
     }
@@ -267,9 +296,10 @@ public class NotificationService {
             sendNotification(
                     booking.getTraveler(),
                     "✓ Hotel Stay Completed",
-                    "Thank you for staying at " + hotelName + "! How was your experience? Leave a review to help fellow travelers.",
+                    "Thank you for staying at " + hotelName + " (" + ref + ")! How was your experience? Leave a review to help fellow travelers.",
                     "HOTEL_STAY_COMPLETED",
-                    "/trips"
+                    "/trips",
+                    ref
             );
         }
     }
@@ -280,15 +310,27 @@ public class NotificationService {
         String ref = booking.getBookingReference();
         String expTitle = booking.getExperience() != null ? booking.getExperience().getTitle() : "Custom Trip";
 
-        if (booking.getHost() != null && booking.getHost().getUser() != null) {
+        User hostUser = null;
+        if (booking.getHost() != null) {
+            if (booking.getHost().getUser() != null) {
+                hostUser = booking.getHost().getUser();
+            } else if (booking.getHost().getId() != null) {
+                hostUser = localHostRepository.findById(booking.getHost().getId())
+                        .map(com.yatrasetu.domain.LocalHost::getUser)
+                        .orElse(null);
+            }
+        }
+
+        if (hostUser != null) {
             sendNotification(
-                    booking.getHost().getUser(),
+                    hostUser,
                     "🔔 New Trip Request",
                     "New trip booking request " + ref + " for '" + expTitle + "' from " +
                             (booking.getTourist() != null ? booking.getTourist().getFullName() : "Tourist") +
                             " on " + booking.getBookingDate() + " (" + booking.getGuestCount() + " guest(s)).",
                     "GUIDE_BOOKING_REQUEST",
-                    "/partner/dashboard"
+                    "/partner/dashboard",
+                    ref
             );
         }
 
@@ -298,61 +340,77 @@ public class NotificationService {
                     "Trip Booking Requested",
                     "Your request " + ref + " for '" + expTitle + "' has been sent to your local guide.",
                     "GUIDE_BOOKING_REQUESTED",
-                    "/bookings"
+                    "/bookings",
+                    ref
             );
         }
     }
 
     @Transactional
     public void emitGuideBookingAccepted(com.yatrasetu.domain.ExperienceBooking booking) {
-        if (booking == null || booking.getTourist() != null) {
-            String expTitle = booking.getExperience() != null ? booking.getExperience().getTitle() : "Custom Trip";
-            sendNotification(
-                    booking.getTourist(),
-                    "✓ Guide Booking Accepted",
-                    "Your guide " + (booking.getHost() != null ? booking.getHost().getName() : "Host") +
-                            " has accepted your request for '" + expTitle + "'! Proceed to complete payment.",
-                    "GUIDE_BOOKING_ACCEPTED",
-                    "/bookings"
-            );
-        }
+        if (booking == null || booking.getTourist() == null) return;
+        String ref = booking.getBookingReference();
+        String expTitle = booking.getExperience() != null ? booking.getExperience().getTitle() : "Custom Trip";
+        sendNotification(
+                booking.getTourist(),
+                "✓ Guide Booking Accepted",
+                "Your guide " + (booking.getHost() != null ? booking.getHost().getName() : "Host") +
+                        " has accepted your request for '" + expTitle + "' (" + ref + ")! Proceed to complete payment.",
+                "GUIDE_BOOKING_ACCEPTED",
+                "/bookings",
+                ref
+        );
     }
 
     @Transactional
     public void emitGuideBookingRejected(com.yatrasetu.domain.ExperienceBooking booking, String reason) {
         if (booking == null || booking.getTourist() == null) return;
+        String ref = booking.getBookingReference();
         String expTitle = booking.getExperience() != null ? booking.getExperience().getTitle() : "Custom Trip";
         sendNotification(
                 booking.getTourist(),
                 "❌ Trip Request Declined",
-                "Your trip request for '" + expTitle + "' was declined." +
+                "Your trip request " + ref + " for '" + expTitle + "' was declined." +
                         (reason != null && !reason.isBlank() ? " Reason: " + reason : ""),
                 "GUIDE_BOOKING_REJECTED",
-                "/bookings"
+                "/bookings",
+                ref
         );
     }
 
     @Transactional
     public void emitGuideBookingConfirmed(com.yatrasetu.domain.ExperienceBooking booking) {
         if (booking == null) return;
+        String ref = booking.getBookingReference();
         String expTitle = booking.getExperience() != null ? booking.getExperience().getTitle() : "Trip";
 
         if (booking.getTourist() != null) {
             sendNotification(
                     booking.getTourist(),
                     "✓ Trip Booking Confirmed",
-                    "Your booking for '" + expTitle + "' is confirmed! Check your meeting point and prepare for your experience.",
+                    "Your booking " + ref + " for '" + expTitle + "' is confirmed! Check your meeting point and prepare for your experience.",
                     "GUIDE_BOOKING_CONFIRMED",
-                    "/bookings"
+                    "/bookings",
+                    ref
             );
         }
-        if (booking.getHost() != null && booking.getHost().getUser() != null) {
+        User hostUser = null;
+        if (booking.getHost() != null) {
+            hostUser = booking.getHost().getUser();
+            if (hostUser == null && booking.getHost().getId() != null) {
+                hostUser = localHostRepository.findById(booking.getHost().getId())
+                        .map(com.yatrasetu.domain.LocalHost::getUser)
+                        .orElse(null);
+            }
+        }
+        if (hostUser != null) {
             sendNotification(
-                    booking.getHost().getUser(),
-                    "✓ Payment Confirmed: " + booking.getBookingReference(),
-                    "Booking " + booking.getBookingReference() + " for '" + expTitle + "' is confirmed and ready for trip day.",
+                    hostUser,
+                    "✓ Payment Confirmed: " + ref,
+                    "Booking " + ref + " for '" + expTitle + "' is confirmed and ready for trip day.",
                     "PARTNER_GUIDE_CONFIRMED",
-                    "/partner/dashboard"
+                    "/partner/dashboard",
+                    ref
             );
         }
     }
@@ -360,26 +418,130 @@ public class NotificationService {
     @Transactional
     public void emitGuideTripStarted(com.yatrasetu.domain.ExperienceBooking booking) {
         if (booking == null || booking.getTourist() == null) return;
+        String ref = booking.getBookingReference();
         sendNotification(
                 booking.getTourist(),
                 "🚀 Your Live Trip has Started!",
                 "Your guide " + (booking.getHost() != null ? booking.getHost().getName() : "Host") +
-                        " has officially started the trip. Live safety tracking and checkpoint check-ins are active.",
+                        " has officially started the trip (" + ref + "). Live safety tracking and checkpoint check-ins are active.",
                 "TRIP_STARTED",
-                "/bookings"
+                "/bookings",
+                ref
         );
     }
 
     @Transactional
-    public void emitGuideTripCompleted(com.yatrasetu.domain.ExperienceBooking booking) {
+    public void emitGuideMarkedCompletionPending(com.yatrasetu.domain.ExperienceBooking booking) {
         if (booking == null || booking.getTourist() == null) return;
+        String ref = booking.getBookingReference();
+        String hostName = (booking.getHost() != null && booking.getHost().getName() != null)
+                ? booking.getHost().getName()
+                : "Your Guide";
         sendNotification(
                 booking.getTourist(),
-                "✓ Trip Completed",
-                "Your trip has concluded! Please confirm completion and leave a review for your guide.",
-                "TRIP_COMPLETED",
-                "/bookings"
+                "✓ Guide Concluded Tour",
+                hostName + " has marked your tour (" + ref + ") as completed. Please confirm completion to finalize the trip.",
+                "TRIP_COMPLETION_PENDING",
+                "/bookings",
+                ref + "-pending"
         );
+    }
+
+    @Transactional
+    public void emitTouristConfirmedTripCompletion(com.yatrasetu.domain.ExperienceBooking booking) {
+        if (booking == null) return;
+        String ref = booking.getBookingReference();
+        String touristName = (booking.getTourist() != null && booking.getTourist().getFullName() != null)
+                ? booking.getTourist().getFullName()
+                : "Guest";
+
+        if (booking.getHost() != null && booking.getHost().getUser() != null) {
+            sendNotification(
+                    booking.getHost().getUser(),
+                    "✓ Trip Completion Confirmed",
+                    touristName + " confirmed completion for trip " + ref + ". Tour concluded successfully.",
+                    "TRIP_COMPLETED",
+                    "/partner/dashboard",
+                    ref + "-confirmed"
+            );
+        }
+    }
+
+    @Transactional
+    public void emitGuideTripCompleted(com.yatrasetu.domain.ExperienceBooking booking) {
+        emitTouristConfirmedTripCompletion(booking);
+    }
+
+    @Transactional
+    public void emitSupportingProviderInvited(com.yatrasetu.domain.ExperienceSupportingProvider sp) {
+        if (sp == null) return;
+        String expTitle = sp.getExperience() != null ? sp.getExperience().getTitle() : "Experience";
+        String hostName = (sp.getExperience() != null && sp.getExperience().getHost() != null) 
+                ? sp.getExperience().getHost().getName() 
+                : "Guide";
+
+        User targetUser = null;
+        // 1. Try finding local host by provider ID
+        if (sp.getProviderId() != null) {
+            targetUser = localHostRepository.findById(sp.getProviderId())
+                    .map(com.yatrasetu.domain.LocalHost::getUser)
+                    .orElse(null);
+        }
+        // 2. Try direct user repository by ID, AuthUserId, or Email
+        if (targetUser == null && sp.getProviderId() != null) {
+            targetUser = userRepository.findById(sp.getProviderId())
+                    .or(() -> userRepository.findByAuthUserId(sp.getProviderId()))
+                    .or(() -> userRepository.findByEmailIgnoreCase(sp.getProviderId()))
+                    .orElse(null);
+        }
+        // 3. Try by provider name or email
+        if (targetUser == null && sp.getProviderName() != null) {
+            targetUser = userRepository.findByFullName(sp.getProviderName())
+                    .or(() -> userRepository.findByEmailIgnoreCase(sp.getProviderName()))
+                    .orElse(null);
+        }
+
+        if (targetUser != null) {
+            sendNotification(
+                    targetUser,
+                    "🎨 New Experience Collaboration Invitation",
+                    "You have been invited by " + hostName + " to join '" + expTitle + "' as a supporting " + sp.getProviderType() + " (" + sp.getId() + ").",
+                    "SUPPORTING_PROVIDER_INVITE",
+                    "/partner/dashboard",
+                    sp.getId()
+            );
+        }
+    }
+
+    @Transactional
+    public void emitSupportingProviderResponded(com.yatrasetu.domain.ExperienceSupportingProvider sp) {
+        if (sp == null || sp.getExperience() == null) return;
+        String expTitle = sp.getExperience().getTitle();
+        User hostUser = null;
+        if (sp.getExperience().getHost() != null) {
+            hostUser = sp.getExperience().getHost().getUser();
+            if (hostUser == null && sp.getExperience().getHost().getId() != null) {
+                hostUser = localHostRepository.findById(sp.getExperience().getHost().getId())
+                        .map(com.yatrasetu.domain.LocalHost::getUser)
+                        .orElse(null);
+            }
+        }
+
+        if (hostUser != null) {
+            boolean accepted = "ACCEPTED".equalsIgnoreCase(sp.getStatus());
+            String title = accepted ? "✓ Supporting Partner Accepted" : "ℹ Supporting Partner Declined";
+            String msg = sp.getProviderName() + " has " + (accepted ? "accepted" : "declined") +
+                    " your collaboration invitation for '" + expTitle + "' (" + sp.getId() + ").";
+
+            sendNotification(
+                    hostUser,
+                    title,
+                    msg,
+                    "SUPPORTING_PROVIDER_RESPONSE",
+                    "/partner/dashboard",
+                    sp.getId() + "_" + sp.getStatus()
+            );
+        }
     }
 
     private User resolveUser(String userIdOrEmail) {

@@ -3,6 +3,7 @@ package com.yatrasetu.repository;
 import com.yatrasetu.domain.Destination;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -50,6 +51,18 @@ public interface DestinationRepository extends JpaRepository<Destination, String
             @Param("minPopularity") BigDecimal minPopularity,
             @Param("searchQuery") String searchQuery,
             Pageable pageable);
+
+    @Query("SELECT d FROM Destination d WHERE d.isActive = true " +
+            "AND (CAST(:stateId AS string) IS NULL OR LOWER(d.state.id) = LOWER(CAST(:stateId AS string)) OR LOWER(d.state.stateName) = LOWER(CAST(:stateId AS string))) " +
+            "AND (CAST(:region AS string) IS NULL OR LOWER(d.region) = LOWER(CAST(:region AS string))) " +
+            "AND (:minPopularity IS NULL OR d.popularityScore >= :minPopularity) " +
+            "AND (CAST(:searchQuery AS string) IS NULL OR LOWER(d.destinationName) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')) OR LOWER(d.district) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')) OR LOWER(d.description) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS string), '%')))")
+    List<Destination> findWithFiltersList(
+            @Param("stateId") String stateId,
+            @Param("region") String region,
+            @Param("minPopularity") BigDecimal minPopularity,
+            @Param("searchQuery") String searchQuery,
+            Sort sort);
 
     @Query("SELECT d FROM Destination d WHERE d.isActive = true AND (" +
             "LOWER(d.destinationName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +

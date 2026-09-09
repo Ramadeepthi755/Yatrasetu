@@ -369,7 +369,7 @@ public class Phase22HotelBookingTest {
 
         assertThat(booking).isNotNull();
         assertThat(booking.getBookingReference()).startsWith("YTS-");
-        assertThat(booking.getBookingStatus()).isEqualTo(HotelBookingStatus.PENDING_PAYMENT);
+        assertThat(booking.getBookingStatus()).isEqualTo(HotelBookingStatus.REQUESTED);
         assertThat(booking.getPaymentStatus()).isEqualTo(HotelPaymentStatus.UNPAID);
         assertThat(booking.getNumberOfNights()).isEqualTo(3);
         assertThat(booking.getNumberOfRooms()).isEqualTo(2);

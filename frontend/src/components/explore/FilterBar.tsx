@@ -27,14 +27,14 @@ const REGIONS = [
 
 const CATEGORIES = [
   'All',
+  'Beaches',
   'Heritage',
-  'Nature',
-  'Beach',
-  'Adventure',
-  'Spiritual',
+  'Temples',
   'Culture',
-  'Hill Station',
+  'Adventure',
   'Food',
+  'Nature',
+  'Hill Station',
 ];
 
 export function FilterBar({

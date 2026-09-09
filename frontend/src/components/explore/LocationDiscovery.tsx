@@ -1,56 +1,105 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Navigation, Loader2, AlertCircle, MapPin, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Navigation, Loader2, AlertCircle, MapPin, RefreshCw, XCircle, ShieldAlert } from 'lucide-react';
 import { getNearbyPlaces, NearbyResult } from '@/lib/api';
 import { DestinationCard } from './DestinationCard';
 import { CityCard } from './CityCard';
 
+type GeolocationStatus = 'idle' | 'loading' | 'success' | 'error';
+type GeolocationErrorType = 'permission_denied' | 'position_unavailable' | 'timeout' | 'unsupported' | 'api_error' | 'no_data';
+
 export function LocationDiscovery() {
-  const [loading, setLoading] = useState(false);
-  const [permissionDenied, setPermissionDenied] = useState(false);
+  const [status, setStatus] = useState<GeolocationStatus>('idle');
+  const [errorType, setErrorType] = useState<GeolocationErrorType | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [nearbyData, setNearbyData] = useState<NearbyResult | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const requestLocation = () => {
-    if (!navigator.geolocation) {
-      setErrorMsg('Geolocation is not supported by your browser.');
+    // SSR & feature detection check
+    if (typeof window === 'undefined' || !navigator?.geolocation) {
+      setStatus('error');
+      setErrorType('unsupported');
+      setErrorMessage('Geolocation is not supported by your browser. You can browse all destinations manually using the filters above.');
       return;
     }
 
-    setLoading(true);
-    setErrorMsg(null);
-    setPermissionDenied(false);
+    setStatus('loading');
+    setErrorType(null);
+    setErrorMessage(null);
+
+    const geoOptions: PositionOptions = {
+      enableHighAccuracy: false,
+      timeout: 15000,
+      maximumAge: 300000, // 5 minutes cached position fallback if available
+    };
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
+        if (!isMountedRef.current) return;
         try {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
           const res = await getNearbyPlaces(lat, lng, 350, 6);
-          if (res.success && res.data) {
+          if (!isMountedRef.current) return;
+
+          if (res.success && res.data && (
+            (res.data.nearbyDestinations && res.data.nearbyDestinations.length > 0) ||
+            (res.data.nearbyCities && res.data.nearbyCities.length > 0)
+          )) {
             setNearbyData(res.data);
+            setStatus('success');
           } else {
-            setErrorMsg('No nearby destinations found in the database for your area.');
+            setStatus('error');
+            setErrorType('no_data');
+            setErrorMessage('No nearby destinations found in the database for your area. You can explore all destinations using the filters above.');
           }
         } catch (e) {
-          console.error(e);
-          setErrorMsg('Failed to find places near your location. Please try again.');
-        } finally {
-          setLoading(false);
+          console.error('LocationDiscovery: API error fetching nearby places', e);
+          if (!isMountedRef.current) return;
+          setStatus('error');
+          setErrorType('api_error');
+          setErrorMessage('Could not load nearby places right now. You can explore all destinations manually using the filters above.');
         }
       },
       (error) => {
-        setLoading(false);
+        if (!isMountedRef.current) return;
+        setStatus('error');
         if (error.code === error.PERMISSION_DENIED) {
-          setPermissionDenied(true);
+          setErrorType('permission_denied');
+          setErrorMessage('Location permission is blocked. Allow location access for this site and try again.');
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          setErrorType('position_unavailable');
+          setErrorMessage("Your device couldn't determine its location.");
+        } else if (error.code === error.TIMEOUT) {
+          setErrorType('timeout');
+          setErrorMessage("We couldn't detect your location right now.");
         } else {
-          setErrorMsg('Unable to retrieve your location. You can browse all destinations manually.');
+          setErrorType('position_unavailable');
+          setErrorMessage("We couldn't detect your location right now.");
         }
       },
-      { timeout: 10000, enableHighAccuracy: false }
+      geoOptions
     );
   };
+
+  const handleReset = () => {
+    setNearbyData(null);
+    setStatus('idle');
+    setErrorType(null);
+    setErrorMessage(null);
+  };
+
+  const isLoading = status === 'loading';
 
   return (
     <div className="rounded-3xl border border-teal-200/80 bg-gradient-to-r from-teal-900 via-indigo-950 to-slate-900 p-6 md:p-8 text-white shadow-xl">
@@ -72,13 +121,13 @@ export function LocationDiscovery() {
           {!nearbyData ? (
             <button
               onClick={requestLocation}
-              disabled={loading}
-              className="inline-flex items-center space-x-2 rounded-2xl bg-amber-500 px-6 py-3.5 text-sm font-bold text-stone-950 shadow-lg shadow-amber-500/20 transition-all hover:bg-amber-400 hover:scale-105 active:scale-95 disabled:opacity-50"
+              disabled={isLoading}
+              className="inline-flex items-center space-x-2 rounded-2xl bg-amber-500 px-6 py-3.5 text-sm font-bold text-stone-950 shadow-lg shadow-amber-500/20 transition-all hover:bg-amber-400 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? (
+              {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Finding nearby places...</span>
+                  <span>Detecting your location…</span>
                 </>
               ) : (
                 <>
@@ -89,28 +138,47 @@ export function LocationDiscovery() {
             </button>
           ) : (
             <button
-              onClick={() => setNearbyData(null)}
-              className="rounded-xl bg-white/10 px-4 py-2 text-xs font-medium text-stone-200 hover:bg-white/20 transition-colors"
+              onClick={handleReset}
+              className="rounded-xl bg-white/10 px-4 py-2.5 text-xs font-medium text-stone-200 hover:bg-white/20 transition-colors flex items-center space-x-1.5"
             >
-              Reset Location
+              <RefreshCw className="h-3.5 w-3.5" />
+              <span>Reset Location</span>
             </button>
           )}
         </div>
       </div>
 
-      {permissionDenied && (
-        <div className="mt-4 flex items-center space-x-2 rounded-xl bg-amber-500/10 p-3 text-xs text-amber-200 border border-amber-500/20">
-          <AlertCircle className="h-4 w-4 flex-shrink-0 text-amber-400" />
-          <span>
-            Location access was denied. You can explore all 28 states and destinations freely using the filters above!
-          </span>
-        </div>
-      )}
+      {/* Error / Fallback Banners */}
+      {status === 'error' && errorMessage && (
+        <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl bg-stone-900/80 border border-amber-500/30 p-4 text-xs backdrop-blur-sm">
+          <div className="flex items-center space-x-3 text-stone-200">
+            {errorType === 'permission_denied' ? (
+              <ShieldAlert className="h-5 w-5 flex-shrink-0 text-amber-400" />
+            ) : (
+              <AlertCircle className="h-5 w-5 flex-shrink-0 text-amber-400" />
+            )}
+            <div className="space-y-0.5">
+              <span className="font-semibold text-amber-300">
+                {errorType === 'permission_denied' && 'Location Permission Required'}
+                {errorType === 'timeout' && 'Location Request Timed Out'}
+                {errorType === 'position_unavailable' && 'Position Unavailable'}
+                {errorType === 'unsupported' && 'Geolocation Unsupported'}
+                {(errorType === 'api_error' || errorType === 'no_data') && 'Notice'}
+              </span>
+              <p className="text-stone-300">{errorMessage}</p>
+            </div>
+          </div>
 
-      {errorMsg && (
-        <div className="mt-4 flex items-center space-x-2 rounded-xl bg-rose-500/10 p-3 text-xs text-rose-200 border border-rose-500/20">
-          <AlertCircle className="h-4 w-4 flex-shrink-0 text-rose-400" />
-          <span>{errorMsg}</span>
+          {(errorType === 'timeout' || errorType === 'position_unavailable' || errorType === 'api_error') && (
+            <button
+              onClick={requestLocation}
+              disabled={isLoading}
+              className="inline-flex items-center justify-center space-x-1.5 self-start sm:self-auto rounded-xl bg-amber-500/20 px-4 py-2 font-semibold text-amber-300 hover:bg-amber-500/30 transition-colors border border-amber-400/30 flex-shrink-0"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              <span>Try Again</span>
+            </button>
+          )}
         </div>
       )}
 
@@ -150,3 +218,4 @@ export function LocationDiscovery() {
     </div>
   );
 }
+

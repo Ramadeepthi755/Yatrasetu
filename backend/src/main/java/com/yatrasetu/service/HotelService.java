@@ -31,6 +31,7 @@ public class HotelService {
     private final HotelInventoryRepository inventoryRepository;
     private final HotelBookingRepository bookingRepository;
     private final HotelBookingAllocationRepository bookingAllocationRepository;
+    private final GooglePlacesService googlePlacesService;
 
     // ==========================================
     // PUBLIC HOTEL DISCOVERY
@@ -81,22 +82,37 @@ public class HotelService {
     @Transactional(readOnly = true)
     public List<HotelDto> getHotelsByDestination(String destinationId) {
         List<Hotel> hotels = hotelRepository.findByDestinationId(destinationId);
-        if (hotels.isEmpty()) {
-            var destOpt = destinationRepository.findById(destinationId);
-            if (destOpt.isPresent()) {
-                var dest = destOpt.get();
-                if (dest.getCity() != null) {
-                    hotels = hotelRepository.findByCityId(dest.getCity().getId());
-                }
-                if (hotels.isEmpty() && dest.getLatitude() != null && dest.getLongitude() != null) {
-                    hotels = hotelRepository.findNearestHotels(dest.getLatitude().doubleValue(), dest.getLongitude().doubleValue(), 12);
-                }
+        var destOpt = destinationRepository.findById(destinationId);
+        if (hotels.isEmpty() && destOpt.isPresent()) {
+            var dest = destOpt.get();
+            if (dest.getCity() != null) {
+                hotels = hotelRepository.findByCityId(dest.getCity().getId());
+            }
+            if (hotels.isEmpty() && dest.getLatitude() != null && dest.getLongitude() != null) {
+                hotels = hotelRepository.findNearestHotels(dest.getLatitude().doubleValue(), dest.getLongitude().doubleValue(), 50.0, 12);
             }
         }
-        return hotels.stream()
+        List<HotelDto> dtos = new ArrayList<>(hotels.stream()
                 .map(this::toDto)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
+
+        if (googlePlacesService.isConfigured() && destOpt.isPresent()) {
+            var dest = destOpt.get();
+            if (dest.getLatitude() != null && dest.getLongitude() != null) {
+                List<HotelDto> places = googlePlacesService.searchNearbyHotels(
+                        dest.getLatitude().doubleValue(),
+                        dest.getLongitude().doubleValue(),
+                        10000,
+                        dest.getId(),
+                        dest.getDestinationName()
+                );
+                dtos.addAll(places);
+            }
+        }
+
+        return dtos;
     }
+
 
     @Transactional(readOnly = true)
     public List<HotelDto> getHotelsByCity(String cityId) {
@@ -541,11 +557,22 @@ public class HotelService {
             stateName = h.getDestination().getState().getStateName();
         }
 
+        String ownerId = null;
+        String ownerName = null;
+        try {
+            if (h.getOwner() != null) {
+                ownerId = h.getOwner().getId();
+                ownerName = h.getOwner().getFullName();
+            }
+        } catch (Exception e) {
+            log.debug("Hotel owner lazy proxy resolution ignored: {}", e.getMessage());
+        }
+
         return HotelDto.builder()
                 .id(h.getId())
                 .hotelName(h.getHotelName())
-                .ownerId(h.getOwner() != null ? h.getOwner().getId() : null)
-                .ownerName(h.getOwner() != null ? h.getOwner().getFullName() : null)
+                .ownerId(ownerId)
+                .ownerName(ownerName)
                 .cityId(h.getCity() != null ? h.getCity().getId() : null)
                 .cityName(h.getCity() != null ? h.getCity().getCityName() : null)
                 .stateId(stateId)

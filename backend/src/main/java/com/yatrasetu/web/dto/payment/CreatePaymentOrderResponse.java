@@ -20,6 +20,7 @@ public class CreatePaymentOrderResponse {
     private Long amountInPaise;
     private String currency;
     private String hotelName;
+    private String experienceTitle;
     private String guestName;
     private String guestEmail;
     private String guestPhone;

@@ -68,6 +68,19 @@ public class ExperienceBookingController {
         private String razorpaySignature;
     }
 
+    @PostMapping("/{id}/payment/order")
+    public ResponseEntity<ApiResponse<com.yatrasetu.web.dto.payment.CreatePaymentOrderResponse>> createPaymentOrder(
+            @PathVariable("id") String id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.<com.yatrasetu.web.dto.payment.CreatePaymentOrderResponse>builder().success(false).message("Authentication required").timestamp(Instant.now()).build());
+        }
+
+        com.yatrasetu.web.dto.payment.CreatePaymentOrderResponse order = bookingService.createPaymentOrder(id, principal);
+        return ResponseEntity.ok(ApiResponse.ok("Payment order generated", order));
+    }
+
     @PostMapping("/{id}/payment")
     public ResponseEntity<ApiResponse<ExperienceBookingDto>> confirmPayment(
             @PathVariable("id") String id,
@@ -153,6 +166,46 @@ public class ExperienceBookingController {
         TripSafetyIncidentDto incident = bookingService.triggerSos(
                 id, request.getDetails(), request.getLatitude(), request.getLongitude(), principal);
         return ResponseEntity.ok(ApiResponse.ok("Emergency SOS alert recorded and emergency protocols triggered", incident));
+    }
+
+    @PostMapping("/{id}/accept")
+    public ResponseEntity<ApiResponse<ExperienceBookingDto>> acceptBooking(
+            @PathVariable("id") String id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.<ExperienceBookingDto>builder().success(false).message("Authentication required").timestamp(Instant.now()).build());
+        }
+
+        ExperienceBookingDto accepted = bookingService.acceptBooking(id, principal.getUserId());
+        return ResponseEntity.ok(ApiResponse.ok("Booking accepted by guide", accepted));
+    }
+
+    @PostMapping("/{id}/reject")
+    public ResponseEntity<ApiResponse<ExperienceBookingDto>> rejectBooking(
+            @PathVariable("id") String id,
+            @RequestParam(value = "reason", required = false) String reason,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.<ExperienceBookingDto>builder().success(false).message("Authentication required").timestamp(Instant.now()).build());
+        }
+
+        ExperienceBookingDto rejected = bookingService.rejectBooking(id, principal.getUserId(), reason);
+        return ResponseEntity.ok(ApiResponse.ok("Booking rejected", rejected));
+    }
+
+    @PostMapping("/{id}/partner-complete")
+    public ResponseEntity<ApiResponse<ExperienceBookingDto>> partnerComplete(
+            @PathVariable("id") String id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.<ExperienceBookingDto>builder().success(false).message("Authentication required").timestamp(Instant.now()).build());
+        }
+
+        ExperienceBookingDto pending = bookingService.markTripCompletionByPartner(id, principal.getUserId());
+        return ResponseEntity.ok(ApiResponse.ok("Trip marked as completed by provider. Awaiting tourist confirmation.", pending));
     }
 
     @PostMapping("/{id}/complete")

@@ -482,7 +482,7 @@ public class Phase22_10PartnerOperationsTest {
                 .build();
 
         HotelBookingDto booking = bookingService.createBooking(hotelDto.getId(), bookingReq, traveler.getId());
-        assertThat(booking.getBookingStatus()).isEqualTo(HotelBookingStatus.PENDING_PAYMENT);
+        assertThat(booking.getBookingStatus()).isEqualTo(HotelBookingStatus.REQUESTED);
 
         // Partner attempts to reduce inventory to 2 units for checkIn date (Active reservations = 4)
         UpdateInventoryRequest reduceReq = UpdateInventoryRequest.builder()

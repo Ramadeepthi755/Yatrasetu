@@ -1,5 +1,6 @@
 package com.yatrasetu.web.dto;
 
+import com.yatrasetu.domain.PartnerSubtype;
 import com.yatrasetu.domain.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +19,7 @@ public class UserProfileDto {
     private String fullName;
     private String displayName;
     private Role role;
+    private PartnerSubtype partnerSubtype;
     private String avatarUrl;
     private String bio;
     private String phone;
@@ -30,3 +32,4 @@ public class UserProfileDto {
     private String budgetPreference;
     private boolean verified;
 }
+

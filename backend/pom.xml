@@ -16,7 +16,7 @@
     <description>YatraSetu Tourism Ecosystem - Backend Core Services</description>
 
     <properties>
-        <java.version>25</java.version>
+        <java.version>21</java.version>
         <lombok.version>1.18.48</lombok.version>
         <postgresql.version>42.7.12</postgresql.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

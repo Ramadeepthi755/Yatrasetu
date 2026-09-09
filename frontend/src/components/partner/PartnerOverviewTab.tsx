@@ -19,6 +19,7 @@ import {
   FileCheck,
   ChevronRight,
   Zap,
+  QrCode,
 } from 'lucide-react';
 import { ExperienceBooking, ExperienceItem, HotelItem, PartnerReview, ExperienceSupportingProvider } from '@/lib/api';
 
@@ -41,6 +42,7 @@ interface PartnerOverviewTabProps {
   onNavigateTab: (tab: string) => void;
   onOpenCreateExperience: () => void;
   onOpenCreateHotel: () => void;
+  onOpenVerifyQr?: () => void;
 }
 
 export default function PartnerOverviewTab({
@@ -57,6 +59,7 @@ export default function PartnerOverviewTab({
   onNavigateTab,
   onOpenCreateExperience,
   onOpenCreateHotel,
+  onOpenVerifyQr,
 }: PartnerOverviewTabProps) {
   // Compute Key Metrics
   const activeBookings = bookings.filter((b) => ['CONFIRMED', 'IN_PROGRESS', 'COMPLETION_PENDING'].includes(b.status));
@@ -286,6 +289,20 @@ export default function PartnerOverviewTab({
                       <p className="text-[11px] text-slate-500 mt-0.5">Configure rate plans, dates, and blocks</p>
                     </div>
                     <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
+                  </button>
+
+                  <button
+                    onClick={onOpenVerifyQr || (() => onNavigateTab('HOTELS'))}
+                    className="p-4 rounded-xl border border-slate-200 hover:border-emerald-600 hover:bg-emerald-50/40 text-left transition-all group flex items-start justify-between sm:col-span-2"
+                  >
+                    <div>
+                      <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
+                        <QrCode className="w-4 h-4" />
+                      </div>
+                      <h4 className="text-xs font-bold text-[#171717]">Scan &amp; Verify Guest QR Pass</h4>
+                      <p className="text-[11px] text-slate-500 mt-0.5">Front desk QR token verification and instant reception check-in</p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-700 group-hover:translate-x-0.5 transition-all" />
                   </button>
                 </>
               ) : (

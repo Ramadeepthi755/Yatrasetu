@@ -222,6 +222,9 @@ public class HotelPaymentService {
         Instant now = Instant.now();
         booking.setBookingStatus(HotelBookingStatus.CONFIRMED);
         booking.setPaymentStatus(HotelPaymentStatus.PAID);
+        if (booking.getQrToken() == null || booking.getQrToken().isBlank()) {
+            booking.setQrToken(hotelBookingService.generateSecureQrToken());
+        }
         booking.setUpdatedAt(now);
         HotelBooking savedBooking = bookingRepository.save(booking);
 
@@ -343,10 +346,15 @@ public class HotelPaymentService {
                     HotelBooking booking = tx.getBooking();
 
                     if ("payment.captured".equals(eventType) || "order.paid".equals(eventType)) {
-                        if (booking.getBookingStatus() == HotelBookingStatus.PENDING_PAYMENT) {
+                        if (booking.getBookingStatus() == HotelBookingStatus.PENDING_PAYMENT ||
+                            booking.getBookingStatus() == HotelBookingStatus.ACCEPTED ||
+                            booking.getBookingStatus() == HotelBookingStatus.REQUESTED) {
                             Instant now = Instant.now();
                             booking.setBookingStatus(HotelBookingStatus.CONFIRMED);
                             booking.setPaymentStatus(HotelPaymentStatus.PAID);
+                            if (booking.getQrToken() == null || booking.getQrToken().isBlank()) {
+                                booking.setQrToken(hotelBookingService.generateSecureQrToken());
+                            }
                             booking.setUpdatedAt(now);
                             bookingRepository.save(booking);
 

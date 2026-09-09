@@ -262,12 +262,12 @@ public class Phase22_9BookingConfirmationTest {
     @Test
     void testConfirmedBookingRequiresPaidPayment() {
         HotelBookingDto booking = createTestReservation();
-        assertThat(booking.getBookingStatus()).isEqualTo(HotelBookingStatus.PENDING_PAYMENT);
+        assertThat(booking.getBookingStatus()).isEqualTo(HotelBookingStatus.REQUESTED);
         assertThat(booking.getPaymentStatus()).isEqualTo(HotelPaymentStatus.UNPAID);
 
         // Attempting to fetch confirmation before payment
         BookingConfirmationDto confirmation = bookingService.getBookingConfirmation(booking.getBookingReference(), traveler.getId());
-        assertThat(confirmation.getBookingStatus()).isEqualTo("PENDING_PAYMENT");
+        assertThat(confirmation.getBookingStatus()).isEqualTo("REQUESTED");
         assertThat(confirmation.getPaymentStatus()).isEqualTo("UNPAID");
         // Voucher is only available for CONFIRMED + PAID
         assertThat(confirmation.isVoucherAvailable()).isFalse();
@@ -291,7 +291,7 @@ public class Phase22_9BookingConfirmationTest {
                 .hasMessageContaining("signature verification failed");
 
         HotelBooking entity = bookingRepository.findByBookingReference(booking.getBookingReference()).orElseThrow();
-        assertThat(entity.getBookingStatus()).isEqualTo(HotelBookingStatus.PENDING_PAYMENT);
+        assertThat(entity.getBookingStatus()).isEqualTo(HotelBookingStatus.REQUESTED);
         assertThat(entity.getPaymentStatus()).isNotEqualTo(HotelPaymentStatus.PAID);
     }
 
@@ -361,8 +361,8 @@ public class Phase22_9BookingConfirmationTest {
         assertThat(confirmation.getStatusTimeline()).isNotEmpty();
         assertThat(confirmation.getStatusTimeline().size()).isGreaterThanOrEqualTo(2);
 
-        // First event is PENDING_PAYMENT
-        assertThat(confirmation.getStatusTimeline().get(0).getNewStatus()).isEqualTo("PENDING_PAYMENT");
+        // First event is REQUESTED
+        assertThat(confirmation.getStatusTimeline().get(0).getNewStatus()).isEqualTo("REQUESTED");
         // Last event is CONFIRMED
         assertThat(confirmation.getStatusTimeline().get(confirmation.getStatusTimeline().size() - 1).getNewStatus()).isEqualTo("CONFIRMED");
     }
@@ -448,13 +448,13 @@ public class Phase22_9BookingConfirmationTest {
                 traveler.getId());
 
         int count1 = notificationRepository.findAll().size();
-        assertThat(count1).isEqualTo(3); // 1 creation + 1 traveler confirmation + 1 partner confirmation
+        assertThat(count1).isEqualTo(4); // 2 on request (traveler + partner) + 2 on confirmation (traveler + partner)
 
         // Duplicate trigger should be idempotent
         HotelBooking entity = bookingRepository.findByBookingReference(booking.getBookingReference()).orElseThrow();
         notificationService.emitBookingConfirmationNotifications(entity);
         int count2 = notificationRepository.findAll().size();
-        assertThat(count2).isEqualTo(3); // No extra notifications created
+        assertThat(count2).isEqualTo(4); // No extra notifications created
     }
 
     // 21 & 22. Notification read is idempotent and user ownership enforced

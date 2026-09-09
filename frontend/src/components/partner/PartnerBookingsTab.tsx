@@ -357,7 +357,7 @@ export default function PartnerBookingsTab({
                   </button>
                 )}
 
-                {['IN_PROGRESS', 'COMPLETION_PENDING'].includes(b.status) && (
+                {b.status === 'IN_PROGRESS' && (
                   <button
                     onClick={async () => {
                       await onCompleteTrip(b.id);
@@ -367,6 +367,12 @@ export default function PartnerBookingsTab({
                   >
                     <CheckCircle className="w-3.5 h-3.5 text-white" /> Complete Trip
                   </button>
+                )}
+
+                {b.status === 'COMPLETION_PENDING' && (
+                  <div className="px-3 py-1.5 bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold rounded-xl flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-amber-600" /> Awaiting Guest Confirmation
+                  </div>
                 )}
               </div>
             </div>

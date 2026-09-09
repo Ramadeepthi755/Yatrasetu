@@ -38,6 +38,7 @@ public class HotelBookingService {
     private final HotelRatePlanRepository ratePlanRepository;
     private final UserRepository userRepository;
     private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
     private final com.yatrasetu.service.document.HotelBookingVoucherService voucherService;
 
     @Value("${app.hotel.booking.pending-expiry-minutes:30}")
@@ -229,6 +230,10 @@ public class HotelBookingService {
                 : "CANCELLATION_POLICY_UNAVAILABLE";
         Integer deadlineHours = ratePlan.getCancellationDeadlineHours();
 
+        String paymentMethod = (request.getPaymentMethod() != null && !request.getPaymentMethod().isBlank())
+                ? request.getPaymentMethod().trim().toUpperCase()
+                : "ONLINE";
+
         HotelBooking booking = HotelBooking.builder()
                 .id(bookingId)
                 .bookingReference(bookingReference)
@@ -252,8 +257,9 @@ public class HotelBookingService {
                 .taxesAmount(taxesAmount)
                 .feesAmount(feesAmount)
                 .totalAmount(totalAmount)
-                .bookingStatus(HotelBookingStatus.PENDING_PAYMENT)
+                .bookingStatus(HotelBookingStatus.REQUESTED)
                 .paymentStatus(HotelPaymentStatus.UNPAID)
+                .paymentMethod(paymentMethod)
                 .sourceType(SourceType.PARTNER_SUBMITTED)
                 .idempotencyKey(request.getIdempotencyKey() != null ? request.getIdempotencyKey().trim() : null)
                 .expiresAt(expiresAt)
@@ -286,29 +292,20 @@ public class HotelBookingService {
                 .id("hist-" + UUID.randomUUID().toString().substring(0, 12))
                 .booking(savedBooking)
                 .previousStatus(null)
-                .newStatus(HotelBookingStatus.PENDING_PAYMENT)
-                .reason("BOOKING_CREATED")
+                .newStatus(HotelBookingStatus.REQUESTED)
+                .reason("BOOKING_REQUESTED")
                 .actorUser(traveler)
                 .createdAt(now)
                 .build());
 
-        // 10. Emit In-App Notification to Traveler
+        // 10. Emit Multi-Party In-App Notifications (Hotel Provider + Traveler)
         try {
-            notificationRepository.save(Notification.builder()
-                    .id("notif-" + UUID.randomUUID().toString().substring(0, 12))
-                    .user(traveler)
-                    .title("Hotel Booking Created")
-                    .message("Your booking " + bookingReference + " at " + hotel.getHotelName() + " has been created. Payment is currently pending.")
-                    .category("BOOKING")
-                    .referenceLink("/trips")
-                    .read(false)
-                    .createdAt(now)
-                    .build());
+            notificationService.emitHotelBookingRequested(savedBooking);
         } catch (Exception e) {
             log.warn("Failed to create in-app notification for booking {}: {}", bookingReference, e.getMessage());
         }
 
-        log.info("Created real hotel booking {} (Id: {}) for traveler {} at hotel {}",
+        log.info("Created real hotel booking {} (Id: {}) for traveler {} at hotel {} with status REQUESTED",
                 bookingReference, bookingId, traveler.getEmail(), hotel.getHotelName());
 
         return mapToDto(savedBooking, true);
@@ -507,16 +504,324 @@ public class HotelBookingService {
     }
 
     /**
+     * Partner: View all hotel bookings across all properties owned by the authenticated partner.
+     */
+    @Transactional
+    public List<HotelBookingDto> getAllPartnerHotelBookings(String userIdOrEmail) {
+        User partner = resolveUser(userIdOrEmail);
+        List<HotelBooking> bookings = bookingRepository.findByHotelOwnerIdOrderByCreatedAtDesc(partner.getId());
+        List<HotelBookingDto> dtos = new ArrayList<>();
+        for (HotelBooking b : bookings) {
+            HotelBooking evaluated = checkAndExpireIfStale(b);
+            dtos.add(mapToDto(evaluated, false));
+        }
+        return dtos;
+    }
+
+    /**
+     * Partner: Accept a hotel booking request.
+     * If ONLINE payment: status becomes ACCEPTED / PENDING_PAYMENT, tourist is notified to complete payment.
+     * If PAY_AT_HOTEL: status becomes CONFIRMED, payment remains UNPAID, secure QR token is generated.
+     */
+    @Transactional
+    public HotelBookingDto acceptHotelBooking(String bookingReference, String partnerUserIdOrEmail) {
+        User partner = resolveUser(partnerUserIdOrEmail);
+        HotelBooking booking = bookingRepository.findByBookingReference(bookingReference)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found: " + bookingReference));
+
+        if (booking.getHotel().getOwner() == null || !booking.getHotel().getOwner().getId().equals(partner.getId())) {
+            throw new AccessDeniedException("You do not own the hotel property for booking " + bookingReference);
+        }
+
+        if (booking.getBookingStatus() != HotelBookingStatus.REQUESTED) {
+            throw new IllegalStateException("Only REQUESTED bookings can be accepted. Current status: " + booking.getBookingStatus());
+        }
+
+        Instant now = Instant.now();
+        HotelBookingStatus previousStatus = booking.getBookingStatus();
+
+        if ("PAY_AT_HOTEL".equalsIgnoreCase(booking.getPaymentMethod())) {
+            // Confirm immediately for Pay-at-Hotel
+            booking.setBookingStatus(HotelBookingStatus.CONFIRMED);
+            booking.setQrToken(generateSecureQrToken());
+            booking.setUpdatedAt(now);
+            HotelBooking saved = bookingRepository.save(booking);
+
+            statusHistoryRepository.save(HotelBookingStatusHistory.builder()
+                    .id("hist-" + UUID.randomUUID().toString().substring(0, 12))
+                    .booking(saved)
+                    .previousStatus(previousStatus)
+                    .newStatus(HotelBookingStatus.CONFIRMED)
+                    .reason("PARTNER_ACCEPTED_PAY_AT_HOTEL")
+                    .actorUser(partner)
+                    .createdAt(now)
+                    .build());
+
+            notificationService.emitBookingConfirmationNotifications(saved);
+            log.info("Partner accepted Pay-at-Hotel booking {}, status -> CONFIRMED with QR", bookingReference);
+            return mapToDto(saved, false);
+        } else {
+            // Online payment pending
+            booking.setBookingStatus(HotelBookingStatus.ACCEPTED);
+            booking.setUpdatedAt(now);
+            HotelBooking saved = bookingRepository.save(booking);
+
+            statusHistoryRepository.save(HotelBookingStatusHistory.builder()
+                    .id("hist-" + UUID.randomUUID().toString().substring(0, 12))
+                    .booking(saved)
+                    .previousStatus(previousStatus)
+                    .newStatus(HotelBookingStatus.ACCEPTED)
+                    .reason("PARTNER_ACCEPTED_ONLINE_PAYMENT_PENDING")
+                    .actorUser(partner)
+                    .createdAt(now)
+                    .build());
+
+            notificationService.emitHotelBookingAccepted(saved);
+            log.info("Partner accepted Online Payment booking {}, status -> ACCEPTED", bookingReference);
+            return mapToDto(saved, false);
+        }
+    }
+
+    /**
+     * Partner: Reject a hotel booking request with a mandatory/optional reason.
+     */
+    @Transactional
+    public HotelBookingDto rejectHotelBooking(String bookingReference, String reason, String partnerUserIdOrEmail) {
+        User partner = resolveUser(partnerUserIdOrEmail);
+        HotelBooking booking = bookingRepository.findByBookingReference(bookingReference)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found: " + bookingReference));
+
+        if (booking.getHotel().getOwner() == null || !booking.getHotel().getOwner().getId().equals(partner.getId())) {
+            throw new AccessDeniedException("You do not own the hotel property for booking " + bookingReference);
+        }
+
+        if (booking.getBookingStatus() != HotelBookingStatus.REQUESTED &&
+            booking.getBookingStatus() != HotelBookingStatus.ACCEPTED &&
+            booking.getBookingStatus() != HotelBookingStatus.PENDING_PAYMENT) {
+            throw new IllegalStateException("Cannot reject booking in status: " + booking.getBookingStatus());
+        }
+
+        Instant now = Instant.now();
+        HotelBookingStatus previousStatus = booking.getBookingStatus();
+        String rejectionReason = (reason != null && !reason.isBlank()) ? reason.trim() : "Declined by property partner";
+
+        booking.setBookingStatus(HotelBookingStatus.REJECTED);
+        booking.setRejectionReason(rejectionReason);
+        booking.setCancellationReason(rejectionReason);
+        booking.setUpdatedAt(now);
+        HotelBooking saved = bookingRepository.save(booking);
+
+        // Release inventory allocations
+        allocationRepository.updateAllocationStatusByBookingId(
+                booking.getId(), BookingAllocationStatus.ACTIVE, BookingAllocationStatus.RELEASED);
+
+        statusHistoryRepository.save(HotelBookingStatusHistory.builder()
+                .id("hist-" + UUID.randomUUID().toString().substring(0, 12))
+                .booking(saved)
+                .previousStatus(previousStatus)
+                .newStatus(HotelBookingStatus.REJECTED)
+                .reason("PARTNER_REJECTED: " + rejectionReason)
+                .actorUser(partner)
+                .createdAt(now)
+                .build());
+
+        notificationService.emitHotelBookingRejected(saved, rejectionReason);
+        log.info("Partner rejected booking {} (Reason: {})", bookingReference, rejectionReason);
+        return mapToDto(saved, false);
+    }
+
+    /**
+     * Partner: Verify guest check-in QR token / booking reference.
+     */
+    @Transactional(readOnly = true)
+    public HotelBookingDto verifyQrAndGetBooking(String qrTokenOrRef, String partnerUserIdOrEmail) {
+        User partner = resolveUser(partnerUserIdOrEmail);
+        if (qrTokenOrRef == null || qrTokenOrRef.isBlank()) {
+            throw new IllegalArgumentException("QR check-in token or booking reference is required");
+        }
+
+        String cleanedToken = qrTokenOrRef.trim();
+        HotelBooking booking = bookingRepository.findByQrToken(cleanedToken)
+                .or(() -> bookingRepository.findByBookingReference(cleanedToken))
+                .orElseThrow(() -> new ResourceNotFoundException("No active booking found for the provided check-in token."));
+
+        if (booking.getHotel().getOwner() == null || !booking.getHotel().getOwner().getId().equals(partner.getId())) {
+            throw new AccessDeniedException("This reservation does not belong to your hotel property.");
+        }
+
+        if (booking.getBookingStatus() != HotelBookingStatus.CONFIRMED && booking.getBookingStatus() != HotelBookingStatus.CHECKED_IN) {
+            throw new ConflictException("Booking is in status " + booking.getBookingStatus() + ". Check-in requires CONFIRMED status.");
+        }
+
+        return mapToDto(booking, true); // Include guest details for physical ID verification
+    }
+
+    /**
+     * Partner: Confirm guest check-in at reception after physical/QR verification.
+     */
+    @Transactional
+    public HotelBookingDto checkinGuest(String qrTokenOrRef, String partnerUserIdOrEmail) {
+        User partner = resolveUser(partnerUserIdOrEmail);
+        if (qrTokenOrRef == null || qrTokenOrRef.isBlank()) {
+            throw new IllegalArgumentException("QR check-in token or booking reference is required");
+        }
+
+        String cleanedToken = qrTokenOrRef.trim();
+        HotelBooking booking = bookingRepository.findByQrToken(cleanedToken)
+                .or(() -> bookingRepository.findByBookingReference(cleanedToken))
+                .orElseThrow(() -> new ResourceNotFoundException("No active booking found for check-in: " + qrTokenOrRef));
+
+        if (booking.getHotel().getOwner() == null || !booking.getHotel().getOwner().getId().equals(partner.getId())) {
+            throw new AccessDeniedException("This reservation does not belong to your hotel property.");
+        }
+
+        if (booking.getBookingStatus() == HotelBookingStatus.CHECKED_IN) {
+            log.info("Booking {} is already checked-in. Returning idempotent response.", booking.getBookingReference());
+            return mapToDto(booking, true);
+        }
+
+        if (booking.getBookingStatus() != HotelBookingStatus.CONFIRMED) {
+            throw new IllegalStateException("Booking must be in CONFIRMED status to perform check-in. Current: " + booking.getBookingStatus());
+        }
+
+        Instant now = Instant.now();
+        HotelBookingStatus previousStatus = booking.getBookingStatus();
+
+        booking.setBookingStatus(HotelBookingStatus.CHECKED_IN);
+        booking.setCheckedInAt(now);
+        booking.setUpdatedAt(now);
+        HotelBooking saved = bookingRepository.save(booking);
+
+        statusHistoryRepository.save(HotelBookingStatusHistory.builder()
+                .id("hist-" + UUID.randomUUID().toString().substring(0, 12))
+                .booking(saved)
+                .previousStatus(previousStatus)
+                .newStatus(HotelBookingStatus.CHECKED_IN)
+                .reason("HOTEL_RECEPTION_CHECKIN_CONFIRMED")
+                .actorUser(partner)
+                .createdAt(now)
+                .build());
+
+        notificationService.emitHotelCheckinConfirmed(saved);
+        log.info("Hotel check-in confirmed for booking {} by partner {}", saved.getBookingReference(), partner.getEmail());
+        return mapToDto(saved, true);
+    }
+
+    /**
+     * Partner: Complete stay / check-out guest at departure.
+     */
+    @Transactional
+    public HotelBookingDto checkoutGuest(String bookingReference, String partnerUserIdOrEmail) {
+        User partner = resolveUser(partnerUserIdOrEmail);
+        HotelBooking booking = bookingRepository.findByBookingReference(bookingReference)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found: " + bookingReference));
+
+        if (booking.getHotel().getOwner() == null || !booking.getHotel().getOwner().getId().equals(partner.getId())) {
+            throw new AccessDeniedException("This reservation does not belong to your hotel property.");
+        }
+
+        if (booking.getBookingStatus() == HotelBookingStatus.CHECKED_OUT || booking.getBookingStatus() == HotelBookingStatus.COMPLETED) {
+            return mapToDto(booking, true);
+        }
+
+        if (booking.getBookingStatus() != HotelBookingStatus.CHECKED_IN) {
+            throw new IllegalStateException("Cannot check-out a reservation that is not currently CHECKED_IN. Current: " + booking.getBookingStatus());
+        }
+
+        Instant now = Instant.now();
+        HotelBookingStatus previousStatus = booking.getBookingStatus();
+
+        booking.setBookingStatus(HotelBookingStatus.CHECKED_OUT);
+        booking.setCheckedOutAt(now);
+        booking.setUpdatedAt(now);
+        HotelBooking saved = bookingRepository.save(booking);
+
+        // Release inventory allocations
+        allocationRepository.updateAllocationStatusByBookingId(
+                booking.getId(), BookingAllocationStatus.ACTIVE, BookingAllocationStatus.RELEASED);
+
+        statusHistoryRepository.save(HotelBookingStatusHistory.builder()
+                .id("hist-" + UUID.randomUUID().toString().substring(0, 12))
+                .booking(saved)
+                .previousStatus(previousStatus)
+                .newStatus(HotelBookingStatus.CHECKED_OUT)
+                .reason("HOTEL_STAY_COMPLETED_CHECKOUT")
+                .actorUser(partner)
+                .createdAt(now)
+                .build());
+
+        notificationService.emitHotelStayCompleted(saved);
+        log.info("Hotel stay completed / checked out for booking {}", bookingReference);
+        return mapToDto(saved, true);
+    }
+
+    /**
+     * Traveler: Submit verified hotel review after completed stay.
+     */
+    @Transactional
+    public HotelBookingDto submitHotelReview(String bookingReference, BigDecimal rating, String comment, String travelerUserIdOrEmail) {
+        User traveler = resolveUser(travelerUserIdOrEmail);
+        HotelBooking booking = bookingRepository.findByBookingReference(bookingReference)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found: " + bookingReference));
+
+        if (!booking.getTraveler().getId().equals(traveler.getId())) {
+            throw new AccessDeniedException("Only the booking traveler can review this stay.");
+        }
+
+        if (booking.getBookingStatus() != HotelBookingStatus.CHECKED_OUT && booking.getBookingStatus() != HotelBookingStatus.COMPLETED) {
+            throw new IllegalStateException("Reviews can only be submitted after a verified stay is completed.");
+        }
+
+        if (booking.getReviewedAt() != null) {
+            throw new ConflictException("You have already submitted a review for this reservation.");
+        }
+
+        if (rating == null || rating.compareTo(BigDecimal.ONE) < 0 || rating.compareTo(BigDecimal.valueOf(5)) > 0) {
+            throw new IllegalArgumentException("Rating must be between 1.0 and 5.0");
+        }
+
+        Instant now = Instant.now();
+        booking.setReviewRating(rating);
+        booking.setReviewComment(comment != null ? comment.trim() : "");
+        booking.setReviewedAt(now);
+        booking.setUpdatedAt(now);
+        HotelBooking saved = bookingRepository.save(booking);
+
+        // Update hotel's average rating in database
+        try {
+            Hotel hotel = booking.getHotel();
+            if (hotel != null) {
+                BigDecimal currentRating = hotel.getHotelRating() != null ? hotel.getHotelRating() : BigDecimal.valueOf(4.5);
+                BigDecimal newRating = currentRating.add(rating).divide(BigDecimal.valueOf(2), 1, java.math.RoundingMode.HALF_UP);
+                hotel.setHotelRating(newRating);
+                hotelRepository.save(hotel);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to update aggregate hotel rating: {}", e.getMessage());
+        }
+
+        log.info("Traveler {} submitted verified review for hotel booking {}", traveler.getEmail(), bookingReference);
+        return mapToDto(saved, true);
+    }
+
+    public String generateSecureQrToken() {
+        return "YATRASETU-HOTEL-CHECKIN:" + UUID.randomUUID().toString().replace("-", "").toUpperCase();
+    }
+
+    /**
      * Configurable Option A: Transactional and idempotent expiration of stale PENDING_PAYMENT reservations.
      */
     @Transactional
     public int expirePendingBookings() {
         Instant cutoff = Instant.now();
         List<HotelBooking> expiredList = bookingRepository.findExpiredPendingBookings(HotelBookingStatus.PENDING_PAYMENT, cutoff);
+        List<HotelBooking> expiredRequested = bookingRepository.findExpiredPendingBookings(HotelBookingStatus.REQUESTED, cutoff);
+        List<HotelBooking> allExpired = new ArrayList<>(expiredList);
+        allExpired.addAll(expiredRequested);
 
         int count = 0;
-        for (HotelBooking booking : expiredList) {
-            if (booking.getBookingStatus() != HotelBookingStatus.PENDING_PAYMENT) {
+        for (HotelBooking booking : allExpired) {
+            if (booking.getBookingStatus() != HotelBookingStatus.PENDING_PAYMENT && booking.getBookingStatus() != HotelBookingStatus.REQUESTED) {
                 continue; // Idempotency check
             }
             expireSingleBooking(booking);
@@ -792,6 +1097,14 @@ public class HotelBookingService {
                 .cancellationReasonCode(b.getCancellationReasonCode() != null ? b.getCancellationReasonCode().name() : null)
                 .cancellationPolicySnapshot(b.getCancellationPolicySnapshot())
                 .cancellationDeadlineHours(b.getCancellationDeadlineHours())
+                .qrToken(b.getQrToken())
+                .paymentMethod(b.getPaymentMethod())
+                .rejectionReason(b.getRejectionReason())
+                .checkedInAt(b.getCheckedInAt())
+                .checkedOutAt(b.getCheckedOutAt())
+                .reviewRating(b.getReviewRating())
+                .reviewComment(b.getReviewComment())
+                .reviewedAt(b.getReviewedAt())
                 .createdAt(b.getCreatedAt())
                 .updatedAt(b.getUpdatedAt())
                 .allocations(allocDtos)

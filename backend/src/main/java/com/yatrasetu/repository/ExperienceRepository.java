@@ -18,6 +18,8 @@ public interface ExperienceRepository extends JpaRepository<Experience, String> 
 
     List<Experience> findByDestinationId(String destinationId);
 
+    List<Experience> findByCityId(String cityId);
+
     List<Experience> findByCulturalTraditionId(String culturalTraditionId);
 
     @Query("SELECT e FROM Experience e WHERE e.culturalTradition.id = :culturalTraditionId " +

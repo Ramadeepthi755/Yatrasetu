@@ -10,6 +10,8 @@ public enum SourceType {
     OFFICIAL,
     API,
     PARTNER_SUBMITTED,
+    PARTNER,
     USER_GENERATED,
     DEMO
 }
+

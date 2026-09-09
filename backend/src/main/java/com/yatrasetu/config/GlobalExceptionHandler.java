@@ -168,6 +168,59 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleDataIntegrityViolation(
+            org.springframework.dao.DataIntegrityViolationException ex, HttpServletRequest request) {
+
+        log.warn("Data integrity violation on {}: {}", request.getRequestURI(), ex.getMessage());
+
+        String message = "A record with the specified unique details already exists or violates a database constraint.";
+        if (ex.getMessage() != null && ex.getMessage().toLowerCase().contains("email")) {
+            message = "An account with this email address already exists. Please sign in or use another email.";
+        }
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .error("Data Conflict")
+                .message(message)
+                .path(request.getRequestURI())
+                .timestamp(Instant.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                ApiResponse.<ErrorResponse>builder()
+                        .success(false)
+                        .message(message)
+                        .data(errorResponse)
+                        .timestamp(Instant.now())
+                        .build()
+        );
+    }
+
+    @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleConstraintViolation(
+            jakarta.validation.ConstraintViolationException ex, HttpServletRequest request) {
+
+        log.warn("Constraint violation on {}: {}", request.getRequestURI(), ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Validation Failed")
+                .message(ex.getMessage() != null ? ex.getMessage() : "Validation constraints failed")
+                .path(request.getRequestURI())
+                .timestamp(Instant.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                ApiResponse.<ErrorResponse>builder()
+                        .success(false)
+                        .message(errorResponse.getMessage())
+                        .data(errorResponse)
+                        .timestamp(Instant.now())
+                        .build()
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<ErrorResponse>> handleGeneralException(
             Exception ex, HttpServletRequest request) {

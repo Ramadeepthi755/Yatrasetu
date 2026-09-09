@@ -67,8 +67,24 @@ public class ExperienceService {
 
     @Transactional(readOnly = true)
     public List<ExperienceDto> getExperiencesByDestination(String destinationId) {
-        return experienceRepository.findByDestinationId(destinationId)
-                .stream()
+        List<Experience> experiences = experienceRepository.findByDestinationId(destinationId);
+        if (experiences.isEmpty()) {
+            Optional<Destination> destOpt = destinationRepository.findById(destinationId);
+            if (destOpt.isPresent()) {
+                Destination dest = destOpt.get();
+                if (dest.getCity() != null) {
+                    experiences = experienceRepository.findByCityId(dest.getCity().getId());
+                }
+                if (experiences.isEmpty() && dest.getNearestMajorCity() != null && !dest.getNearestMajorCity().isBlank()) {
+                    String major = dest.getNearestMajorCity().toLowerCase().trim();
+                    experiences = experienceRepository.findAll().stream()
+                            .filter(e -> (e.getCity() != null && e.getCity().getCityName() != null && e.getCity().getCityName().toLowerCase().contains(major))
+                                    || (e.getCity() != null && e.getCity().getId() != null && e.getCity().getId().toLowerCase().contains(major)))
+                            .collect(Collectors.toList());
+                }
+            }
+        }
+        return experiences.stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }

@@ -311,4 +311,100 @@ public class AuthenticationAndRbacTest {
                 .header("Authorization", "Bearer mock-partner-partner@yatrasetu.in"))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void testSihDemoAccountsSessionSyncAndVerifiedStatus() throws Exception {
+        // 1. Ravi Guide session sync
+        AuthController.SyncUserRequest raviReq = new AuthController.SyncUserRequest();
+        raviReq.setAuthUserId("a0000000-0000-0000-0000-000000000002");
+        raviReq.setEmail("ravi.guide@yatrasetu.demo");
+        raviReq.setFullName("Ravi Kumar");
+        raviReq.setRole(Role.PARTNER);
+        raviReq.setPartnerSubtype(PartnerSubtype.GUIDE);
+
+        mockMvc.perform(post("/api/v1/auth/sync")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(raviReq)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.email").value("ravi.guide@yatrasetu.demo"))
+                .andExpect(jsonPath("$.data.role").value("PARTNER"));
+
+        // 2. Tourist session sync
+        AuthController.SyncUserRequest touristReq = new AuthController.SyncUserRequest();
+        touristReq.setAuthUserId("a0000000-0000-0000-0000-000000000001");
+        touristReq.setEmail("tourist@yatrasetu.demo");
+        touristReq.setFullName("SIH Demo Tourist");
+        touristReq.setRole(Role.TRAVELER);
+
+        mockMvc.perform(post("/api/v1/auth/sync")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(touristReq)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.role").value("TRAVELER"));
+
+        // 3. Hotel Partner session sync
+        AuthController.SyncUserRequest hotelReq = new AuthController.SyncUserRequest();
+        hotelReq.setAuthUserId("a0000000-0000-0000-0000-000000000004");
+        hotelReq.setEmail("tirupati.hotel@yatrasetu.demo");
+        hotelReq.setFullName("Srinivasa Rao");
+        hotelReq.setRole(Role.PARTNER);
+        hotelReq.setPartnerSubtype(PartnerSubtype.HOTEL);
+
+        mockMvc.perform(post("/api/v1/auth/sync")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(hotelReq)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.role").value("PARTNER"));
+    }
+
+    @Test
+    void testNewProviderSignupAndProfileUpdate() throws Exception {
+        String uniqueEmail = "newprovider." + System.currentTimeMillis() + "@test.com";
+        String uniqueAuthId = "auth-new-" + System.currentTimeMillis();
+
+        // 1. Register new partner via sync
+        AuthController.SyncUserRequest signupReq = new AuthController.SyncUserRequest();
+        signupReq.setAuthUserId(uniqueAuthId);
+        signupReq.setEmail(uniqueEmail);
+        signupReq.setFullName("Shri Ramesh Sharma");
+        signupReq.setRole(Role.PARTNER);
+        signupReq.setPartnerSubtype(PartnerSubtype.GUIDE);
+
+        mockMvc.perform(post("/api/v1/auth/sync")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signupReq)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.email").value(uniqueEmail))
+                .andExpect(jsonPath("$.data.role").value("PARTNER"));
+
+        // 2. Fetch Partner Profile
+        mockMvc.perform(get("/api/v1/partner/profile/me")
+                .header("Authorization", "Bearer mock-partner-" + uniqueEmail))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.email").value(uniqueEmail))
+                .andExpect(jsonPath("$.data.role").value("PARTNER"))
+                .andExpect(jsonPath("$.data.verificationStatus").value("PENDING"));
+
+        // 3. Update Partner Profile with business details
+        UpdatePartnerProfileRequest updateReq = new UpdatePartnerProfileRequest();
+        updateReq.setBusinessName("Ramesh Heritage Tours");
+        updateReq.setCity("Varanasi");
+        updateReq.setState("Uttar Pradesh");
+        updateReq.setBio("Certified local guide for Ganga Ghats and Kashi temples.");
+        updateReq.setPartnerSubtype(PartnerSubtype.GUIDE);
+
+        mockMvc.perform(put("/api/v1/partner/profile/me")
+                .header("Authorization", "Bearer mock-partner-" + uniqueEmail)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateReq)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.businessName").value("Ramesh Heritage Tours"))
+                .andExpect(jsonPath("$.data.city").value("Varanasi"));
+    }
 }

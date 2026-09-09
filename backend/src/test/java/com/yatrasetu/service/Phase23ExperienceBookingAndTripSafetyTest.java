@@ -52,6 +52,8 @@ public class Phase23ExperienceBookingAndTripSafetyTest {
     private BookingMessageRepository bookingMessageRepository;
     @Mock
     private LocalHostService localHostService;
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private ExperienceBookingService bookingService;
@@ -240,6 +242,7 @@ public class Phase23ExperienceBookingAndTripSafetyTest {
     @Test
     @DisplayName("Test Cash Milestone Payment Lifecycle (50% at Start, 50% at Completion)")
     void testCashPaymentMilestones() {
+        booking.setStatus("PAYMENT_PENDING");
         booking.setTotalAmount(BigDecimal.valueOf(3600.00));
         when(bookingRepository.findById("book-1")).thenReturn(Optional.of(booking));
         when(bookingRepository.save(any(ExperienceBooking.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -278,7 +281,7 @@ public class Phase23ExperienceBookingAndTripSafetyTest {
         when(bookingRepository.save(any(ExperienceBooking.class))).thenAnswer(inv -> inv.getArgument(0));
 
         ExperienceBookingDto dto = bookingService.startTrip("book-1", hostUser.getId());
-        assertThat(dto.getMeetingPointName()).isEqualTo("Kapila Theertham Main Entrance, Seshachalam Foothills");
+        assertThat(dto.getMeetingPointName()).isEqualTo("Kapila Theertham Main Entrance, Tirupati");
         assertThat(dto.getMeetingPointLatitude()).isEqualByComparingTo(BigDecimal.valueOf(13.6521));
         assertThat(dto.getMeetingPointLongitude()).isEqualByComparingTo(BigDecimal.valueOf(79.4267));
     }
