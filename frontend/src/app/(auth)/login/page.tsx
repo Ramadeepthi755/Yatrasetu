@@ -90,7 +90,7 @@ export default function LoginPage() {
         <div className="relative z-10 space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-[#F59E0B]">
             <Sparkles className="w-3.5 h-3.5" />
-            India's Connected Tourism Ecosystem
+            India&apos;s Connected Tourism Ecosystem
           </div>
           <h2 className="text-4xl font-extrabold text-white leading-tight tracking-tight">
             Every journey<br/>
@@ -98,7 +98,7 @@ export default function LoginPage() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F59E0B] to-[#FBBF24]">bridge.</span>
           </h2>
           <p className="text-slate-300 text-sm leading-relaxed max-w-xs">
-            Connecting India's 1.4 billion stories ΓÇö travelers, local guides, and cultural custodians ΓÇö into one living ecosystem.
+            Connecting India&apos;s 1.4 billion stories ΓÇö travelers, local guides, and cultural custodians ΓÇö into one living ecosystem.
           </p>
 
           {/* Stats row */}

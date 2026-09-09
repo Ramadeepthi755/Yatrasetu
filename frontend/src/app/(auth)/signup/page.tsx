@@ -242,7 +242,7 @@ export default function SignupPage() {
         <div className="relative z-10 space-y-5">
           <p className="text-[#F59E0B] text-xs font-bold uppercase tracking-widest">Join the family</p>
           <h2 className="text-3xl font-extrabold text-white leading-tight">
-            India's largest<br/>
+            India&apos;s largest<br/>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F59E0B] to-[#FBBF24]">community</span><br/>
             of travelers<br/>
             & storytellers.
@@ -300,7 +300,7 @@ export default function SignupPage() {
               <div>
                 <h1 className="text-2xl font-extrabold text-[#171717] tracking-tight">Create your account</h1>
                 <p className="text-sm text-[#64748B] mt-1">
-                  Let's start with your basic details.
+                  Let&apos;s start with your basic details.
                 </p>
               </div>
 
@@ -852,7 +852,7 @@ export default function SignupPage() {
 
               {/* Verification note */}
               <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
-                <strong>Verification note:</strong> Your guide profile will be reviewed by regional tourism authorities. Once approved, you'll receive a verified badge and appear in traveler searches.
+                <strong>Verification note:</strong> Your guide profile will be reviewed by regional tourism authorities. Once approved, you&apos;ll receive a verified badge and appear in traveler searches.
               </div>
 
               {/* Actions */}
