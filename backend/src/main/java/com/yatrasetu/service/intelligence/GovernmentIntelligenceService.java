@@ -2,10 +2,7 @@ package com.yatrasetu.service.intelligence;
 
 import com.yatrasetu.domain.Destination;
 import com.yatrasetu.domain.User;
-import com.yatrasetu.domain.intelligence.HealthClassification;
-import com.yatrasetu.domain.intelligence.IntelligenceSourceType;
-import com.yatrasetu.domain.intelligence.TourismGovernmentAction;
-import com.yatrasetu.domain.intelligence.TourismRedistributionRecommendation;
+import com.yatrasetu.domain.intelligence.*;
 import com.yatrasetu.repository.DestinationRepository;
 import com.yatrasetu.repository.intelligence.TourismDemandSignalRepository;
 import com.yatrasetu.repository.intelligence.TourismGovernmentActionRepository;
@@ -28,7 +25,6 @@ public class GovernmentIntelligenceService {
     private final TourismDemandSignalRepository signalRepository;
     private final TourismDemandService demandService;
     private final DestinationHealthService healthService;
-    private final TourismRedistributionService redistributionService;
     private final TourismRedistributionRecommendationRepository recommendationRepository;
     private final TourismGovernmentActionRepository actionRepository;
 
@@ -116,7 +112,7 @@ public class GovernmentIntelligenceService {
     }
 
     @Transactional
-    public TourismGovernmentAction recordAction(GovernmentActionRequest request, User user) {
+    public GovernmentActionResponseDto recordAction(GovernmentActionRequest request, User user) {
         Destination destination = null;
         if (request.getDestinationId() != null) {
             destination = destinationRepository.findById(request.getDestinationId()).orElse(null);
@@ -127,16 +123,78 @@ public class GovernmentIntelligenceService {
             rec = recommendationRepository.findById(request.getRecommendationId()).orElse(null);
         }
 
+        GovernmentActionPriority priority = request.getPriority() != null ? request.getPriority() : GovernmentActionPriority.MEDIUM;
+
         TourismGovernmentAction action = TourismGovernmentAction.builder()
                 .id("act-" + UUID.randomUUID())
                 .destination(destination)
                 .recommendation(rec)
-                .actionType(request.getActionType())
+                .actionType(request.getActionType() != null ? request.getActionType() : GovernmentActionType.CREATE_INITIATIVE)
                 .title(request.getTitle() != null ? request.getTitle() : "Government Action Logged")
                 .notes(request.getNotes())
                 .user(user)
+                .status(GovernmentActionStatus.LOGGED)
+                .priority(priority)
+                .createdAt(Instant.now())
                 .build();
 
-        return actionRepository.save(action);
+        TourismGovernmentAction saved = actionRepository.save(action);
+        return mapToResponseDto(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GovernmentActionResponseDto> getActionHistory(GovernmentActionStatus status, GovernmentActionPriority priority) {
+        List<TourismGovernmentAction> actions;
+        if (status == null && priority == null) {
+            actions = actionRepository.findAllWithDetails();
+        } else {
+            actions = actionRepository.findByStatusAndPriorityFiltered(status, priority);
+        }
+
+        List<GovernmentActionResponseDto> dtos = new ArrayList<>();
+        for (TourismGovernmentAction a : actions) {
+            dtos.add(mapToResponseDto(a));
+        }
+        return dtos;
+    }
+
+    @Transactional
+    public GovernmentActionResponseDto updateActionStatus(String actionId, GovernmentActionStatus newStatus, String resolutionNotes, User user) {
+        TourismGovernmentAction action = actionRepository.findById(actionId).orElse(null);
+        if (action == null) return null;
+
+        if (newStatus != null) {
+            action.setStatus(newStatus);
+            if (newStatus == GovernmentActionStatus.RESOLVED || newStatus == GovernmentActionStatus.DISMISSED) {
+                action.setResolvedAt(Instant.now());
+            }
+        }
+
+        if (resolutionNotes != null && !resolutionNotes.isBlank()) {
+            action.setResolutionNotes(resolutionNotes);
+        }
+
+        TourismGovernmentAction saved = actionRepository.save(action);
+        log.info("Government user {} updated action {} to status {}", user != null ? user.getId() : "system", actionId, newStatus);
+        return mapToResponseDto(saved);
+    }
+
+    private GovernmentActionResponseDto mapToResponseDto(TourismGovernmentAction a) {
+        return GovernmentActionResponseDto.builder()
+                .id(a.getId())
+                .destinationId(a.getDestination() != null ? a.getDestination().getId() : null)
+                .destinationName(a.getDestination() != null ? a.getDestination().getDestinationName() : "General Directive")
+                .stateName(a.getDestination() != null && a.getDestination().getState() != null ? a.getDestination().getState().getStateName() : "National")
+                .recommendationId(a.getRecommendation() != null ? a.getRecommendation().getId() : null)
+                .actionType(a.getActionType())
+                .title(a.getTitle())
+                .notes(a.getNotes())
+                .status(a.getStatus() != null ? a.getStatus() : GovernmentActionStatus.LOGGED)
+                .priority(a.getPriority() != null ? a.getPriority() : GovernmentActionPriority.MEDIUM)
+                .resolutionNotes(a.getResolutionNotes())
+                .resolvedAt(a.getResolvedAt())
+                .userFullName(a.getUser() != null ? a.getUser().getFullName() : "Government Official")
+                .createdAt(a.getCreatedAt())
+                .build();
     }
 }

@@ -12,9 +12,10 @@ public final class ProvenanceUtil {
             case DATASET -> "Dataset";
             case OFFICIAL -> "Official";
             case API -> "Live API";
-            case PARTNER_SUBMITTED -> Boolean.TRUE.equals(isVerified) ? "Verified Partner" : "Partner Listing";
+            case PARTNER_SUBMITTED, PARTNER -> Boolean.TRUE.equals(isVerified) ? "Verified Partner" : "Partner Listing";
             case USER_GENERATED -> "Traveler Submitted";
             case DEMO -> "Demo";
         };
     }
 }
+

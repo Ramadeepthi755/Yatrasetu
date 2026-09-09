@@ -7,14 +7,16 @@ import { TravelerDiscovery } from '@/lib/api';
 import {
   MapPin,
   Calendar,
-  Sparkles,
-  UserPlus,
-  CheckCircle2,
-  Clock,
+  Compass,
   MessageCircle,
-  Tag,
+  UserCheck,
   Languages,
+  Users,
+  Tag,
+  CheckCircle2,
   ArrowRight,
+  Clock,
+  UserPlus,
 } from 'lucide-react';
 import ConnectModal from './ConnectModal';
 
@@ -92,7 +94,7 @@ export default function TravelBuddyCard({ traveler, onConnectionChange }: Travel
               )}`}
               title="Deterministic Match Score based on Destination, Dates, Interests, Style & Languages"
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <Users className="w-3.5 h-3.5" />
               <span>{traveler.matchScore}% Match</span>
             </div>
           </div>

@@ -10,15 +10,16 @@ import {
   ArrowLeft,
   Camera,
   Bed,
-  Sparkles,
   Loader2,
   AlertCircle,
+  Palette,
 } from 'lucide-react';
-import { getStateDetail, StateDetail } from '@/lib/api';
+import { getStateDetail, getCulturalTraditionsByState, StateDetail, CulturalTraditionDto } from '@/lib/api';
 import { DestinationCard } from '@/components/explore/DestinationCard';
 import { CityCard } from '@/components/explore/CityCard';
 import { PoiCard } from '@/components/explore/PoiCard';
 import { HotelCard } from '@/components/explore/HotelCard';
+import { CulturalTraditionCard } from '@/components/explore/CulturalTraditionCard';
 import { MapView, MapMarker } from '@/components/map/MapView';
 
 export default function StateDetailPage() {
@@ -27,6 +28,7 @@ export default function StateDetailPage() {
   const stateId = params.stateId as string;
 
   const [state, setState] = useState<StateDetail | null>(null);
+  const [traditions, setTraditions] = useState<CulturalTraditionDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,11 +38,19 @@ export default function StateDetailPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await getStateDetail(stateId);
-        if (res.success && res.data) {
-          setState(res.data);
+        const [stateRes, tradRes] = await Promise.allSettled([
+          getStateDetail(stateId),
+          getCulturalTraditionsByState(stateId),
+        ]);
+
+        if (stateRes.status === 'fulfilled' && stateRes.value.success && stateRes.value.data) {
+          setState(stateRes.value.data);
         } else {
           setError('State not found.');
+        }
+
+        if (tradRes.status === 'fulfilled' && tradRes.value.success && tradRes.value.data) {
+          setTraditions(tradRes.value.data);
         }
       } catch (err: any) {
         console.error(err);
@@ -273,7 +283,33 @@ export default function StateDetailPage() {
           </section>
         )}
 
-        {/* Section 4: Attractions & POIs */}
+        {/* Section 4: Cultural Traditions & Heritage Crafts */}
+        {traditions && traditions.length > 0 && (
+          <section className="rounded-3xl border border-amber-200/80 bg-gradient-to-b from-amber-50/40 via-white to-stone-50/30 p-6 md:p-8 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-amber-800 mb-1">
+                  <Palette className="h-4 w-4 text-amber-700" />
+                  <span>Living Craft &amp; Heritage Directory</span>
+                </div>
+                <h2 className="text-2xl font-bold text-stone-900 tracking-tight">
+                  Cultural Traditions of {state.stateName}
+                </h2>
+                <p className="text-xs text-stone-500 mt-0.5">
+                  Authentic source-backed handicrafts, handlooms, and indigenous arts
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {traditions.map((t) => (
+                <CulturalTraditionCard key={t.id} tradition={t} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Section 5: Attractions & POIs */}
         {state.topPois && state.topPois.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-6">

@@ -46,6 +46,50 @@ public class PartnerExperienceController {
                 .build());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<ExperienceDto>> getMyExperienceById(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("id") String id) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.<ExperienceDto>builder()
+                            .success(false)
+                            .message("Authentication required")
+                            .timestamp(Instant.now())
+                            .build());
+        }
+
+        ExperienceDto experience = experienceService.getMyExperienceById(principal.getUserId(), id);
+        return ResponseEntity.ok(ApiResponse.<ExperienceDto>builder()
+                .success(true)
+                .message("Retrieved partner experience successfully")
+                .data(experience)
+                .timestamp(Instant.now())
+                .build());
+    }
+
+    @PostMapping("/{id}/submit")
+    public ResponseEntity<ApiResponse<ExperienceDto>> submitExperience(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("id") String id) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.<ExperienceDto>builder()
+                            .success(false)
+                            .message("Authentication required")
+                            .timestamp(Instant.now())
+                            .build());
+        }
+
+        ExperienceDto submitted = experienceService.submitExperience(principal.getUserId(), id);
+        return ResponseEntity.ok(ApiResponse.<ExperienceDto>builder()
+                .success(true)
+                .message("Experience submitted for verification successfully")
+                .data(submitted)
+                .timestamp(Instant.now())
+                .build());
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<ExperienceDto>> createExperience(
             @AuthenticationPrincipal UserPrincipal principal,

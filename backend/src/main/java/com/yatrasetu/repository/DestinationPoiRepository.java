@@ -26,8 +26,9 @@ public interface DestinationPoiRepository extends JpaRepository<DestinationPoi, 
     List<DestinationPoi> searchPois(@Param("query") String query, Pageable pageable);
 
     @Query(value = "SELECT p.* FROM destination_pois p " +
-            "WHERE p.is_active = true AND p.latitude != 0.0 AND p.longitude != 0.0 " +
-            "ORDER BY (6371 * acos(cos(radians(:lat)) * cos(radians(p.latitude)) * cos(radians(p.longitude) - radians(:lng)) + sin(radians(:lat)) * sin(radians(p.latitude)))) ASC " +
+            "WHERE p.is_active = true AND p.latitude IS NOT NULL AND p.longitude IS NOT NULL AND p.latitude != 0.0 AND p.longitude != 0.0 " +
+            "ORDER BY (6371 * acos(LEAST(1.0, GREATEST(-1.0, cos(radians(:lat)) * cos(radians(p.latitude)) * cos(radians(p.longitude) - radians(:lng)) + sin(radians(:lat)) * sin(radians(p.latitude)))))) ASC " +
             "LIMIT :limit", nativeQuery = true)
     List<DestinationPoi> findNearestPois(@Param("lat") double lat, @Param("lng") double lng, @Param("limit") int limit);
 }
+

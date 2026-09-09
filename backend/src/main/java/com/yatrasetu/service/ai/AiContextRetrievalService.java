@@ -38,11 +38,23 @@ public class AiContextRetrievalService {
     private final ObjectMapper objectMapper;
     private final com.yatrasetu.service.intelligence.DestinationHealthService destinationHealthService;
     private final com.yatrasetu.service.intelligence.TourismRedistributionService tourismRedistributionService;
+    private final com.yatrasetu.service.intelligence.HiddenGemDiscoveryService hiddenGemDiscoveryService;
+    private final com.yatrasetu.service.intelligence.DynamicRedistributionService dynamicRedistributionService;
+    private final com.yatrasetu.service.intelligence.EcosystemGapDetectionService ecosystemGapDetectionService;
+    private final com.yatrasetu.service.intelligence.GovernmentAlertService governmentAlertService;
 
     @Value("${app.open-meteo.base-url:https://api.open-meteo.com/v1}")
     private String openMeteoBaseUrl;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = new org.springframework.boot.web.client.RestTemplateBuilder()
+            .setConnectTimeout(java.time.Duration.ofMillis(3000))
+            .setReadTimeout(java.time.Duration.ofMillis(5000))
+            .build();
+
+    // 30-minute thread-safe in-memory cache for live weather: Key = "lat_lon", Value = (timestamp, WeatherSummaryDto)
+    private static final Map<String, WeatherCacheEntry> WEATHER_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private record WeatherCacheEntry(long timestampEpochMs, TripDto.WeatherSummaryDto data) {}
 
     private static final Set<String> STOP_WORDS = Set.of(
             "what", "where", "which", "when", "who", "whom", "how", "why",
@@ -170,6 +182,19 @@ public class AiContextRetrievalService {
                 }
                 var recommendations = tourismRedistributionService.getActiveRecommendations(true);
                 context.put("activeRedistributionOpportunities", recommendations.stream().limit(5).toList());
+
+                var dynamicCorridors = dynamicRedistributionService.calculateDynamicCorridors(
+                        !matchedDestinations.isEmpty() ? matchedDestinations.get(0).getId() : null, true, 5);
+                context.put("dynamicRedistributionCorridors", dynamicCorridors);
+
+                var gaps = ecosystemGapDetectionService.detectAndSyncEcosystemGaps();
+                context.put("governmentEcosystemGaps", gaps.stream().limit(5).toList());
+
+                var gems = hiddenGemDiscoveryService.discoverHiddenGems(true, 5);
+                context.put("governmentHiddenGems", gems);
+
+                var alerts = governmentAlertService.getPrioritizedAlerts(true);
+                context.put("governmentAlerts", alerts.stream().limit(5).toList());
             } catch (Exception e) {
                 log.debug("Government intelligence context enrichment failed: {}", e.getMessage());
             }
@@ -594,8 +619,16 @@ public class AiContextRetrievalService {
         if (latitude == null || longitude == null) {
             return null;
         }
+
+        String cacheKey = String.format(Locale.US, "%.2f_%.2f", latitude.doubleValue(), longitude.doubleValue());
+        long now = System.currentTimeMillis();
+        WeatherCacheEntry cached = WEATHER_CACHE.get(cacheKey);
+        if (cached != null && (now - cached.timestampEpochMs()) < 1800000L) { // 30 mins TTL
+            return cached.data();
+        }
+
         try {
-            String url = String.format("%s/forecast?latitude=%.4f&longitude=%.4f&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m",
+            String url = String.format(Locale.US, "%s/forecast?latitude=%.4f&longitude=%.4f&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m",
                     openMeteoBaseUrl, latitude.doubleValue(), longitude.doubleValue());
 
             String response = restTemplate.getForObject(url, String.class);
@@ -608,12 +641,15 @@ public class AiContextRetrievalService {
                     String condition = mapWmoWeatherCode(code);
                     String advice = generateWeatherAdvice(temp, code);
 
-                    return TripDto.WeatherSummaryDto.builder()
+                    TripDto.WeatherSummaryDto dto = TripDto.WeatherSummaryDto.builder()
                             .temperatureC(temp)
                             .condition(condition)
                             .source("Open-Meteo Live API")
                             .advice(advice)
                             .build();
+
+                    WEATHER_CACHE.put(cacheKey, new WeatherCacheEntry(now, dto));
+                    return dto;
                 }
             }
         } catch (Exception e) {

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -25,81 +25,143 @@ import {
   Utensils,
   Camera,
   History,
+  Landmark,
+  ShieldCheck,
+  Palette,
+  Bed,
+  Car,
+  Palmtree,
+  Waves,
+  FileText,
+  CheckCircle2,
 } from 'lucide-react';
 
-type Role = 'TRAVELER' | 'PARTNER';
+type SelectedRole = 'TRAVELER' | 'PARTNER' | 'GOVERNMENT';
+type PartnerSubRole = 'GUIDE' | 'HOTEL' | 'OTHER';
 type Step = 1 | 2;
 
-// Tourist preference questions
-const SOCIAL_STYLES = [
-  { id: 'introvert', label: 'Introvert', desc: 'I prefer quiet, personal discoveries', icon: '≡ƒºÿ' },
-  { id: 'ambivert', label: 'Ambivert', desc: 'Depends on my mood and company', icon: 'ΓÜû∩╕Å' },
-  { id: 'extrovert', label: 'Extrovert', desc: 'I love meeting people while travelling', icon: '≡ƒñ¥' },
+// Traveler options
+const TRAVEL_INTERESTS = [
+  { id: 'Heritage', label: 'Heritage & Monuments', desc: 'UNESCO sites, forts & palaces', icon: Building2 },
+  { id: 'Nature', label: 'Nature & Wildlife', desc: 'Forests, hills, rivers & safaris', icon: Mountain },
+  { id: 'Spiritual', label: 'Spiritual & Sacred', desc: 'Temples, ghats & sacred circuits', icon: Landmark },
+  { id: 'Culinary', label: 'Food & Culinary Trails', desc: 'Regional cuisine & street food', icon: Utensils },
+  { id: 'Adventure', label: 'Adventure & Trekking', desc: 'Hiking, rafting & outdoor sports', icon: Compass },
+  { id: 'Coastal', label: 'Beaches & Backwaters', desc: 'Sunsets, coastlines & boat rides', icon: Waves },
+  { id: 'Culture', label: 'Art, Craft & Culture', desc: 'Folk arts, handlooms & festivals', icon: History },
+  { id: 'Photography', label: 'Travel Photography', desc: 'Scenic landscapes & historic spots', icon: Camera },
 ];
 
-const GROUP_STYLES = [
-  { id: 'solo', label: 'Solo Explorer', desc: 'I travel alone, on my own schedule', icon: '≡ƒº│' },
-  { id: 'duo', label: 'Duo / Couple', desc: 'Best experiences with one companion', icon: '≡ƒæ½' },
-  { id: 'group', label: 'Group Traveler', desc: 'More the merrier & safer too', icon: '≡ƒæÑ' },
-  { id: 'family', label: 'Family Trips', desc: 'With kids or extended family', icon: '≡ƒæ¿ΓÇì≡ƒæ⌐ΓÇì≡ƒæºΓÇì≡ƒæª' },
+const TRAVEL_STYLES = [
+  { id: 'Solo Explorer', label: 'Solo Explorer', desc: 'Self-paced journeys on my own schedule' },
+  { id: 'Comfortable Explorer', label: 'Comfortable Explorer', desc: 'Balanced itineraries & verified stays' },
+  { id: 'Backpacker / Budget', label: 'Backpacker / Budget', desc: 'Authentic local stays & hostels' },
+  { id: 'Luxury & Heritage', label: 'Luxury & Heritage', desc: 'Premium palace stays & curated tours' },
+  { id: 'Family & Group', label: 'Family & Group', desc: 'Relaxed, child-friendly & safe travel' },
 ];
 
-const FOOD_PREFS = [
-  { id: 'veg', label: 'Vegetarian', icon: '≡ƒÑù' },
-  { id: 'nonveg', label: 'Non-Vegetarian', icon: '≡ƒìù' },
-  { id: 'vegan', label: 'Vegan', icon: '≡ƒî▒' },
-  { id: 'street', label: 'Street Food Lover', icon: '≡ƒî«' },
-  { id: 'regional', label: 'Regional Cuisine', icon: '≡ƒì¢' },
-  { id: 'seafood', label: 'Seafood', icon: '≡ƒªÉ' },
+const BUDGET_PREFERENCES = [
+  { id: 'Budget', label: 'Budget (₹1,000–₹2,500/day)', desc: 'Hostels, public transport & local eateries' },
+  { id: 'Mid-Range', label: 'Mid-Range (₹2,500–₹6,000/day)', desc: 'Comfortable hotels, cabs & guided walks' },
+  { id: 'Luxury', label: 'Luxury (₹6,000+/day)', desc: 'Heritage resorts, private transport & VIP access' },
 ];
 
-const PLACE_TYPES = [
-  { id: 'historical', label: 'Historical', desc: 'Monuments, ruins & ancient sites', icon: History },
-  { id: 'heritage', label: 'Heritage', desc: 'UNESCO sites, palaces & traditions', icon: Building2 },
-  { id: 'adventure', label: 'Adventurous', desc: 'Trekking, rafting & outdoor sports', icon: Mountain },
-  { id: 'nature', label: 'Nature & Wildlife', desc: 'Forests, hills, rivers & wildlife', icon: '≡ƒî┐' },
-  { id: 'coastal', label: 'Beaches & Coastal', desc: 'Beaches, backwaters & sunsets', icon: '≡ƒÅû∩╕Å' },
-  { id: 'spiritual', label: 'Spiritual & Sacred', desc: 'Temples, ghats & sacred circuits', icon: '≡ƒ¢ò' },
-  { id: 'urban', label: 'Urban Culture', desc: 'Cities, art & local neighbourhoods', icon: '≡ƒÅÖ∩╕Å' },
-  { id: 'culinary', label: 'Food Trails', desc: 'Culinary journeys & food markets', icon: Utensils },
+const TRIP_TYPES = [
+  'Weekend Getaways',
+  'Cultural Immersions',
+  'Himalayan Treks',
+  'Spiritual Circuits',
+  'Wildlife Safaris',
+  'Coastal Relaxation',
+  'Offbeat Rural Tourism',
 ];
 
-const GUIDE_PREF = [
-  { id: 'always', label: 'Guide Every Trip', desc: 'I prefer local expertise for all destinations', icon: '≡ƒù║∩╕Å' },
-  { id: 'specific', label: 'Specific Cities Only', desc: 'Only for unfamiliar or complex locations', icon: '≡ƒôì' },
-  { id: 'never', label: 'Self-Explorer', desc: 'I rely on apps and my own research', icon: '≡ƒö¡' },
+const MAJOR_INDIAN_STATES = [
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
+  'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+  'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
+  'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+  'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Delhi', 'Jammu & Kashmir', 'Ladakh',
 ];
 
-const MOST_VISITED_REGIONS = [
-  'North India', 'South India', 'East India', 'West India',
-  'Northeast India', 'Central India', 'Himalayas', 'Coastal India',
-];
-
-// Guide-specific data
 const LANGUAGES = [
   'English', 'Hindi', 'Kannada', 'Tamil', 'Telugu', 'Malayalam',
   'Bengali', 'Marathi', 'Gujarati', 'Punjabi', 'Odia', 'Assamese',
-  'French', 'Spanish', 'German', 'Japanese',
+  'French', 'Spanish', 'German',
 ];
 
-const GUIDE_SUBTYPES = [
-  { id: 'GUIDE', label: 'Local Guide / Storyteller', icon: '≡ƒº¡' },
-  { id: 'LOCAL_HOST', label: 'Community Host / Cultural Expert', icon: '≡ƒÅí' },
-  { id: 'EXPERIENCE_PROVIDER', label: 'Experience / Activity Provider', icon: '≡ƒÄ»' },
-  { id: 'HOMESTAY', label: 'Homestay / Heritage Stay', icon: '≡ƒ¢û' },
-  { id: 'RESTAURANT', label: 'Local Cuisine / Culinary Host', icon: '≡ƒì╜∩╕Å' },
-  { id: 'ARTISAN', label: 'Artisan / Handloom Creator', icon: '≡ƒº╡' },
-  { id: 'PHOTOGRAPHER', label: 'Travel Photographer', icon: '≡ƒô╕' },
+// Partner options
+interface PartnerTypeOption {
+  id: string;
+  subtype: 'GUIDE' | 'HOMESTAY' | 'HOTEL' | 'RESTAURANT' | 'OTHER' | 'EXPERIENCE_PROVIDER' | 'LOCAL_HOST';
+  label: string;
+  desc: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const PARTNER_TYPES: PartnerTypeOption[] = [
+  {
+    id: 'guide',
+    subtype: 'GUIDE',
+    label: 'Local Guide & Storyteller',
+    desc: 'Conduct heritage walks, monument tours & storytelling',
+    icon: Compass,
+  },
+  {
+    id: 'homestay',
+    subtype: 'HOMESTAY',
+    label: 'Homestay / Heritage Stay',
+    desc: 'Offer authentic village stays and heritage rooms',
+    icon: Bed,
+  },
+  {
+    id: 'hotel',
+    subtype: 'HOTEL',
+    label: 'Hotel / Resort',
+    desc: 'Accommodations, boutique stays and lodge services',
+    icon: Building2,
+  },
+  {
+    id: 'restaurant',
+    subtype: 'RESTAURANT',
+    label: 'Restaurant / Culinary Host',
+    desc: 'Traditional thalis, regional eateries & food tasting',
+    icon: Utensils,
+  },
+  {
+    id: 'agency',
+    subtype: 'OTHER',
+    label: 'Travel Agency / Tour Operator',
+    desc: 'Curated holiday packages & local logistics',
+    icon: Briefcase,
+  },
+  {
+    id: 'transport',
+    subtype: 'OTHER',
+    label: 'Transport Provider',
+    desc: 'Local taxis, airport transfers & inter-city cabs',
+    icon: Car,
+  },
+  {
+    id: 'rental',
+    subtype: 'OTHER',
+    label: 'Rental Provider',
+    desc: 'Bicycle, scooter, trekking gear & camera rentals',
+    icon: Palmtree,
+  },
+  {
+    id: 'experience',
+    subtype: 'EXPERIENCE_PROVIDER',
+    label: 'Experience & Workshop Host',
+    desc: 'Pottery, cooking classes, yoga & artisan crafts',
+    icon: Palette,
+  },
 ];
 
-const INDIAN_CITIES = [
-  'Delhi', 'Mumbai', 'Bengaluru', 'Chennai', 'Hyderabad', 'Kolkata',
-  'Jaipur', 'Udaipur', 'Varanasi', 'Agra', 'Hampi', 'Mysuru',
-  'Kochi', 'Goa', 'Rishikesh', 'Leh', 'Darjeeling', 'Amritsar',
-  'Ahmedabad', 'Bhopal', 'Puri', 'Madurai', 'Pondicherry', 'Shimla',
-];
+function ProgressBar({ step, role }: { step: Step; role: SelectedRole }) {
+  if (role === 'GOVERNMENT') return null;
 
-function ProgressBar({ step }: { step: Step }) {
   return (
     <div className="flex items-center gap-2 mb-8">
       {[1, 2].map((s) => (
@@ -115,7 +177,7 @@ function ProgressBar({ step }: { step: Step }) {
               {s < step ? <Check className="w-3.5 h-3.5" /> : s}
             </div>
             <span className="text-xs font-semibold hidden sm:inline">
-              {s === 1 ? 'Your Details' : 'Complete Profile'}
+              {s === 1 ? 'Account Credentials' : role === 'PARTNER' ? 'Partner Business Profile' : 'Traveler Preferences'}
             </span>
           </div>
           {s < 2 && (
@@ -140,7 +202,7 @@ function ToggleChip({
     <button
       type="button"
       onClick={onClick}
-      className={`px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all ${
+      className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
         selected
           ? 'bg-[#312E81] text-white border-[#312E81] shadow-sm'
           : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
@@ -153,84 +215,189 @@ function ToggleChip({
 
 export default function SignupPage() {
   const router = useRouter();
-  const { signup } = useAuth();
+  const { signup, updateTravelerProfile, updatePartner, loginAsDemo } = useAuth();
+  const [role, setRole] = useState<SelectedRole>('TRAVELER');
   const [step, setStep] = useState<Step>(1);
 
-  // Step 1 state
+  // Common Account Details (Step 1)
   const [fullName, setFullName] = useState('');
-  const [address, setAddress] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [role, setRole] = useState<Role>('TRAVELER');
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Traveler Profile State (Step 2)
+  const [travelerState, setTravelerState] = useState('');
+  const [travelerCity, setTravelerCity] = useState('');
+  const [travelerLanguages, setTravelerLanguages] = useState<string[]>(['English', 'Hindi']);
+  const [travelerInterests, setTravelerInterests] = useState<string[]>(['Heritage', 'Nature']);
+  const [travelerStyle, setTravelerStyle] = useState<string>('Comfortable Explorer');
+  const [budgetPreference, setBudgetPreference] = useState<string>('Mid-Range');
+  const [preferredTripTypes, setPreferredTripTypes] = useState<string[]>(['Cultural Immersions', 'Weekend Getaways']);
+
+  // Partner Profile State (Step 2)
+  const [selectedPartnerType, setSelectedPartnerType] = useState<PartnerTypeOption>(PARTNER_TYPES[0]);
+  const [businessName, setBusinessName] = useState('');
+  const [serviceDescription, setServiceDescription] = useState('');
+  const [operatingState, setOperatingState] = useState('');
+  const [operatingCity, setOperatingCity] = useState('');
+  const [businessAddress, setBusinessAddress] = useState('');
+  const [partnerLanguages, setPartnerLanguages] = useState<string[]>(['English', 'Hindi']);
+  const [serviceCategories, setServiceCategories] = useState('');
+  const [pricingInfo, setPricingInfo] = useState('');
+
+  // Government Inquirer State
+  const [govOfficerName, setGovOfficerName] = useState('');
+  const [govEmail, setGovEmail] = useState('');
+  const [govPhone, setGovPhone] = useState('');
+  const [govDesignation, setGovDesignation] = useState('');
+  const [govDepartment, setGovDepartment] = useState('');
+  const [govMinistry, setGovMinistry] = useState('State Tourism Department');
+  const [govState, setGovState] = useState('');
+  const [govDistrict, setGovDistrict] = useState('');
+  const [govOffice, setGovOffice] = useState('');
+  const [govSubmitted, setGovSubmitted] = useState(false);
+
+  // Status & Feedback
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Step 2 tourist state
-  const [socialStyle, setSocialStyle] = useState<string>('ambivert');
-  const [groupStyle, setGroupStyle] = useState<string>('solo');
-  const [foodPrefs, setFoodPrefs] = useState<string[]>(['veg', 'street']);
-  const [placeTypes, setPlaceTypes] = useState<string[]>(['historical', 'heritage']);
-  const [guidePref, setGuidePref] = useState<string>('specific');
-  const [visitedRegions, setVisitedRegions] = useState<string[]>([]);
-  const [languages, setLanguages] = useState<string[]>(['English', 'Hindi']);
-
-  // Step 2 guide state
-  const [guideSubtype, setGuideSubtype] = useState('GUIDE');
-  const [businessName, setBusinessName] = useState('');
-  const [guideCity, setGuideCity] = useState('');
-  const [guideState, setGuideState] = useState('');
-  const [bio, setBio] = useState('');
-  const [guideLanguages, setGuideLanguages] = useState<string[]>(['English', 'Hindi']);
-  const [knownCities, setKnownCities] = useState<string[]>([]);
-  const [skills, setSkills] = useState('');
-
-  const toggleArr = (arr: string[], setArr: (v: string[]) => void, val: string) => {
-    setArr(arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val]);
+  const toggleArrayItem = (list: string[], setList: (v: string[]) => void, item: string) => {
+    setList(list.includes(item) ? list.filter((x) => x !== item) : [...list, item]);
   };
 
   const validateStep1 = () => {
     if (!fullName.trim()) return 'Please enter your full name.';
-    if (!email.trim()) return 'Please enter your email address.';
-    if (!phone.trim()) return 'Please enter your phone number.';
-    if (!password || password.length < 6) return 'Password must be at least 6 characters.';
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      return 'Please enter a valid email address.';
+    }
+    if (!phone.trim()) return 'Please enter your mobile number.';
+    const cleanedPhone = phone.replace(/[^0-9]/g, '');
+    if (cleanedPhone.length < 10) {
+      return 'Please enter a valid 10-digit mobile number.';
+    }
+    if (!password || password.length < 6) {
+      return 'Password must be at least 6 characters.';
+    }
+    if (password !== confirmPassword) {
+      return 'Passwords do not match.';
+    }
     return null;
   };
 
-  const handleStep1Next = (e: React.FormEvent) => {
+  const handleStep1Submit = (e: React.FormEvent) => {
     e.preventDefault();
     const err = validateStep1();
-    if (err) { setError(err); return; }
+    if (err) {
+      setError(err);
+      return;
+    }
     setError(null);
     setStep(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleFinalSubmit = async () => {
+  // Final Registration for Traveler
+  const handleTravelerRegister = async () => {
     setLoading(true);
     setError(null);
     try {
-      await signup(fullName, email, password, role, role === 'PARTNER' ? guideSubtype : undefined);
-      if (role === 'PARTNER') {
-        router.push('/onboarding/partner');
-      } else {
-        router.push('/onboarding/traveler');
+      await signup(fullName.trim(), email.trim(), password, 'TRAVELER');
+      
+      // Save traveler profile preferences
+      try {
+        await updateTravelerProfile({
+          state: travelerState || undefined,
+          city: travelerCity || undefined,
+          languages: travelerLanguages,
+          interests: travelerInterests,
+          travelStyle: travelerStyle,
+          budgetPreference: budgetPreference,
+        });
+      } catch (profileErr) {
+        console.warn('Profile preference update handled non-blockingly:', profileErr);
       }
+
+      router.push('/dashboard');
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to create account. Please try again.';
+      const msg = err instanceof Error ? err.message : 'Failed to complete traveler registration.';
       setError(msg);
     } finally {
       setLoading(false);
     }
   };
 
+  // Final Registration for Local Partner
+  const handlePartnerRegister = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await signup(
+        fullName.trim(),
+        email.trim(),
+        password,
+        'PARTNER',
+        selectedPartnerType.subtype
+      );
+
+      // Save partner profile details
+      try {
+        const skillsList = serviceCategories
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+
+        await updatePartner({
+          businessName: businessName.trim(),
+          partnerSubtype: selectedPartnerType.subtype,
+          state: operatingState.trim() || undefined,
+          city: operatingCity.trim(),
+          bio: serviceDescription.trim() || undefined,
+          partnerSkills: skillsList.length > 0 ? skillsList : [selectedPartnerType.label],
+          languages: partnerLanguages,
+        });
+      } catch (partnerErr) {
+        console.warn('Partner profile details saved non-blockingly:', partnerErr);
+      }
+
+      // Redirect based on partner subtype
+      if (selectedPartnerType.subtype === 'GUIDE') {
+        router.push('/onboarding/guide');
+      } else if (selectedPartnerType.subtype === 'HOTEL' || selectedPartnerType.subtype === 'HOMESTAY') {
+        router.push('/onboarding/hotel');
+      } else {
+        router.push('/onboarding/partner');
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to complete partner registration.';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGovRequestSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!govOfficerName.trim() || !govEmail.trim() || !govDesignation.trim()) {
+      setError('Please complete all required government officer details.');
+      return;
+    }
+    if (!govEmail.toLowerCase().includes('gov') && !govEmail.toLowerCase().includes('nic')) {
+      setError('Official email must be from a verified government domain (e.g. @gov.in, @nic.in, or state department).');
+      return;
+    }
+    setError(null);
+    setGovSubmitted(true);
+  };
+
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row">
-      {/* Left panel */}
+    <div className="min-h-screen flex flex-col lg:flex-row bg-[#FFFBF5]">
+      {/* Left visual brand panel */}
       <div className="hidden lg:flex lg:w-5/12 xl:w-1/3 relative bg-gradient-to-br from-[#1E1B4B] via-[#312E81] to-[#0F766E] overflow-hidden flex-col justify-between p-12">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#F59E0B_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-72 h-72 rounded-full bg-[#0F766E]/20 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-[#0F766E]/20 blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#F59E0B] to-[#FBBF24] flex items-center justify-center shadow-lg">
@@ -240,27 +407,34 @@ export default function SignupPage() {
         </div>
 
         <div className="relative z-10 space-y-5">
-          <p className="text-[#F59E0B] text-xs font-bold uppercase tracking-widest">Join the family</p>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-semibold text-[#F59E0B]">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Verified Tourism Network
+          </div>
           <h2 className="text-3xl font-extrabold text-white leading-tight">
             India&apos;s largest<br/>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F59E0B] to-[#FBBF24]">community</span><br/>
             of travelers<br/>
             & storytellers.
+            Connecting India&apos;s<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F59E0B] to-[#FBBF24]">travelers, partners</span><br />
+            & governance.
           </h2>
           <p className="text-slate-300 text-sm leading-relaxed">
-            Whether you explore or guide, YatraSetu builds your perfect journey profile so every recommendation matters.
+            Personalized itineraries for travelers, transparent listings for local tourism partners, and real-time intelligence for state authorities.
           </p>
 
-          <div className="space-y-3 pt-2">
+          <div className="space-y-2.5 pt-2">
             {[
-              { icon: '≡ƒº¡', text: 'Personalised destination matching' },
-              { icon: '≡ƒñ¥', text: 'Connect with verified local guides' },
-              { icon: '≡ƒù║∩╕Å', text: 'AI trip planner tuned to your style' },
-              { icon: '≡ƒôè', text: 'Contribute to India\'s tourism intelligence' },
-            ].map(({ icon, text }) => (
-              <div key={text} className="flex items-center gap-3 text-sm text-slate-200">
-                <span className="text-base">{icon}</span>
-                {text}
+              { icon: Compass, text: 'Personalized destination and POI matching' },
+              { icon: Briefcase, text: 'Direct partner listing with verified credentials' },
+              { icon: Landmark, text: 'Government data honesty & zero-hallucination policy' },
+            ].map(({ icon: Icon, text }) => (
+              <div key={text} className="flex items-center gap-3 text-xs text-slate-200">
+                <div className="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0 text-[#F59E0B]">
+                  <Icon className="w-3.5 h-3.5" />
+                </div>
+                <span>{text}</span>
               </div>
             ))}
           </div>
@@ -274,10 +448,10 @@ export default function SignupPage() {
         </div>
       </div>
 
-      {/* Right panel ΓÇö form */}
-      <div className="flex-1 flex items-start justify-center py-10 px-4 sm:px-6 lg:px-10 bg-[#FFFBF5] overflow-y-auto">
-        <div className="w-full max-w-lg">
-          {/* Mobile brand */}
+      {/* Right Content Form Panel */}
+      <div className="flex-1 flex items-start justify-center py-10 px-4 sm:px-6 lg:px-10 overflow-y-auto">
+        <div className="w-full max-w-xl">
+          {/* Mobile Header */}
           <div className="lg:hidden flex items-center gap-3 mb-6">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#312E81] to-[#4338CA] flex items-center justify-center shadow-md">
               <Compass className="w-5 h-5 text-[#F59E0B]" />
@@ -285,7 +459,7 @@ export default function SignupPage() {
             <span className="text-lg font-bold text-[#312E81]">YatraSetu</span>
           </div>
 
-          <ProgressBar step={step} />
+          <ProgressBar step={step} role={role} />
 
           {error && (
             <div className="mb-5 p-4 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-3 text-rose-700 text-xs sm:text-sm">
@@ -294,74 +468,134 @@ export default function SignupPage() {
             </div>
           )}
 
-          {/* ΓöÇΓöÇΓöÇΓöÇ STEP 1 ΓöÇΓöÇΓöÇΓöÇ */}
+          {/* ========================================================================= */}
+          {/* ROLE SELECTION & STEP 1: ACCOUNT DETAILS                                   */}
+          {/* ========================================================================= */}
           {step === 1 && (
-            <form onSubmit={handleStep1Next} className="space-y-6">
+            <form onSubmit={handleStep1Submit} className="space-y-6">
               <div>
                 <h1 className="text-2xl font-extrabold text-[#171717] tracking-tight">Create your account</h1>
                 <p className="text-sm text-[#64748B] mt-1">
                   Let&apos;s start with your basic details.
+                  Select how you want to use YatraSetu and enter your credentials.
                 </p>
               </div>
 
-              {/* Role selector */}
+              {/* Role Selection Options */}
               <div>
-                <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-2">
-                  I want to join as
+                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider mb-2.5">
+                  How do you want to use YatraSetu? *
                 </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    {
-                      r: 'TRAVELER' as Role,
-                      label: 'Tourist',
-                      desc: 'Explore India, plan trips & discover local culture',
-                      icon: Users,
-                      accent: '#312E81',
-                      bg: 'indigo-50/60',
-                      ring: 'ring-[#312E81]',
-                      border: 'border-[#312E81]',
-                      emoji: '≡ƒº│',
-                    },
-                    {
-                      r: 'PARTNER' as Role,
-                      label: 'Tourist Guide',
-                      desc: 'Host, guide, and share your city\'s stories',
-                      icon: Briefcase,
-                      accent: '#0F766E',
-                      bg: 'teal-50/60',
-                      ring: 'ring-[#0F766E]',
-                      border: 'border-[#0F766E]',
-                      emoji: '≡ƒº¡',
-                    },
-                  ].map(({ r, label, desc, emoji, ring, border }) => (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() => setRole(r)}
-                      className={`relative p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-2 ${
-                        role === r
-                          ? `${border} ${ring} ring-2 bg-white shadow-sm`
-                          : 'border-slate-200 hover:border-slate-300 bg-white'
-                      }`}
-                    >
-                      <span className="text-2xl">{emoji}</span>
-                      <div>
-                        <div className="text-sm font-bold text-[#171717]">{label}</div>
-                        <p className="text-[11px] text-[#64748B] mt-0.5 leading-snug">{desc}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Option 1: Tourist / Traveler */}
+                  <button
+                    type="button"
+                    onClick={() => { setRole('TRAVELER'); setError(null); }}
+                    className={`relative p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-2 ${
+                      role === 'TRAVELER'
+                        ? 'border-[#312E81] ring-2 ring-[#312E81]/20 bg-white shadow-sm'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    }`}
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-indigo-50 text-[#312E81] flex items-center justify-center font-bold">
+                      <Users className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-[#171717]">Tourist / Traveler</div>
+                      <p className="text-[11px] text-[#64748B] mt-0.5 leading-snug">
+                        Explore India, plan trips, book guides, hotels and restaurants.
+                      </p>
+                    </div>
+                    {role === 'TRAVELER' && (
+                      <div className="absolute top-3.5 right-3.5 w-5 h-5 rounded-full bg-[#312E81] flex items-center justify-center">
+                        <Check className="w-3 h-3 text-white" />
                       </div>
-                      {role === r && (
-                        <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#312E81] flex items-center justify-center">
-                          <Check className="w-3 h-3 text-white" />
-                        </div>
-                      )}
-                    </button>
-                  ))}
+                    )}
+                  </button>
+
+                  {/* Option 2: Guide */}
+                  <button
+                    type="button"
+                    onClick={() => { setRole('PARTNER'); setSelectedPartnerType(PARTNER_TYPES[0]); setError(null); }}
+                    className={`relative p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-2 ${
+                      role === 'PARTNER' && selectedPartnerType.subtype === 'GUIDE'
+                        ? 'border-[#0F766E] ring-2 ring-[#0F766E]/20 bg-white shadow-sm'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    }`}
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-teal-50 text-[#0F766E] flex items-center justify-center font-bold">
+                      <Compass className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-[#171717]">Local Guide</div>
+                      <p className="text-[11px] text-[#64748B] mt-0.5 leading-snug">
+                        Conduct heritage walks, storytelling tours and local experiences.
+                      </p>
+                    </div>
+                    {role === 'PARTNER' && selectedPartnerType.subtype === 'GUIDE' && (
+                      <div className="absolute top-3.5 right-3.5 w-5 h-5 rounded-full bg-[#0F766E] flex items-center justify-center">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+                  </button>
+
+                  {/* Option 3: Hotel */}
+                  <button
+                    type="button"
+                    onClick={() => { setRole('PARTNER'); setSelectedPartnerType(PARTNER_TYPES.find(p => p.subtype === 'HOTEL') || PARTNER_TYPES[2]); setError(null); }}
+                    className={`relative p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-2 ${
+                      role === 'PARTNER' && selectedPartnerType.subtype === 'HOTEL'
+                        ? 'border-[#312E81] ring-2 ring-[#312E81]/20 bg-white shadow-sm'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    }`}
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+                      <Building2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-[#171717]">Hotel / Stay</div>
+                      <p className="text-[11px] text-[#64748B] mt-0.5 leading-snug">
+                        List your property, manage rooms, rates and bookings.
+                      </p>
+                    </div>
+                    {role === 'PARTNER' && selectedPartnerType.subtype === 'HOTEL' && (
+                      <div className="absolute top-3.5 right-3.5 w-5 h-5 rounded-full bg-[#312E81] flex items-center justify-center">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+                  </button>
+
+                  {/* Option 4: Government */}
+                  <button
+                    type="button"
+                    onClick={() => { setRole('GOVERNMENT'); setError(null); }}
+                    className={`relative p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-2 ${
+                      role === 'GOVERNMENT'
+                        ? 'border-amber-500 ring-2 ring-amber-500/20 bg-white shadow-sm'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    }`}
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold">
+                      <Landmark className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-[#171717]">Government</div>
+                      <p className="text-[11px] text-[#64748B] mt-0.5 leading-snug">
+                        Tourism intelligence, analytics and policy dashboards.
+                      </p>
+                    </div>
+                    {role === 'GOVERNMENT' && (
+                      <div className="absolute top-3.5 right-3.5 w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+                  </button>
                 </div>
               </div>
 
-              {/* Full name */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
+              {/* Account Credentials Fields */}
+              <div className="space-y-4 pt-1">
+                <div>
                   <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
                     Full Name *
                   </label>
@@ -372,97 +606,114 @@ export default function SignupPage() {
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="e.g. Ramesh Chandra"
+                      placeholder={role === 'PARTNER' ? 'e.g. Rajesh Kumar (Host/Guide)' : 'e.g. Aditi Sharma'}
                       className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none transition-all shadow-sm"
                     />
                   </div>
                 </div>
 
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
-                    Address / Home City *
-                  </label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    <input
-                      type="text"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      placeholder="e.g. 12 MG Road, Bengaluru, Karnataka"
-                      className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none transition-all shadow-sm"
-                    />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
+                      Email Address *
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none transition-all shadow-sm"
+                      />
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Email & Phone */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
-                    Email Address *
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@example.com"
-                      className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none transition-all shadow-sm"
-                    />
+                  <div>
+                    <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
+                      Mobile Number *
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <input
+                        type="tel"
+                        required
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="+91 98765 43210"
+                        className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none transition-all shadow-sm"
+                      />
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
-                    Phone Number *
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    <input
-                      type="tel"
-                      required
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+91 98765 43210"
-                      className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none transition-all shadow-sm"
-                    />
-                  </div>
-                </div>
-              </div>
 
-              {/* Password */}
-              <div>
-                <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
-                  Password (min. 6 characters) *
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="ΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇó"
-                    className="w-full pl-10 pr-11 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none transition-all shadow-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
+                      Password (min. 6 chars) *
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full pl-10 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none transition-all shadow-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
+                      Confirm Password *
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full pl-10 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none transition-all shadow-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
                 </div>
+
                 {password.length > 0 && (
-                  <div className="mt-1.5 flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 pt-0.5">
                     <div className="flex gap-1">
-                      {[1,2,3,4].map((i) => (
-                        <div key={i} className={`h-1 w-8 rounded-full transition-colors ${
-                          password.length >= i * 3
-                            ? password.length >= 10 ? 'bg-emerald-500' : password.length >= 6 ? 'bg-amber-400' : 'bg-rose-400'
-                            : 'bg-slate-200'
-                        }`} />
+                      {[1, 2, 3, 4].map((i) => (
+                        <div
+                          key={i}
+                          className={`h-1 w-8 rounded-full transition-colors ${
+                            password.length >= i * 3
+                              ? password.length >= 10
+                                ? 'bg-emerald-500'
+                                : password.length >= 6
+                                ? 'bg-amber-400'
+                                : 'bg-rose-400'
+                              : 'bg-slate-200'
+                          }`}
+                        />
                       ))}
                     </div>
                     <span className="text-[10px] text-slate-500">
@@ -474,9 +725,11 @@ export default function SignupPage() {
 
               <button
                 type="submit"
-                className="w-full py-3.5 bg-[#312E81] hover:bg-[#1E1B4B] text-white font-semibold rounded-xl text-sm shadow-md shadow-[#312E81]/20 transition-all flex items-center justify-center gap-2 group"
+                className={`w-full py-3.5 text-white font-semibold rounded-xl text-sm shadow-md transition-all flex items-center justify-center gap-2 group ${
+                  role === 'PARTNER' ? 'bg-[#0F766E] hover:bg-[#0D9488]' : 'bg-[#312E81] hover:bg-[#1E1B4B]'
+                }`}
               >
-                Continue ΓÇö Set Up Profile
+                <span>Continue to {role === 'PARTNER' ? 'Partner Business Profile' : 'Traveler Profile'}</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </button>
 
@@ -489,183 +742,394 @@ export default function SignupPage() {
             </form>
           )}
 
-          {/* ΓöÇΓöÇΓöÇΓöÇ STEP 2: TOURIST ΓöÇΓöÇΓöÇΓöÇ */}
+          {/* ========================================================================= */}
+          {/* STEP 2: TRAVELER ONBOARDING (Clean, Non-Business)                         */}
+          {/* ========================================================================= */}
           {step === 2 && role === 'TRAVELER' && (
             <div className="space-y-7">
               <div>
-                <h1 className="text-2xl font-extrabold text-[#171717] tracking-tight">Your Travel Personality</h1>
+                <h1 className="text-2xl font-extrabold text-[#171717] tracking-tight">Traveler Profile & Preferences</h1>
                 <p className="text-sm text-[#64748B] mt-1">
-                  Help us tailor every recommendation, guide match, and AI itinerary to your style.
+                  Help YatraSetu tailor your personalized recommendations, AI itineraries, and community connections.
                 </p>
               </div>
 
-              {/* Q1: Social style */}
+              {/* Location: Home State & City */}
               <div className="space-y-3">
-                <h3 className="text-sm font-bold text-[#171717] flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-[#312E81] text-white text-xs flex items-center justify-center font-semibold">1</span>
-                  Are you more of an introvert or extrovert?
-                </h3>
-                <div className="grid grid-cols-3 gap-2">
-                  {SOCIAL_STYLES.map((opt) => (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => setSocialStyle(opt.id)}
-                      className={`p-3 rounded-xl border-2 text-left transition-all ${
-                        socialStyle === opt.id
-                          ? 'border-[#312E81] bg-indigo-50 ring-1 ring-[#312E81]'
-                          : 'border-slate-200 bg-white hover:border-slate-300'
-                      }`}
+                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider">
+                  Where is your home base?
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <select
+                      value={travelerState}
+                      onChange={(e) => setTravelerState(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none shadow-sm"
                     >
-                      <span className="text-lg block mb-1">{opt.icon}</span>
-                      <div className="text-xs font-bold text-[#171717]">{opt.label}</div>
-                      <p className="text-[10px] text-slate-500 mt-0.5 leading-snug hidden sm:block">{opt.desc}</p>
-                    </button>
-                  ))}
+                      <option value="">Select Home State</option>
+                      {MAJOR_INDIAN_STATES.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      value={travelerCity}
+                      onChange={(e) => setTravelerCity(e.target.value)}
+                      placeholder="e.g. Bengaluru, Pune, Delhi"
+                      className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none shadow-sm"
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Q2: Group style */}
+              {/* Travel Interests */}
               <div className="space-y-3">
-                <h3 className="text-sm font-bold text-[#171717] flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-[#312E81] text-white text-xs flex items-center justify-center font-semibold">2</span>
-                  Do you prefer solo trips or group travel?
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {GROUP_STYLES.map((opt) => (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => setGroupStyle(opt.id)}
-                      className={`p-3 rounded-xl border-2 text-center transition-all ${
-                        groupStyle === opt.id
-                          ? 'border-[#312E81] bg-indigo-50 ring-1 ring-[#312E81]'
-                          : 'border-slate-200 bg-white hover:border-slate-300'
-                      }`}
-                    >
-                      <span className="text-xl block mb-1.5">{opt.icon}</span>
-                      <div className="text-[11px] font-bold text-[#171717]">{opt.label}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Q3: Food */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-bold text-[#171717] flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-[#312E81] text-white text-xs flex items-center justify-center font-semibold">3</span>
-                  What food do you enjoy? <span className="text-[11px] font-normal text-slate-500">(Select all that apply)</span>
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {FOOD_PREFS.map((opt) => (
-                    <ToggleChip
-                      key={opt.id}
-                      selected={foodPrefs.includes(opt.id)}
-                      onClick={() => toggleArr(foodPrefs, setFoodPrefs, opt.id)}
-                    >
-                      {opt.icon} {opt.label}
-                    </ToggleChip>
-                  ))}
-                </div>
-              </div>
-
-              {/* Q4: Places */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-bold text-[#171717] flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-[#312E81] text-white text-xs flex items-center justify-center font-semibold">4</span>
-                  What kind of places do you love visiting?
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {PLACE_TYPES.map((opt) => {
-                    const isSelected = placeTypes.includes(opt.id);
-                    const IconEl = typeof opt.icon === 'string' ? null : opt.icon;
+                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider flex items-center justify-between">
+                  <span>Travel Interests</span>
+                  <span className="text-[11px] font-normal text-slate-500 lowercase">(select all that match)</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {TRAVEL_INTERESTS.map((item) => {
+                    const isSelected = travelerInterests.includes(item.id);
+                    const Icon = item.icon;
                     return (
                       <button
-                        key={opt.id}
+                        key={item.id}
                         type="button"
-                        onClick={() => toggleArr(placeTypes, setPlaceTypes, opt.id)}
-                        className={`p-3 rounded-xl border-2 text-left transition-all ${
+                        onClick={() => toggleArrayItem(travelerInterests, setTravelerInterests, item.id)}
+                        className={`p-3 rounded-xl border text-left transition-all flex items-start gap-3 ${
                           isSelected
-                            ? 'border-[#312E81] bg-indigo-50 ring-1 ring-[#312E81]'
+                            ? 'border-[#312E81] bg-indigo-50/70 ring-1 ring-[#312E81]'
                             : 'border-slate-200 bg-white hover:border-slate-300'
                         }`}
                       >
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-base">
-                            {typeof opt.icon === 'string' ? opt.icon : IconEl && <IconEl className="w-4 h-4 text-[#312E81]" />}
-                          </span>
-                          {isSelected && <Check className="w-3.5 h-3.5 text-[#312E81]" />}
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                          isSelected ? 'bg-[#312E81] text-white' : 'bg-slate-100 text-slate-600'
+                        }`}>
+                          <Icon className="w-4 h-4" />
                         </div>
-                        <div className="text-[11px] font-bold text-[#171717]">{opt.label}</div>
-                        <p className="text-[10px] text-slate-500 mt-0.5 leading-snug hidden sm:block">{opt.desc}</p>
+                        <div className="flex-1">
+                          <div className="text-xs font-bold text-[#171717]">{item.label}</div>
+                          <p className="text-[10px] text-slate-500 leading-tight mt-0.5">{item.desc}</p>
+                        </div>
+                        {isSelected && <Check className="w-4 h-4 text-[#312E81] flex-shrink-0" />}
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Q5: Guide preference */}
+              {/* Travel Style */}
               <div className="space-y-3">
-                <h3 className="text-sm font-bold text-[#171717] flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-[#312E81] text-white text-xs flex items-center justify-center font-semibold">5</span>
-                  Do you like having a guide for your trips?
-                </h3>
-                <div className="grid grid-cols-3 gap-2">
-                  {GUIDE_PREF.map((opt) => (
+                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider">
+                  Your Preferred Travel Style
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {TRAVEL_STYLES.map((style) => (
                     <button
-                      key={opt.id}
+                      key={style.id}
                       type="button"
-                      onClick={() => setGuidePref(opt.id)}
-                      className={`p-3 rounded-xl border-2 text-left transition-all ${
-                        guidePref === opt.id
-                          ? 'border-[#F59E0B] bg-amber-50 ring-1 ring-[#F59E0B]'
+                      onClick={() => setTravelerStyle(style.id)}
+                      className={`p-3 rounded-xl border text-left transition-all ${
+                        travelerStyle === style.id
+                          ? 'border-[#312E81] bg-indigo-50/70 ring-1 ring-[#312E81]'
                           : 'border-slate-200 bg-white hover:border-slate-300'
                       }`}
                     >
-                      <span className="text-lg block mb-1">{opt.icon}</span>
-                      <div className="text-[11px] font-bold text-[#171717]">{opt.label}</div>
-                      <p className="text-[10px] text-slate-500 mt-0.5 leading-snug hidden sm:block">{opt.desc}</p>
+                      <div className="text-xs font-bold text-[#171717]">{style.label}</div>
+                      <p className="text-[10px] text-slate-500 leading-tight mt-0.5">{style.desc}</p>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Q6: Regions visited */}
+              {/* Budget Preference */}
               <div className="space-y-3">
-                <h3 className="text-sm font-bold text-[#171717] flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-[#312E81] text-white text-xs flex items-center justify-center font-semibold">6</span>
-                  Which regions of India have you visited most?
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {MOST_VISITED_REGIONS.map((region) => (
-                    <ToggleChip
-                      key={region}
-                      selected={visitedRegions.includes(region)}
-                      onClick={() => toggleArr(visitedRegions, setVisitedRegions, region)}
+                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider">
+                  Budget Preference
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {BUDGET_PREFERENCES.map((b) => (
+                    <button
+                      key={b.id}
+                      type="button"
+                      onClick={() => setBudgetPreference(b.id)}
+                      className={`p-3 rounded-xl border text-left transition-all ${
+                        budgetPreference === b.id
+                          ? 'border-[#F59E0B] bg-amber-50 ring-1 ring-[#F59E0B]'
+                          : 'border-slate-200 bg-white hover:border-slate-300'
+                      }`}
                     >
-                      {region}
+                      <div className="text-xs font-bold text-[#171717]">{b.id}</div>
+                      <p className="text-[10px] text-slate-500 leading-tight mt-0.5">{b.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Preferred Trip Types */}
+              <div className="space-y-2.5">
+                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider">
+                  Preferred Trip Types
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {TRIP_TYPES.map((type) => (
+                    <ToggleChip
+                      key={type}
+                      selected={preferredTripTypes.includes(type)}
+                      onClick={() => toggleArrayItem(preferredTripTypes, setPreferredTripTypes, type)}
+                    >
+                      {type}
                     </ToggleChip>
                   ))}
                 </div>
               </div>
 
-              {/* Q7: Languages */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-bold text-[#171717] flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-[#312E81] text-white text-xs flex items-center justify-center font-semibold">7</span>
-                  Languages you speak or understand
-                </h3>
+              {/* Preferred Languages */}
+              <div className="space-y-2.5">
+                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider">
+                  Languages You Speak
+                </label>
                 <div className="flex flex-wrap gap-2">
-                  {LANGUAGES.slice(0, 12).map((lang) => (
+                  {LANGUAGES.map((lang) => (
                     <ToggleChip
                       key={lang}
-                      selected={languages.includes(lang)}
-                      onClick={() => toggleArr(languages, setLanguages, lang)}
+                      selected={travelerLanguages.includes(lang)}
+                      onClick={() => toggleArrayItem(travelerLanguages, setTravelerLanguages, lang)}
                     >
                       {lang}
                     </ToggleChip>
                   ))}
                 </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex items-center gap-3 pt-3">
+                <button
+                  type="button"
+                  onClick={() => { setStep(1); setError(null); window.scrollTo({ top: 0 }); }}
+                  className="flex items-center gap-2 px-4 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={handleTravelerRegister}
+                  disabled={loading}
+                  className="flex-1 py-3.5 bg-[#312E81] hover:bg-[#1E1B4B] text-white font-bold rounded-xl text-sm shadow-md shadow-[#312E81]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 group"
+                >
+                  {loading ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    <>
+                      Complete Signup & Start Exploring
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* STEP 2: LOCAL PARTNER ONBOARDING (Role-Specific Business Details)          */}
+          {/* ========================================================================= */}
+          {step === 2 && role === 'PARTNER' && (
+            <div className="space-y-7">
+              <div>
+                <h1 className="text-2xl font-extrabold text-[#171717] tracking-tight">Local Partner Onboarding</h1>
+                <p className="text-sm text-[#64748B] mt-1">
+                  List your tourism service, verified expertise, or local experience on the YatraSetu ecosystem.
+                </p>
+              </div>
+
+              {/* Partner Type Selection */}
+              <div className="space-y-3">
+                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider">
+                        Partner Service Category <span className="text-slate-400 normal-case">(optional)</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {PARTNER_TYPES.map((type) => {
+                    const isSelected = selectedPartnerType.id === type.id;
+                    const Icon = type.icon;
+                    return (
+                      <button
+                        key={type.id}
+                        type="button"
+                        onClick={() => setSelectedPartnerType(type)}
+                        className={`p-3.5 rounded-xl border text-left transition-all flex items-start gap-3 ${
+                          isSelected
+                            ? 'border-[#0F766E] bg-teal-50/70 ring-1 ring-[#0F766E]'
+                            : 'border-slate-200 bg-white hover:border-slate-300'
+                        }`}
+                      >
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                          isSelected ? 'bg-[#0F766E] text-white' : 'bg-slate-100 text-slate-600'
+                        }`}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-xs font-bold text-[#171717]">{type.label}</div>
+                          <p className="text-[10px] text-slate-500 leading-tight mt-0.5">{type.desc}</p>
+                        </div>
+                        {isSelected && <Check className="w-4 h-4 text-[#0F766E] flex-shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Business Name & Address */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
+                      Business / Service Name <span className="text-slate-400 normal-case">(optional)</span>
+                  </label>
+                  <div className="relative">
+                    <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={businessName}
+                      onChange={(e) => setBusinessName(e.target.value)}
+                      placeholder="e.g. Hampi Heritage Walks & Guided Excursions"
+                      className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E]/10 outline-none shadow-sm"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
+                      Operating State <span className="text-slate-400 normal-case">(optional)</span>
+                    </label>
+                    <select
+                      value={operatingState}
+                      onChange={(e) => setOperatingState(e.target.value)}
+                      className="w-full px-3.5 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E]/10 outline-none shadow-sm"
+                    >
+                      <option value="">Select State</option>
+                      {MAJOR_INDIAN_STATES.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
+                      Primary Operating City <span className="text-slate-400 normal-case">(optional)</span>
+                    </label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={operatingCity}
+                        onChange={(e) => setOperatingCity(e.target.value)}
+                        placeholder="e.g. Hampi, Kochi, Jaipur"
+                        className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E]/10 outline-none shadow-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
+                    Full Business / Meeting Address
+                  </label>
+                  <input
+                    type="text"
+                    value={businessAddress}
+                    onChange={(e) => setBusinessAddress(e.target.value)}
+                    placeholder="e.g. Near Virupaksha Temple Complex, Hampi Bazaar"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E]/10 outline-none shadow-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
+                    Service Description & Highlights
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={serviceDescription}
+                    onChange={(e) => setServiceDescription(e.target.value)}
+                    placeholder="Describe your tours, stays, vehicle fleet, or culinary specialities for travelers..."
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E]/10 outline-none resize-none shadow-sm"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
+                      Skills & Specializations
+                    </label>
+                    <input
+                      type="text"
+                      value={serviceCategories}
+                      onChange={(e) => setServiceCategories(e.target.value)}
+                      placeholder="e.g. Temple Architecture, Storytelling, Trekking"
+                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E]/10 outline-none shadow-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
+                      Indicative Rates / Pricing (INR)
+                    </label>
+                    <input
+                      type="text"
+                      value={pricingInfo}
+                      onChange={(e) => setPricingInfo(e.target.value)}
+                      placeholder="e.g. ₹500/hr or ₹1,200/person"
+                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E]/10 outline-none shadow-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Languages */}
+                <div className="space-y-2.5">
+                  <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-[#0F766E]" />
+                    Languages for Customer Communication
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {LANGUAGES.map((lang) => (
+                      <ToggleChip
+                        key={lang}
+                        selected={partnerLanguages.includes(lang)}
+                        onClick={() => toggleArrayItem(partnerLanguages, setPartnerLanguages, lang)}
+                      >
+                        {lang}
+                      </ToggleChip>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Verification note */}
+              <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
+                <strong>Verification note:</strong> Your guide profile will be reviewed by regional tourism authorities. Once approved, you&apos;ll receive a verified badge and appear in traveler searches.
+              {/* Partner Verification Lifecycle Notice */}
+              <div className="p-4 rounded-2xl bg-teal-50/80 border border-teal-200 text-xs text-teal-950 space-y-2">
+                <div className="flex items-center gap-2 font-bold text-[#0F766E]">
+                  <ShieldCheck className="w-4 h-4" />
+                  Partner Verification Lifecycle
+                </div>
+                <div className="flex items-center gap-2 text-[11px] text-teal-800 font-medium">
+                  <span className="px-2 py-0.5 rounded-full bg-white border border-teal-300">1. Registered</span>
+                  <span>→</span>
+                  <span className="px-2 py-0.5 rounded-full bg-white border border-teal-300">2. Review</span>
+                  <span>→</span>
+                  <span className="px-2 py-0.5 rounded-full bg-teal-600 text-white font-bold">3. Verified Partner</span>
+                </div>
+                <p className="text-[11px] text-teal-800 leading-relaxed">
+                  Upon registration, your account receives a <strong>Partner Listing</strong> status. Once contact details and credentials are authenticated, your account will display the official <strong>Verified Partner</strong> badge.
+                </p>
               </div>
 
               {/* Action buttons */}
@@ -680,18 +1144,18 @@ export default function SignupPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={handleFinalSubmit}
+                  onClick={handlePartnerRegister}
                   disabled={loading}
-                  className="flex-1 py-3.5 bg-[#F59E0B] hover:bg-[#D97706] text-[#171717] font-bold rounded-xl text-sm shadow-md shadow-[#F59E0B]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 group"
+                  className="flex-1 py-3.5 bg-[#0F766E] hover:bg-[#0D9488] text-white font-bold rounded-xl text-sm shadow-md shadow-[#0F766E]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 group"
                 >
                   {loading ? (
                     <>
-                      <span className="w-4 h-4 border-2 border-[#171717]/30 border-t-[#171717] rounded-full animate-spin" />
-                      Creating account...
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Registering Partner...
                     </>
                   ) : (
                     <>
-                      Create Account & Start Exploring
+                      Register & Open Partner Dashboard
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                     </>
                   )}
@@ -700,190 +1164,165 @@ export default function SignupPage() {
             </div>
           )}
 
-          {/* ΓöÇΓöÇΓöÇΓöÇ STEP 2: GUIDE ΓöÇΓöÇΓöÇΓöÇ */}
-          {step === 2 && role === 'PARTNER' && (
-            <div className="space-y-7">
-              <div>
-                <h1 className="text-2xl font-extrabold text-[#171717] tracking-tight">Your Guide Profile</h1>
-                <p className="text-sm text-[#64748B] mt-1">
-                  Tell travelers about your experience, cities you know, and how you can guide them.
+          {/* ========================================================================= */}
+          {/* GOVERNMENT AUTHORITY ACCESS WORKFLOW (Server-Authorized / Official Flow)  */}
+          {/* ========================================================================= */}
+          {role === 'GOVERNMENT' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold mb-2">
+                    <Landmark className="w-3.5 h-3.5 text-amber-700" />
+                    Government Authority Portal
+                  </div>
+                  <h1 className="text-2xl font-extrabold text-[#171717] tracking-tight">Authorized Official Access</h1>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setRole('TRAVELER'); setError(null); }}
+                  className="text-xs font-semibold text-[#312E81] hover:underline"
+                >
+                  ← Return to Public Signup
+                </button>
+              </div>
+
+              {/* Security & Authorization Notice */}
+              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-950 space-y-2">
+                <div className="flex items-center gap-2 font-bold text-amber-900">
+                  <ShieldCheck className="w-4 h-4 text-amber-700" />
+                  Official Credential Policy
+                </div>
+                <p className="text-[11px] text-amber-800 leading-relaxed">
+                  Government intelligence dashboards and tourism redistribution controls are restricted to authenticated Ministry of Tourism and State Tourism Department officials. Public self-signup is strictly disabled for government authority accounts to prevent unauthorized access.
                 </p>
               </div>
 
-              {/* Guide subtype */}
-              <div className="space-y-3">
-                <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider">
-                  I am a... *
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {GUIDE_SUBTYPES.map((opt) => (
+              {govSubmitted ? (
+                <div className="p-6 rounded-3xl bg-white border border-slate-200 text-center space-y-4 shadow-sm">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-lg font-bold text-[#171717]">Authority Verification Request Submitted</h3>
+                  <p className="text-xs text-[#64748B] max-w-md mx-auto leading-relaxed">
+                    Your verification request for <strong>{govEmail}</strong> has been logged. YatraSetu administration will authenticate your official department credentials and issue your secure access token.
+                  </p>
+                  <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
                     <button
-                      key={opt.id}
                       type="button"
-                      onClick={() => setGuideSubtype(opt.id)}
-                      className={`p-3.5 rounded-xl border-2 text-left flex items-center gap-3 transition-all ${
-                        guideSubtype === opt.id
-                          ? 'border-[#0F766E] bg-teal-50 ring-1 ring-[#0F766E]'
-                          : 'border-slate-200 bg-white hover:border-slate-300'
-                      }`}
+                      onClick={() => loginAsDemo('GOVERNMENT').then(() => router.push('/government/dashboard'))}
+                      className="px-4 py-2.5 bg-[#312E81] text-white text-xs font-bold rounded-xl shadow hover:bg-[#1E1B4B] transition-colors"
                     >
-                      <span className="text-xl">{opt.icon}</span>
-                      <span className="text-xs font-bold text-[#171717]">{opt.label}</span>
-                      {guideSubtype === opt.id && <Check className="w-4 h-4 text-[#0F766E] ml-auto" />}
+                      Explore Government Demo Dashboard
                     </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Business name + cities */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
-                    Business / Guide Name *
-                  </label>
-                  <div className="relative">
-                    <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    <input
-                      type="text"
-                      required
-                      value={businessName}
-                      onChange={(e) => setBusinessName(e.target.value)}
-                      placeholder="e.g. Ramesh Heritage Walks"
-                      className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717]  placeholder:text-slate-400 focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E]/10 outline-none transition-all shadow-sm"
-                    />
+                    <Link
+                      href="/login"
+                      className="px-4 py-2.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl hover:bg-slate-200 transition-colors"
+                    >
+                      Back to Sign In
+                    </Link>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
-                    Primary Operating City *
-                  </label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    <input
-                      type="text"
-                      required
-                      value={guideCity}
-                      onChange={(e) => setGuideCity(e.target.value)}
-                      placeholder="e.g. Hampi, Kochi"
-                      className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E]/10 outline-none transition-all shadow-sm"
-                    />
+              ) : (
+                <form onSubmit={handleGovRequestSubmit} className="space-y-4 bg-white p-6 rounded-3xl border border-slate-200/90 shadow-sm">
+                  <h3 className="text-xs font-bold text-[#171717] uppercase tracking-wider">
+                    Submit Authority Credential Verification Request
+                  </h3>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-[#171717] mb-1">Officer Name *</label>
+                      <input
+                        type="text"
+                        required
+                        value={govOfficerName}
+                        onChange={(e) => setGovOfficerName(e.target.value)}
+                        placeholder="e.g. Dr. A. K. Sharma"
+                        className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs text-[#171717] focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#171717] mb-1">Official Email (@gov.in / @nic.in) *</label>
+                      <input
+                        type="email"
+                        required
+                        value={govEmail}
+                        onChange={(e) => setGovEmail(e.target.value)}
+                        placeholder="officer@tourism.gov.in"
+                        className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs text-[#171717] focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none"
+                      />
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
-                    State
-                  </label>
-                  <input
-                    type="text"
-                    value={guideState}
-                    onChange={(e) => setGuideState(e.target.value)}
-                    placeholder="e.g. Karnataka, Kerala"
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E]/10 outline-none transition-all shadow-sm"
-                  />
-                </div>
-              </div>
 
-              {/* Cities you know */}
-              <div className="space-y-3">
-                <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider">
-                  Cities You Know Well
-                  <span className="ml-1.5 text-[10px] font-normal text-slate-500 normal-case">(select all that apply)</span>
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {INDIAN_CITIES.map((city) => (
-                    <ToggleChip
-                      key={city}
-                      selected={knownCities.includes(city)}
-                      onClick={() => toggleArr(knownCities, setKnownCities, city)}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-[#171717] mb-1">Designation / Title *</label>
+                      <input
+                        type="text"
+                        required
+                        value={govDesignation}
+                        onChange={(e) => setGovDesignation(e.target.value)}
+                        placeholder="e.g. Director General / Tourism Secretary"
+                        className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs text-[#171717] focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#171717] mb-1">Official Mobile Number</label>
+                      <input
+                        type="tel"
+                        value={govPhone}
+                        onChange={(e) => setGovPhone(e.target.value)}
+                        placeholder="+91 98765 00000"
+                        className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs text-[#171717] focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-[#171717] mb-1">Ministry / Department</label>
+                      <input
+                        type="text"
+                        value={govMinistry}
+                        onChange={(e) => setGovMinistry(e.target.value)}
+                        placeholder="e.g. Ministry of Tourism, Govt of India"
+                        className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs text-[#171717] focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#171717] mb-1">State / UT Jurisdiction</label>
+                      <select
+                        value={govState}
+                        onChange={(e) => setGovState(e.target.value)}
+                        className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs text-[#171717] focus:border-[#312E81] focus:ring-2 focus:ring-[#312E81]/10 outline-none"
+                      >
+                        <option value="">National / All India</option>
+                        {MAJOR_INDIAN_STATES.map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3 bg-[#312E81] hover:bg-[#1E1B4B] text-white font-bold rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Submit Official Credential Verification Request
+                  </button>
+
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-[11px] text-slate-500">Need to preview the intelligence system?</span>
+                    <button
+                      type="button"
+                      onClick={() => loginAsDemo('GOVERNMENT').then(() => router.push('/government/dashboard'))}
+                      className="text-xs font-bold text-amber-700 hover:text-amber-800 transition-colors"
                     >
-                      {city}
-                    </ToggleChip>
-                  ))}
-                </div>
-              </div>
-
-              {/* Languages */}
-              <div className="space-y-3">
-                <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider flex items-center gap-2">
-                  <Globe className="w-3.5 h-3.5 text-[#0F766E]" />
-                  Languages You Guide In *
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {LANGUAGES.map((lang) => (
-                    <ToggleChip
-                      key={lang}
-                      selected={guideLanguages.includes(lang)}
-                      onClick={() => toggleArr(guideLanguages, setGuideLanguages, lang)}
-                    >
-                      {lang}
-                    </ToggleChip>
-                  ))}
-                </div>
-              </div>
-
-              {/* Skills */}
-              <div>
-                <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
-                  Key Skills & Specialisations
-                  <span className="ml-1.5 text-[10px] font-normal text-slate-500 normal-case">(comma separated)</span>
-                </label>
-                <input
-                  type="text"
-                  value={skills}
-                  onChange={(e) => setSkills(e.target.value)}
-                  placeholder="e.g. Temple Architecture, Photography, Birdwatching, Local Cuisine"
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E]/10 outline-none transition-all shadow-sm"
-                />
-              </div>
-
-              {/* Bio */}
-              <div>
-                <label className="block text-xs font-semibold text-[#171717] uppercase tracking-wider mb-1">
-                  About You & Your Services
-                </label>
-                <textarea
-                  rows={4}
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Tell travelers what makes your local expertise unique ΓÇö your background, highlight tours, and what travelers say about you..."
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E]/10 outline-none resize-none transition-all shadow-sm"
-                />
-              </div>
-
-              {/* Verification note */}
-              <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
-                <strong>Verification note:</strong> Your guide profile will be reviewed by regional tourism authorities. Once approved, you&apos;ll receive a verified badge and appear in traveler searches.
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => { setStep(1); setError(null); window.scrollTo({ top: 0 }); }}
-                  className="flex items-center gap-2 px-4 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back
-                </button>
-                <button
-                  type="button"
-                  onClick={handleFinalSubmit}
-                  disabled={loading}
-                  className="flex-1 py-3.5 bg-[#0F766E] hover:bg-[#0D9488] text-white font-bold rounded-xl text-sm shadow-md shadow-[#0F766E]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 group"
-                >
-                  {loading ? (
-                    <>
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Creating account...
-                    </>
-                  ) : (
-                    <>
-                      Submit Profile & Open Dashboard
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                    </>
-                  )}
-                </button>
-              </div>
+                      Try Official Demo Login →
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           )}
         </div>

@@ -15,6 +15,7 @@ import java.util.List;
 public class UpdateExperienceRequest {
     private String destinationId;
     private String cityId;
+    private String culturalTraditionId;
     private String title;
     private String description;
     private String category;
@@ -26,4 +27,5 @@ public class UpdateExperienceRequest {
     private List<String> languages;
     private String coverImageUrl;
     private Boolean isActive;
+    private String status;
 }

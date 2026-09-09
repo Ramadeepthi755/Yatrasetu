@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import {
   discoverTravelers,
@@ -20,15 +20,15 @@ import {
   Search,
   SlidersHorizontal,
   X,
-  Sparkles,
   RefreshCw,
 } from 'lucide-react';
 
 function TravelConnectContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const initialDestId = searchParams.get('destinationId') || '';
 
-  const { token } = useAuth();
+  const { token, isAuthenticated, loading: authLoading } = useAuth();
 
   const [destinations, setDestinations] = useState<DestinationSummary[]>([]);
   const [selectedDestId, setSelectedDestId] = useState<string>(initialDestId);
@@ -42,6 +42,13 @@ function TravelConnectContent() {
   const [error, setError] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [totalCount, setTotalCount] = useState<number>(0);
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      const redirectQuery = initialDestId ? `?destinationId=${initialDestId}` : '';
+      router.push(`/login?redirect=${encodeURIComponent('/travel-connect' + redirectQuery)}`);
+    }
+  }, [authLoading, isAuthenticated, router, initialDestId]);
 
   // Load destinations for the dropdown
   useEffect(() => {

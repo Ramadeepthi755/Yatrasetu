@@ -8,7 +8,6 @@ import {
   Mail,
   MapPin,
   Compass,
-  Sparkles,
   ShieldCheck,
   Edit3,
   Check,
@@ -221,7 +220,7 @@ export default function ProfilePage() {
           {/* Preferences Card */}
           <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
             <h3 className="text-sm font-bold text-[#171717] flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#F59E0B]" />
+              <Compass className="w-4 h-4 text-[#F59E0B]" />
               Travel Preferences
             </h3>
             <div className="space-y-3 text-xs">

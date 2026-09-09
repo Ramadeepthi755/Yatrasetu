@@ -1,6 +1,7 @@
 package com.yatrasetu.web.rest;
 
 import com.yatrasetu.service.DestinationService;
+import com.yatrasetu.service.ExperienceBookingService;
 import com.yatrasetu.service.HotelService;
 import com.yatrasetu.service.PoiService;
 import com.yatrasetu.web.dto.*;
@@ -25,6 +26,7 @@ public class DestinationController {
     private final com.yatrasetu.service.LocalHostService localHostService;
     private final com.yatrasetu.service.ExperienceService experienceService;
     private final com.yatrasetu.service.DestinationEcosystemService ecosystemService;
+    private final ExperienceBookingService bookingService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<DestinationSummaryDto>>> getDestinations(
@@ -137,6 +139,15 @@ public class DestinationController {
                 .build());
     }
 
+    @GetMapping("/{id}/recommend-guides")
+    public ResponseEntity<ApiResponse<List<RecommendedGuideDto>>> getRecommendedGuides(
+            @PathVariable("id") String id,
+            @RequestParam(name = "interests", required = false) List<String> interests,
+            @RequestParam(name = "languages", required = false) List<String> languages) {
+        List<RecommendedGuideDto> guides = bookingService.recommendGuidesForDestination(id, interests, languages);
+        return ResponseEntity.ok(ApiResponse.ok("Retrieved explainable guide recommendations for destination", guides));
+    }
+
     @GetMapping("/{id}/experiences")
     public ResponseEntity<ApiResponse<List<ExperienceDto>>> getDestinationExperiences(@PathVariable("id") String id) {
         List<ExperienceDto> experiences = experienceService.getExperiencesByDestination(id);
@@ -214,4 +225,3 @@ public class DestinationController {
                 .build());
     }
 }
-

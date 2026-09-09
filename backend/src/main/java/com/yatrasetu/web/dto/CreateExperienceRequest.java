@@ -19,6 +19,7 @@ public class CreateExperienceRequest {
 
     private String destinationId;
     private String cityId;
+    private String culturalTraditionId;
 
     @NotBlank(message = "Title is required")
     private String title;

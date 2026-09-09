@@ -47,4 +47,12 @@ public interface LocalHostRepository extends JpaRepository<LocalHost, String> {
             @Param("language") String language,
             @Param("searchQuery") String searchQuery,
             Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE LocalHost h SET h.experienceCount = COALESCE(h.experienceCount, 0) + 1 WHERE h.id = :hostId")
+    void incrementExperienceCount(@Param("hostId") String hostId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE LocalHost h SET h.rating = :rating WHERE h.id = :hostId")
+    void updateRating(@Param("hostId") String hostId, @Param("rating") BigDecimal rating);
 }

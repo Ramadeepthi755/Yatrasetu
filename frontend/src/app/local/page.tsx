@@ -1,17 +1,39 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Compass, ShieldCheck, Filter, AlertCircle, RefreshCw } from 'lucide-react';
-import { getLocalHosts, LocalHost } from '@/lib/api';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { Search, Compass, ShieldCheck, Filter, AlertCircle, RefreshCw, Sparkles, MapPin, Languages, CheckCircle } from 'lucide-react';
+import { getLocalHosts, matchGuides, LocalHost, RecommendedGuide } from '@/lib/api';
 import { LocalHostCard } from '@/components/explore/LocalHostCard';
+import { RecommendedGuideCard } from '@/components/explore/RecommendedGuideCard';
 
 export default function LocalHostsDirectoryPage() {
+  const router = useRouter();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const searchParams = useSearchParams();
+  const initialDestination = searchParams.get('destinationId') || '';
+
   const [hosts, setHosts] = useState<LocalHost[]>([]);
+  const [recommendedGuides, setRecommendedGuides] = useState<RecommendedGuide[]>([]);
+  const [matchMessage, setMatchMessage] = useState<string | null>(null);
+  const [relaxationSuggestions, setRelaxationSuggestions] = useState<string[]>([]);
+  const [isMatchingMode, setIsMatchingMode] = useState<boolean>(Boolean(initialDestination));
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      const redirectQuery = initialDestination ? `?destinationId=${initialDestination}` : '';
+      router.push(`/login?redirect=${encodeURIComponent('/local' + redirectQuery)}`);
+    }
+  }, [authLoading, isAuthenticated, router, initialDestination]);
+
   // Filter States
+  const [destinationId, setDestinationId] = useState<string>(initialDestination);
   const [search, setSearch] = useState<string>('');
+  const [selectedInterest, setSelectedInterest] = useState<string>('all');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('all');
   const [skill, setSkill] = useState<string>('all');
   const [isVerifiedOnly, setIsVerifiedOnly] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<string>('rating');
@@ -21,24 +43,46 @@ export default function LocalHostsDirectoryPage() {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalElements, setTotalElements] = useState<number>(0);
 
-  const loadHosts = useCallback(async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await getLocalHosts({
-        search: search.trim() || undefined,
-        skill: skill !== 'all' ? skill : undefined,
-        isVerified: isVerifiedOnly ? true : undefined,
-        sort: sortBy,
-        direction: sortBy === 'pricePerHour' ? 'asc' : 'desc',
-        page: currentPage,
-        size: 12,
-      });
+      if (isMatchingMode || (destinationId && destinationId !== 'all') || selectedInterest !== 'all' || selectedLanguage !== 'all') {
+        // Run explainable matching engine
+        const res = await matchGuides({
+          destinationId: destinationId && destinationId !== 'all' ? destinationId : undefined,
+          interests: selectedInterest !== 'all' ? [selectedInterest] : undefined,
+          languages: selectedLanguage !== 'all' ? [selectedLanguage] : undefined,
+          skill: skill !== 'all' ? skill : undefined,
+          verifiedOnly: isVerifiedOnly || undefined,
+        });
 
-      if (res.success && res.data) {
-        setHosts(res.data.content);
-        setTotalPages(res.data.totalPages);
-        setTotalElements(res.data.totalElements);
+        if (res.success && res.data) {
+          setRecommendedGuides(res.data.matches);
+          setMatchMessage(res.data.message);
+          setRelaxationSuggestions(res.data.relaxationSuggestions || []);
+          setTotalElements(res.data.matches.length);
+          setTotalPages(1);
+        }
+      } else {
+        const res = await getLocalHosts({
+          search: search.trim() || undefined,
+          skill: skill !== 'all' ? skill : undefined,
+          isVerified: isVerifiedOnly ? true : undefined,
+          sort: sortBy,
+          direction: sortBy === 'pricePerHour' ? 'asc' : 'desc',
+          page: currentPage,
+          size: 12,
+        });
+
+        if (res.success && res.data) {
+          setHosts(res.data.content);
+          setRecommendedGuides([]);
+          setMatchMessage(null);
+          setRelaxationSuggestions([]);
+          setTotalPages(res.data.totalPages);
+          setTotalElements(res.data.totalElements);
+        }
       }
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to load local hosts';
@@ -46,25 +90,65 @@ export default function LocalHostsDirectoryPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, skill, isVerifiedOnly, sortBy, currentPage]);
+  }, [search, skill, isVerifiedOnly, sortBy, currentPage, destinationId, selectedInterest, selectedLanguage, isMatchingMode]);
 
   useEffect(() => {
-    loadHosts();
-  }, [loadHosts]);
+    loadData();
+  }, [loadData]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsMatchingMode(false);
     setCurrentPage(0);
-    loadHosts();
+    loadData();
   };
 
   const handleResetFilters = () => {
     setSearch('');
+    setDestinationId('');
+    setSelectedInterest('all');
+    setSelectedLanguage('all');
     setSkill('all');
     setIsVerifiedOnly(false);
+    setIsMatchingMode(false);
     setSortBy('rating');
     setCurrentPage(0);
   };
+
+  const destinationOptions = [
+    { label: 'All Destinations', value: 'all' },
+    { label: 'Hyderabad (Telangana)', value: 'dest-101' },
+    { label: 'Jaipur (Rajasthan)', value: 'dest-3' },
+    { label: 'Varanasi (Uttar Pradesh)', value: 'dest-4' },
+    { label: 'Hampi (Karnataka)', value: 'dest-14' },
+    { label: 'Goa Coastal Belt', value: 'dest-1' },
+    { label: 'Udaipur (Rajasthan)', value: 'dest-6' },
+    { label: 'Agra (Uttar Pradesh)', value: 'dest-5' },
+    { label: 'Kerala Backwaters', value: 'dest-7' },
+  ];
+
+  const interestOptions = [
+    { label: 'All Interests', value: 'all' },
+    { label: 'Heritage & History', value: 'Heritage' },
+    { label: 'Culinary & Food', value: 'Food' },
+    { label: 'Artisan & Crafts', value: 'Crafts' },
+    { label: 'Architecture', value: 'Architecture' },
+    { label: 'Spiritual & Sacred', value: 'Spiritual' },
+    { label: 'Photography', value: 'Photography' },
+    { label: 'Nature & Wildlife', value: 'Nature' },
+  ];
+
+  const languageOptions = [
+    { label: 'All Languages', value: 'all' },
+    { label: 'Telugu', value: 'Telugu' },
+    { label: 'Hindi', value: 'Hindi' },
+    { label: 'English', value: 'English' },
+    { label: 'Urdu', value: 'Urdu' },
+    { label: 'Kannada', value: 'Kannada' },
+    { label: 'Rajasthani', value: 'Rajasthani' },
+    { label: 'Tamil', value: 'Tamil' },
+    { label: 'Malayalam', value: 'Malayalam' },
+  ];
 
   const skillOptions = [
     { label: 'All Roles', value: 'all' },
@@ -85,17 +169,17 @@ export default function LocalHostsDirectoryPage() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-400 border border-amber-500/20 mb-4">
               <Compass className="h-3.5 w-3.5 mr-1.5" />
-              YatraSetu Local
+              YatraSetu Local Directory
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl">
-              Meet India Through Its People
+              Meet Verified Local Guides & Hosts
             </h1>
             <p className="mt-4 text-base text-stone-300 sm:text-lg leading-relaxed">
-              Connect with verified community guides, master artisans, and storytellers who bring heritage, culture, and traditions to life beyond conventional tourist itineraries.
+              Connect with place-specific community historians, master craftspeople, and culinary custodians. Explainable recommendations matched to your destination and cultural interests.
             </p>
           </div>
 
-          {/* Search Bar */}
+          {/* Quick Search */}
           <form onSubmit={handleSearchSubmit} className="mt-8 flex max-w-2xl gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
@@ -103,7 +187,7 @@ export default function LocalHostsDirectoryPage() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by host name, city, skills, or heritage keywords..."
+                placeholder="Search by guide name, city, skill, or heritage keyword..."
                 className="w-full rounded-xl border border-stone-700 bg-stone-800/90 py-3 pl-10 pr-4 text-sm text-white placeholder-stone-400 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 backdrop-blur-sm"
               />
             </div>
@@ -119,87 +203,173 @@ export default function LocalHostsDirectoryPage() {
 
       {/* Main Content Area */}
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-6">
-        {/* Sample Data Disclosure Banner */}
-        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50/90 p-4 text-xs text-amber-900 shadow-sm backdrop-blur-md flex items-start gap-2.5">
-          <AlertCircle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <span className="font-bold">Honest Directory Disclosure:</span> Profiles tagged with{' '}
-            <span className="font-semibold text-stone-700 underline">Sample Guide</span> are curated realistic demonstration profiles representing registered tourism community hosts across India. Verified partner profiles show a green badge.
-          </div>
-        </div>
-
-        {/* Filter Controls Bar */}
-        <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-stone-500 flex items-center mr-1">
-              <Filter className="h-3.5 w-3.5 mr-1" /> Filter:
+        {/* Tourist Interests & Destination Filter Card (Task 5) */}
+        <div className="mb-8 rounded-2xl border border-stone-200 bg-white p-6 shadow-md">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-stone-100 gap-2">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-amber-600" />
+              <h2 className="text-sm font-bold text-stone-900 uppercase tracking-wider">
+                Explainable Guide Matching Engine
+              </h2>
+            </div>
+            <span className="text-xs text-stone-500">
+              Filter by place, language, and cultural focus
             </span>
+          </div>
 
-            {/* Skill / Role Dropdown */}
-            <select
-              value={skill}
-              onChange={(e) => {
-                setSkill(e.target.value);
-                setCurrentPage(0);
-              }}
-              className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-medium text-stone-700 focus:border-amber-400 focus:outline-none"
-            >
-              {skillOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Destination Selector */}
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5 flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5 text-amber-600" /> Destination
+              </label>
+              <select
+                value={destinationId}
+                onChange={(e) => {
+                  setDestinationId(e.target.value);
+                  setIsMatchingMode(true);
+                  setCurrentPage(0);
+                }}
+                className="w-full rounded-xl border border-stone-200 bg-stone-50 p-2.5 text-xs font-medium text-stone-800 focus:border-amber-400 focus:outline-none"
+              >
+                {destinationOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            {/* Verified Only Toggle */}
+            {/* Interest Selector */}
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5 flex items-center gap-1">
+                <Compass className="w-3.5 h-3.5 text-amber-600" /> Cultural Interest
+              </label>
+              <select
+                value={selectedInterest}
+                onChange={(e) => {
+                  setSelectedInterest(e.target.value);
+                  setIsMatchingMode(true);
+                  setCurrentPage(0);
+                }}
+                className="w-full rounded-xl border border-stone-200 bg-stone-50 p-2.5 text-xs font-medium text-stone-800 focus:border-amber-400 focus:outline-none"
+              >
+                {interestOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Language Selector */}
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5 flex items-center gap-1">
+                <Languages className="w-3.5 h-3.5 text-amber-600" /> Spoken Language
+              </label>
+              <select
+                value={selectedLanguage}
+                onChange={(e) => {
+                  setSelectedLanguage(e.target.value);
+                  setIsMatchingMode(true);
+                  setCurrentPage(0);
+                }}
+                className="w-full rounded-xl border border-stone-200 bg-stone-50 p-2.5 text-xs font-medium text-stone-800 focus:border-amber-400 focus:outline-none"
+              >
+                {languageOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Role / Skill */}
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5 flex items-center gap-1">
+                <Filter className="w-3.5 h-3.5 text-amber-600" /> Role Type
+              </label>
+              <select
+                value={skill}
+                onChange={(e) => {
+                  setSkill(e.target.value);
+                  setIsMatchingMode(true);
+                  setCurrentPage(0);
+                }}
+                className="w-full rounded-xl border border-stone-200 bg-stone-50 p-2.5 text-xs font-medium text-stone-800 focus:border-amber-400 focus:outline-none"
+              >
+                {skillOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-stone-100 flex flex-wrap items-center justify-between gap-2">
             <button
               onClick={() => {
                 setIsVerifiedOnly(!isVerifiedOnly);
                 setCurrentPage(0);
               }}
-              className={`flex items-center rounded-lg px-3 py-1.5 text-xs font-medium transition-colors border ${
+              className={`flex items-center rounded-lg px-3 py-1.5 text-xs font-bold transition-colors border ${
                 isVerifiedOnly
                   ? 'bg-teal-50 border-teal-300 text-teal-800'
                   : 'bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100'
               }`}
             >
               <ShieldCheck className="h-3.5 w-3.5 mr-1 text-teal-600" />
-              Verified Only
+              YatraSetu Verified Only
             </button>
 
-            {(search || skill !== 'all' || isVerifiedOnly || sortBy !== 'rating') && (
+            {(destinationId || selectedInterest !== 'all' || selectedLanguage !== 'all' || skill !== 'all' || isVerifiedOnly || search) && (
               <button
                 onClick={handleResetFilters}
-                className="flex items-center text-xs text-amber-700 hover:text-amber-800 ml-2 font-medium"
+                className="flex items-center text-xs text-amber-700 hover:text-amber-800 font-bold"
               >
-                <RefreshCw className="h-3 w-3 mr-1" /> Reset
+                <RefreshCw className="h-3.5 w-3.5 mr-1" /> Reset All Preferences
               </button>
             )}
           </div>
-
-          {/* Sort By Dropdown */}
-          <div className="flex items-center space-x-2 text-xs">
-            <span className="text-stone-500">Sort by:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => {
-                setSortBy(e.target.value);
-                setCurrentPage(0);
-              }}
-              className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-1.5 font-medium text-stone-700 focus:border-amber-400 focus:outline-none"
-            >
-              <option value="rating">Top Rated</option>
-              <option value="experienceCount">Most Experiences</option>
-              <option value="pricePerHour">Price: Low to High</option>
-            </select>
-          </div>
         </div>
+
+        {/* Relaxation Suggestions Banner if no exact match (Task 5) */}
+        {relaxationSuggestions.length > 0 && (
+          <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 p-5 shadow-sm">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" />
+              <div className="space-y-2 flex-1">
+                <p className="text-xs font-bold text-amber-950">
+                  {matchMessage || 'No 100% exact match found for all combined filters.'}
+                </p>
+                <p className="text-xs text-amber-900">
+                  Would you like to relax one of your preferences to see verified guides nearby?
+                </p>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {relaxationSuggestions.map((sugg, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        if (sugg.includes('language')) setSelectedLanguage('all');
+                        if (sugg.includes('interest') || sugg.includes('cultural')) setSelectedInterest('all');
+                        if (sugg.includes('budget')) setSkill('all');
+                      }}
+                      className="rounded-lg bg-white px-3 py-1 text-xs font-semibold text-amber-900 border border-amber-300 hover:bg-amber-100 transition shadow-xs"
+                    >
+                      ✓ {sugg}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Results Counter */}
         <div className="mb-4 flex items-center justify-between text-xs text-stone-500 px-1">
           <span>
-            Showing <strong className="text-stone-900">{hosts.length}</strong> of{' '}
-            <strong className="text-stone-900">{totalElements}</strong> local hosts
+            Showing <strong className="text-stone-900">{recommendedGuides.length || hosts.length}</strong> verified providers
           </span>
           {totalPages > 1 && (
             <span>
@@ -238,7 +408,7 @@ export default function LocalHostsDirectoryPage() {
           <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
             <p className="text-sm font-bold text-red-800 mb-2">{error}</p>
             <button
-              onClick={loadHosts}
+              onClick={loadData}
               className="rounded-xl bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700"
             >
               Try Again
@@ -247,12 +417,12 @@ export default function LocalHostsDirectoryPage() {
         )}
 
         {/* Empty State */}
-        {!loading && !error && hosts.length === 0 && (
+        {!loading && !error && recommendedGuides.length === 0 && hosts.length === 0 && (
           <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-12 text-center">
             <Compass className="mx-auto h-12 w-12 text-stone-400 mb-3" />
-            <h3 className="text-base font-bold text-stone-900">No local hosts matched your search</h3>
+            <h3 className="text-base font-bold text-stone-900">No local guides matched your criteria</h3>
             <p className="mt-1 text-xs text-stone-500 max-w-sm mx-auto">
-              Try adjusting your search terms, removing filters, or resetting to see all available local people.
+              Try relaxing your language or interest filter to discover verified local hosts in this region.
             </p>
             <button
               onClick={handleResetFilters}
@@ -263,35 +433,16 @@ export default function LocalHostsDirectoryPage() {
           </div>
         )}
 
-        {/* Host Cards Grid */}
-        {!loading && !error && hosts.length > 0 && (
+        {/* Grid View */}
+        {!loading && !error && (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {hosts.map((host) => (
-              <LocalHostCard key={host.id} host={host} />
-            ))}
-          </div>
-        )}
-
-        {/* Pagination Controls */}
-        {!loading && totalPages > 1 && (
-          <div className="mt-12 flex items-center justify-center space-x-3">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-              disabled={currentPage === 0}
-              className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
-            >
-              Previous
-            </button>
-            <span className="text-xs text-stone-600 font-medium">
-              Page {currentPage + 1} of {totalPages}
-            </span>
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
-              disabled={currentPage >= totalPages - 1}
-              className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
-            >
-              Next
-            </button>
+            {recommendedGuides.length > 0
+              ? recommendedGuides.map((item) => (
+                  <RecommendedGuideCard key={item.guide.id} item={item} />
+                ))
+              : hosts.map((host) => (
+                  <LocalHostCard key={host.id} host={host} />
+                ))}
           </div>
         )}
       </main>

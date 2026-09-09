@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Store, UserPlus, ShieldAlert, ArrowRight } from 'lucide-react';
+import { Sparkles, ShieldCheck, ArrowRight, Compass } from 'lucide-react';
 
 export interface EcosystemEmptyStateProps {
   title: string;
@@ -20,30 +20,41 @@ export function EcosystemEmptyState({
   showPartnerCta = true,
 }: EcosystemEmptyStateProps) {
   return (
-    <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 p-8 text-center">
-      <div className="w-12 h-12 mx-auto rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center mb-3">
-        <Store className="w-6 h-6" />
+    <div className="rounded-3xl border border-stone-200/90 bg-gradient-to-br from-white via-stone-50/50 to-amber-50/20 p-6 sm:p-8 shadow-xs text-center relative overflow-hidden">
+      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-900 border border-amber-500/20 text-xs font-semibold mb-3">
+        <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+        <span>Ecosystem Onboarding in Progress</span>
       </div>
-      <h4 className="text-base font-semibold text-slate-800 dark:text-slate-200">
-        {title}
+
+      <h4 className="text-base sm:text-lg font-bold text-stone-900">
+        {title || `More local partners are joining YatraSetu`}
       </h4>
-      <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+
+      <p className="mt-2 text-xs sm:text-sm text-stone-600 max-w-lg mx-auto leading-relaxed">
         {description ||
-          `We do not fabricate fake listings or prices. Verified ${category.toLowerCase()} listings for ${destinationName || 'this destination'} will appear as local providers register.`}
+          `Verified ${category.toLowerCase()} listings and curated hosts for ${destinationName || 'this destination'} are currently being onboarded to ensure authentic, trusted travel experiences.`}
       </p>
 
-      {showPartnerCta && (
-        <div className="mt-4 flex items-center justify-center gap-3">
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+        <Link
+          href="/explore"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#312E81] hover:bg-[#1E1B4B] text-white transition-all shadow-sm"
+        >
+          <Compass className="w-3.5 h-3.5 text-amber-400" />
+          <span>Explore Other Destinations</span>
+        </Link>
+
+        {showPartnerCta && (
           <Link
-            href="/partner/register"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm"
+            href="/partner/dashboard"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 transition-colors shadow-2xs"
           >
-            <UserPlus className="w-3.5 h-3.5" />
-            <span>Register as {category} Partner</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
+            <span>Join as Verified Partner</span>
             <ArrowRight className="w-3 h-3 ml-0.5" />
           </Link>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

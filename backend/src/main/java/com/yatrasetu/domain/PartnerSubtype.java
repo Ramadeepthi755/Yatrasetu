@@ -9,5 +9,9 @@ public enum PartnerSubtype {
     HOMESTAY,
     ARTISAN,
     PHOTOGRAPHER,
+    TRANSPORT,
+    RENTAL,
+    TRAVEL_AGENCY,
     OTHER
 }
+

@@ -32,6 +32,7 @@ export interface UserProfile {
   fullName: string;
   displayName?: string;
   role: 'TRAVELER' | 'PARTNER' | 'GOVERNMENT';
+  partnerSubtype?: 'LOCAL_HOST' | 'GUIDE' | 'EXPERIENCE_PROVIDER' | 'RESTAURANT' | 'HOTEL' | 'HOMESTAY' | 'ARTISAN' | 'PHOTOGRAPHER' | 'OTHER' | string;
   avatarUrl?: string;
   bio?: string;
   phone?: string;
@@ -187,6 +188,97 @@ export interface LocalOpportunity {
   disclaimer: string;
 }
 
+export interface GovernmentAlert {
+  id: string;
+  alertCategory: 'CRITICAL_PRESSURE' | 'SUPPLY_BOTTLENECK' | 'UNDERUTILIZED_ASSET' | 'WATCHLIST';
+  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  destinationId: string;
+  destinationName: string;
+  stateName: string;
+  metricValue: number;
+  metricLabel: string;
+  title: string;
+  explanation: string;
+  recommendedAction: string;
+  sourceType: string;
+  timestamp: string;
+}
+
+export interface EcosystemGap {
+  id: string;
+  destinationId: string;
+  destinationName: string;
+  stateName: string;
+  cityName: string;
+  gapType: 'GUIDE_HOST_DEFICIT' | 'STAYS_DEFICIT' | 'EXPERIENCE_DEFICIT' | 'CONNECTIVITY_GAP';
+  severity: 'HIGH' | 'MEDIUM' | 'LOW';
+  description: string;
+  suggestedIntervention: string;
+  observedDemand: number;
+  hostCount: number;
+  hotelCount: number;
+  experienceCount: number;
+  sourceType: string;
+  detectedAt: string;
+  disclaimer: string;
+}
+
+export interface DynamicHiddenGem {
+  destinationId: string;
+  destinationName: string;
+  stateName: string;
+  cityName: string;
+  classification: string;
+  demandScore: number;
+  activityPressureScore: number;
+  localOpportunityScore: number;
+  accessibilityScore: number;
+  sustainabilityProxyScore: number;
+  poiCount: number;
+  tripTypes: string[];
+  hiddenGemScore: number;
+  explanation: string;
+  sourceType: string;
+  disclaimer: string;
+}
+
+export interface DynamicRedistributionPair {
+  sourceDestinationId: string;
+  sourceDestinationName: string;
+  sourceStateName: string;
+  sourceActivityPressureScore: number;
+  sourceDemandScore: number;
+  targetDestinationId: string;
+  targetDestinationName: string;
+  targetStateName: string;
+  targetActivityPressureScore: number;
+  targetLocalOpportunityScore: number;
+  pressureDifferential: number;
+  compatibilityScore: number;
+  sharedThemes: string[];
+  reason: string;
+  expectedPotentialBenefit: string;
+  sourceType: string;
+  limitationsDisclaimer: string;
+}
+
+export interface GovernmentActionRecord {
+  id: string;
+  destinationId?: string;
+  destinationName: string;
+  stateName: string;
+  recommendationId?: string;
+  actionType: string;
+  title: string;
+  notes?: string;
+  status: 'LOGGED' | 'IN_PROGRESS' | 'RESOLVED' | 'DISMISSED';
+  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  resolutionNotes?: string;
+  resolvedAt?: string;
+  userFullName: string;
+  createdAt: string;
+}
+
 export interface StateSummary {
   id: string;
   stateName: string;
@@ -315,6 +407,8 @@ export interface PoiItem {
 export interface HotelItem {
   id: string;
   hotelName: string;
+  ownerId?: string;
+  ownerName?: string;
   cityId?: string;
   cityName?: string;
   stateId?: string;
@@ -332,7 +426,223 @@ export interface HotelItem {
   inventoryType?: string;
   sourceType?: string;
   sourceLabel?: string;
+  verificationStatus?: 'UNVERIFIED' | 'PENDING_REVIEW' | 'VERIFIED' | 'REJECTED' | 'SUSPENDED';
+  bookabilityStatus?: 'BOOKABLE' | 'PENDING_VERIFICATION' | 'VERIFIED_BUT_INCOMPLETE' | 'VERIFIED_BUT_INACTIVE' | 'UNVERIFIED' | 'REJECTED' | 'SUSPENDED' | 'NOT_READY';
+  verificationNotes?: string;
+  verifiedBy?: string;
+  verifiedAt?: string;
+  rejectionReason?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  officialWebsite?: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+  isDemoData?: boolean;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
+
+export interface PartnerHotelAnalyticsDto {
+  hotelId: string;
+  hotelName: string;
+  verificationStatus: string;
+  bookabilityStatus: string;
+  isBookable: boolean;
+  totalBookingsCount: number;
+  confirmedBookingsCount: number;
+  pendingPaymentCount: number;
+  cancelledBookingsCount: number;
+  expiredBookingsCount: number;
+  reservedRoomNights: number;
+  paidBookingValue: number;
+  currency: string;
+  totalRoomTypesCount: number;
+  activeRoomTypesCount: number;
+  activeRatePlansCount: number;
+  inventoryCoverageDays: number;
+  inventoryBlockedDays: number;
+  platformValueDisclosure: string;
+  missingSetupSteps: string[];
+}
+
+export interface HotelInventoryCalendarDto {
+  date: string;
+  roomTypeId: string;
+  roomTypeName: string;
+  totalUnits: number;
+  blockedUnits: number;
+  reservedUnits: number;
+  availableUnits: number;
+  isDateSpecific?: boolean;
+}
+
+export interface CreateHotelRequest {
+  hotelName: string;
+  cityId: string;
+  destinationId?: string;
+  category?: string;
+  pricePerNight: number;
+  address?: string;
+  amenities?: string[];
+  latitude?: number;
+  longitude?: number;
+  contactPhone?: string;
+  contactEmail?: string;
+  officialWebsite?: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+}
+
+export interface UpdateHotelRequest {
+  hotelName?: string;
+  cityId?: string;
+  destinationId?: string;
+  category?: string;
+  pricePerNight?: number;
+  address?: string;
+  amenities?: string[];
+  latitude?: number;
+  longitude?: number;
+  contactPhone?: string;
+  contactEmail?: string;
+  officialWebsite?: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+}
+
+export interface HotelVerificationRequest {
+  decision: 'APPROVED' | 'REJECTED' | 'SUSPENDED';
+  notes?: string;
+  rejectionReason?: string;
+}
+
+export interface HotelRoomTypeItem {
+  id: string;
+  hotelId: string;
+  hotelName?: string;
+  roomTypeName: string;
+  description?: string;
+  maxOccupancy: number;
+  bedConfiguration?: string;
+  roomSizeSqft?: number;
+  amenities: string[];
+  isAccessible: boolean;
+  baseInventoryUnits: number;
+  sourceType: string;
+  isActive: boolean;
+  isDemoData?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateRoomTypeRequest {
+  roomTypeName: string;
+  description?: string;
+  maxOccupancy: number;
+  bedConfiguration?: string;
+  roomSizeSqft?: number;
+  amenities?: string[];
+  isAccessible?: boolean;
+  baseInventoryUnits: number;
+  isActive?: boolean;
+}
+
+export interface UpdateRoomTypeRequest {
+  roomTypeName?: string;
+  description?: string;
+  maxOccupancy?: number;
+  bedConfiguration?: string;
+  roomSizeSqft?: number;
+  amenities?: string[];
+  isAccessible?: boolean;
+  baseInventoryUnits?: number;
+  isActive?: boolean;
+}
+
+export interface HotelInventoryItem {
+  id: string;
+  roomTypeId: string;
+  roomTypeName?: string;
+  hotelId?: string;
+  inventoryDate?: string;
+  totalUnits: number;
+  blockedUnits: number;
+  sourceType: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface UpdateInventoryRequest {
+  inventoryDate?: string;
+  totalUnits: number;
+  blockedUnits?: number;
+}
+
+export interface HotelRatePlanItem {
+  id: string;
+  roomTypeId: string;
+  roomTypeName?: string;
+  hotelId?: string;
+  hotelName?: string;
+  planName: string;
+  mealPlan: 'EP' | 'CP' | 'MAP' | 'AP';
+  description?: string;
+  basePrice: number;
+  currency: string;
+  priceUnit: string;
+  validFrom?: string;
+  validTo?: string;
+  cancellationPolicy: 'FREE_CANCELLATION' | 'NON_REFUNDABLE' | 'PARTIAL_REFUND' | 'CUSTOM';
+  cancellationDeadlineHours: number;
+  cancellationFeeType?: 'NONE' | 'PERCENTAGE' | 'FIXED_AMOUNT' | 'FIRST_NIGHT';
+  cancellationFeeValue?: number;
+  taxesIncluded: boolean;
+  feesIncluded: boolean;
+  sourceType: string;
+  status: 'DRAFT' | 'ACTIVE' | 'INACTIVE';
+  isDemoData?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateRatePlanRequest {
+  planName: string;
+  mealPlan: string;
+  description?: string;
+  basePrice: number;
+  currency?: string;
+  priceUnit?: string;
+  validFrom?: string;
+  validTo?: string;
+  cancellationPolicy?: string;
+  cancellationDeadlineHours?: number;
+  cancellationFeeType?: string;
+  cancellationFeeValue?: number;
+  taxesIncluded?: boolean;
+  feesIncluded?: boolean;
+  status?: string;
+}
+
+export interface UpdateRatePlanRequest {
+  planName?: string;
+  mealPlan?: string;
+  description?: string;
+  basePrice?: number;
+  currency?: string;
+  priceUnit?: string;
+  validFrom?: string;
+  validTo?: string;
+  cancellationPolicy?: string;
+  cancellationDeadlineHours?: number;
+  cancellationFeeType?: string;
+  cancellationFeeValue?: number;
+  taxesIncluded?: boolean;
+  feesIncluded?: boolean;
+  status?: string;
+}
+
+
 
 export interface FamousFoodItem {
   id: string;
@@ -470,6 +780,13 @@ export interface ExperienceItem {
   isApproved: boolean;
   isActive: boolean;
   isDemoData: boolean;
+  culturalTraditionId?: string;
+  culturalTraditionName?: string;
+  status?: 'DRAFT' | 'SUBMITTED' | 'UNDER_REVIEW' | 'APPROVED' | 'PUBLISHED' | 'REJECTED' | 'SUSPENDED';
+  verificationStatus?: 'UNVERIFIED' | 'PENDING_REVIEW' | 'VERIFIED' | 'REJECTED' | 'SUSPENDED';
+  verificationNotes?: string;
+  verifiedBy?: string;
+  verifiedAt?: string;
 }
 
 export interface LocalHostDetail extends LocalHost {
@@ -549,7 +866,8 @@ export async function syncUserSession(
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || `Failed to sync user session (${res.status})`);
+    const msg = errorData.data?.message || errorData.message || (errorData.data?.validationErrors ? Object.values(errorData.data.validationErrors).join(', ') : null);
+    throw new Error(msg || `Failed to sync user session (${res.status})`);
   }
   return res.json();
 }
@@ -561,7 +879,8 @@ export async function getMyProfile(token?: string): Promise<ApiResponse<UserProf
   const res = await fetch(`${API_BASE_URL}/profile/me`, { headers, cache: 'no-store' });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Failed to fetch profile: ${res.status}`);
+    const msg = err.data?.message || err.message;
+    throw new Error(msg || `Failed to fetch profile: ${res.status}`);
   }
   return res.json();
 }
@@ -583,7 +902,8 @@ export async function updateMyProfile(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Failed to update profile: ${res.status}`);
+    const msg = err.data?.message || err.message || (err.data?.validationErrors ? Object.values(err.data.validationErrors).join(', ') : null);
+    throw new Error(msg || `Failed to update profile: ${res.status}`);
   }
   return res.json();
 }
@@ -595,7 +915,8 @@ export async function getPartnerProfile(token?: string): Promise<ApiResponse<Par
   const res = await fetch(`${API_BASE_URL}/partner/profile/me`, { headers, cache: 'no-store' });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Failed to fetch partner profile: ${res.status}`);
+    const msg = err.data?.message || err.message;
+    throw new Error(msg || `Failed to fetch partner profile: ${res.status}`);
   }
   return res.json();
 }
@@ -617,7 +938,8 @@ export async function updatePartnerProfile(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Failed to update partner profile: ${res.status}`);
+    const msg = err.data?.message || err.message || (err.data?.validationErrors ? Object.values(err.data.validationErrors).join(', ') : null);
+    throw new Error(msg || `Failed to update partner profile: ${res.status}`);
   }
   return res.json();
 }
@@ -763,9 +1085,9 @@ export async function reviewRecommendation(id: string, notes?: string, token?: s
 }
 
 export async function recordGovernmentAction(
-  action: { destinationId?: string; recommendationId?: string; actionType: string; title: string; notes?: string },
+  action: { destinationId?: string; recommendationId?: string; actionType: string; title: string; notes?: string; priority?: string },
   token?: string
-): Promise<ApiResponse<string>> {
+): Promise<ApiResponse<GovernmentActionRecord>> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
@@ -777,6 +1099,91 @@ export async function recordGovernmentAction(
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.message || `Failed to record government action: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getGovernmentAlerts(token?: string, includeDemo = false): Promise<ApiResponse<GovernmentAlert[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/intelligence/alerts?includeDemo=${includeDemo}`, { headers, cache: 'no-store' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch alerts: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getEcosystemGaps(token?: string): Promise<ApiResponse<EcosystemGap[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/intelligence/ecosystem-gaps`, { headers, cache: 'no-store' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch ecosystem gaps: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getGovernmentHiddenGems(token?: string, limit = 15, includeDemo = false): Promise<ApiResponse<DynamicHiddenGem[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/intelligence/hidden-gems?limit=${limit}&includeDemo=${includeDemo}`, { headers, cache: 'no-store' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch hidden gems: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getDynamicRedistributionCorridors(sourceId?: string, token?: string, limit = 15, includeDemo = false): Promise<ApiResponse<DynamicRedistributionPair[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const url = sourceId
+    ? `${API_BASE_URL}/government/intelligence/redistribution/dynamic?sourceId=${encodeURIComponent(sourceId)}&limit=${limit}&includeDemo=${includeDemo}`
+    : `${API_BASE_URL}/government/intelligence/redistribution/dynamic?limit=${limit}&includeDemo=${includeDemo}`;
+
+  const res = await fetch(url, { headers, cache: 'no-store' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch dynamic corridors: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getActionHistory(status?: string, priority?: string, token?: string): Promise<ApiResponse<GovernmentActionRecord[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const params = new URLSearchParams();
+  if (status) params.append('status', status);
+  if (priority) params.append('priority', priority);
+
+  const url = `${API_BASE_URL}/government/intelligence/actions/history${params.toString() ? `?${params.toString()}` : ''}`;
+  const res = await fetch(url, { headers, cache: 'no-store' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch action history: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function updateActionStatus(id: string, status: string, resolutionNotes?: string, token?: string): Promise<ApiResponse<GovernmentActionRecord>> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/intelligence/actions/${id}/status`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({ status, resolutionNotes }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to update action status: ${res.status}`);
   }
   return res.json();
 }
@@ -1176,6 +1583,67 @@ export async function deletePartnerExperience(
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.message || `Failed to delete experience: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function submitPartnerExperienceForReview(
+  id: string,
+  token?: string
+): Promise<ApiResponse<ExperienceItem>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/partner/experiences/${encodeURIComponent(id)}/submit`, {
+    method: 'POST',
+    headers,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to submit experience for review: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPendingGovernmentExperiences(
+  token?: string
+): Promise<ApiResponse<ExperienceItem[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/experiences/pending`, {
+    headers,
+    cache: 'no-store',
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch pending experiences: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function reviewGovernmentExperience(
+  id: string,
+  decision: 'APPROVED' | 'REJECTED' | 'SUSPENDED',
+  verificationNotes?: string,
+  token?: string
+): Promise<ApiResponse<ExperienceItem>> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/experiences/${encodeURIComponent(id)}/review`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ decision, verificationNotes }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to review experience: ${res.status}`);
   }
   return res.json();
 }
@@ -1774,5 +2242,2364 @@ export async function deleteTrip(id: string, token?: string): Promise<ApiRespons
   return res.json();
 }
 
+// ==========================================
+// Cultural Traditions & Heritage Craft APIs
+// ==========================================
+
+export interface CulturalTraditionDto {
+  id: string;
+  stateId: string;
+  stateName?: string;
+  cityId?: string;
+  cityName?: string;
+  destinationId?: string;
+  destinationName?: string;
+  traditionName: string;
+  category: string;
+  craftType?: string;
+  historicalOrigin?: string;
+  materialsUsed?: string;
+  culturalSignificance?: string;
+  isGiTagged?: boolean;
+  giTagYear?: string;
+  primaryProducingCluster?: string;
+  sourceOrganization?: string;
+  sourceType?: string;
+  sourceLabel?: string;
+  sourceUrl?: string;
+  imageUrl?: string;
+  provenance?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface GetCulturalTraditionsParams {
+  stateId?: string;
+  cityId?: string;
+  destinationId?: string;
+  category?: string;
+  search?: string;
+  page?: number;
+  size?: number;
+  sortBy?: string;
+  sortDir?: string;
+}
+
+export async function getCulturalTraditions(
+  params: GetCulturalTraditionsParams = {}
+): Promise<ApiResponse<PageResponse<CulturalTraditionDto>>> {
+  const query = new URLSearchParams();
+  if (params.stateId && params.stateId !== 'All') query.set('stateId', params.stateId);
+  if (params.cityId && params.cityId !== 'All') query.set('cityId', params.cityId);
+  if (params.destinationId && params.destinationId !== 'All') query.set('destinationId', params.destinationId);
+  if (params.category && params.category !== 'All') query.set('category', params.category);
+  if (params.search && params.search.trim()) query.set('search', params.search.trim());
+  if (params.page !== undefined) query.set('page', params.page.toString());
+  if (params.size !== undefined) query.set('size', params.size.toString());
+  if (params.sortBy) query.set('sortBy', params.sortBy);
+  if (params.sortDir) query.set('sortDir', params.sortDir);
+
+  const url = `${API_BASE_URL}/culture/traditions${query.toString() ? `?${query.toString()}` : ''}`;
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural traditions: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalTraditionDetail(
+  id: string
+): Promise<ApiResponse<CulturalTraditionDto>> {
+  const res = await fetch(`${API_BASE_URL}/culture/traditions/${encodeURIComponent(id)}`, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural tradition detail: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalCategories(): Promise<ApiResponse<string[]>> {
+  const res = await fetch(`${API_BASE_URL}/culture/categories`, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural categories: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalTraditionsByState(
+  stateId: string
+): Promise<ApiResponse<CulturalTraditionDto[]>> {
+  const res = await fetch(`${API_BASE_URL}/culture/states/${encodeURIComponent(stateId)}`, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural traditions for state: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalTraditionsByDestination(
+  destinationId: string
+): Promise<ApiResponse<CulturalTraditionDto[]>> {
+  const res = await fetch(`${API_BASE_URL}/culture/destinations/${encodeURIComponent(destinationId)}`, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural traditions for destination: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalTraditionExperiences(
+  id: string
+): Promise<ApiResponse<ExperienceItem[]>> {
+  const res = await fetch(`${API_BASE_URL}/culture/traditions/${encodeURIComponent(id)}/experiences`, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch experiences for cultural tradition: ${res.status}`);
+  }
+  return res.json();
+}
+
+// ---------------------------------------------------------------------------
+// Phase 21.5 — Cultural Opportunity Score & Intelligence APIs
+// ---------------------------------------------------------------------------
+
+export interface CulturalOpportunityItem {
+  destinationId: string;
+  destinationName: string;
+  cityId?: string;
+  cityName?: string;
+  stateId?: string;
+  stateName?: string;
+  score: number | null;
+  status: 'SUFFICIENT_DATA' | 'INSUFFICIENT_DATA';
+  confidence: 'HIGH' | 'MEDIUM' | 'LOW' | 'INSUFFICIENT';
+  classification: 'HIGH_OPPORTUNITY' | 'MODERATE_OPPORTUNITY' | 'EMERGING_OPPORTUNITY' | 'LOWER_OPPORTUNITY' | 'INSUFFICIENT_DATA';
+  matrixCategory: 'HIGH_DEMAND_LOW_SUPPLY' | 'HIGH_DEMAND_HIGH_SUPPLY' | 'LOW_DEMAND_LOW_SUPPLY' | 'LOW_DEMAND_HIGH_SUPPLY' | 'INSUFFICIENT_DATA';
+  traditionScore: number;
+  demandScore: number;
+  supplyScore: number;
+  gapPenalty: number;
+  traditionCount: number;
+  destinationTraditionCount: number;
+  cityTraditionCount: number;
+  stateTraditionCount: number;
+  giTraditionCount: number;
+  observedDemandSignals: number;
+  verifiedExperienceCount: number;
+  verifiedArtisanCount: number;
+  detectedGaps: string[];
+  explanations: string[];
+  suggestedActions: string[];
+  dataMode: 'OBSERVED' | 'DEMO';
+  disclaimer: string;
+  generatedAt: string;
+}
+
+export interface CulturalOpportunityOverview {
+  totalDestinationsEvaluated: number;
+  destinationsWithSufficientData: number;
+  destinationsWithInsufficientData: number;
+  averageOpportunityScore: number;
+  highOpportunityCount: number;
+  moderateOpportunityCount: number;
+  emergingOpportunityCount: number;
+  lowerOpportunityCount: number;
+  culturalExperienceDeficitCount: number;
+  giRichDestinationsCount: number;
+  matrixDistribution: Record<string, number>;
+  topOpportunityDestinations: CulturalOpportunityItem[];
+  isDemoModeActive: boolean;
+  observedSignalsCount: number;
+  demoSignalsCount: number;
+  dataProvenance: Record<string, string>;
+  dataDisclaimer: string;
+  generatedAt: string;
+}
+
+export async function getCulturalOpportunities(
+  token?: string,
+  includeDemo = false
+): Promise<ApiResponse<CulturalOpportunityItem[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-opportunities?includeDemo=${includeDemo}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural opportunities: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalOpportunityOverview(
+  token?: string,
+  includeDemo = false
+): Promise<ApiResponse<CulturalOpportunityOverview>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-opportunities/overview?includeDemo=${includeDemo}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural opportunity overview: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalOpportunityDetail(
+  destinationId: string,
+  token?: string,
+  includeDemo = false
+): Promise<ApiResponse<CulturalOpportunityItem>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-opportunities/${encodeURIComponent(destinationId)}?includeDemo=${includeDemo}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural opportunity detail: ${res.status}`);
+  }
+  return res.json();
+}
+
+// ---------------------------------------------------------------------------
+// Phase 21.6 — Cultural Ecosystem Gap & Government Action Engine APIs
+// ---------------------------------------------------------------------------
+
+export interface CulturalEcosystemGapItem {
+  id: string;
+  destinationId: string;
+  destinationName: string;
+  cityId?: string;
+  cityName?: string;
+  stateId?: string;
+  stateName?: string;
+  gapType: 'CULTURAL_EXPERIENCE_DEFICIT' | 'ARTISAN_PARTNER_DEFICIT' | 'CONNECTIVITY_GAP' | 'STAYS_DEFICIT' | 'GUIDE_HOST_DEFICIT' | 'CULTURAL_DATA_GAP';
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INSUFFICIENT_DATA';
+  opportunityScore: number | null;
+  traditionScore: number;
+  demandScore: number;
+  supplyScore: number;
+  traditionCount: number;
+  giTraditionCount: number;
+  observedDemandSignals: number;
+  verifiedExperienceCount: number;
+  verifiedArtisanCount: number;
+  recommendedAction: string;
+  evidence: string;
+  honestyDisclaimer: string;
+  confidence: 'HIGH' | 'MEDIUM' | 'LOW' | 'INSUFFICIENT';
+  dataMode: 'OBSERVED' | 'DEMO';
+  detectedAt: string;
+}
+
+export interface CulturalEcosystemGapOverview {
+  totalGapsDetected: number;
+  criticalGapsCount: number;
+  highSeverityGapsCount: number;
+  mediumSeverityGapsCount: number;
+  lowSeverityGapsCount: number;
+  experienceDeficitCount: number;
+  artisanDeficitCount: number;
+  connectivityGapCount: number;
+  staysDeficitCount: number;
+  guideHostDeficitCount: number;
+  culturalDataGapCount: number;
+  totalDestinationsWithGaps: number;
+  isDemoModeActive: boolean;
+  gapsByType: Record<string, number>;
+  gapsBySeverity: Record<string, number>;
+  dataDisclaimer: string;
+  generatedAt: string;
+}
+
+export interface CulturalGovernmentActionItem {
+  id: string;
+  destinationId: string;
+  destinationName: string;
+  stateId?: string;
+  stateName?: string;
+  cityName?: string;
+  actionType: string;
+  title: string;
+  description: string;
+  gapType: 'CULTURAL_EXPERIENCE_DEFICIT' | 'ARTISAN_PARTNER_DEFICIT' | 'CONNECTIVITY_GAP' | 'STAYS_DEFICIT' | 'GUIDE_HOST_DEFICIT' | 'CULTURAL_DATA_GAP';
+  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'DISMISSED';
+  opportunityScore: number | null;
+  severity: string;
+  recommendedAction: string;
+  actionReason: string;
+  resolutionNotes?: string;
+  resolvedAt?: string;
+  assignedTo?: string;
+  updatedBy?: string;
+  evidenceSummary: string;
+  honestyDisclaimer: string;
+  dataMode: 'OBSERVED' | 'DEMO';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function getCulturalGaps(
+  token?: string,
+  includeDemo = false
+): Promise<ApiResponse<CulturalEcosystemGapItem[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-actions/gaps?includeDemo=${includeDemo}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural gaps: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalGapsOverview(
+  token?: string,
+  includeDemo = false
+): Promise<ApiResponse<CulturalEcosystemGapOverview>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-actions/gaps/overview?includeDemo=${includeDemo}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural gaps overview: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalGapsForDestination(
+  destinationId: string,
+  token?: string,
+  includeDemo = false
+): Promise<ApiResponse<CulturalEcosystemGapItem[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-actions/gaps/destination/${encodeURIComponent(destinationId)}?includeDemo=${includeDemo}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural gaps for destination: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalActions(
+  token?: string,
+  includeDemo = false,
+  status?: string,
+  priority?: string,
+  gapType?: string
+): Promise<ApiResponse<CulturalGovernmentActionItem[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const query = new URLSearchParams();
+  query.set('includeDemo', includeDemo.toString());
+  if (status && status !== 'ALL') query.set('status', status);
+  if (priority && priority !== 'ALL') query.set('priority', priority);
+  if (gapType && gapType !== 'ALL') query.set('gapType', gapType);
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-actions?${query.toString()}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural actions: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCulturalActionById(
+  actionId: string,
+  token?: string
+): Promise<ApiResponse<CulturalGovernmentActionItem>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-actions/${encodeURIComponent(actionId)}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cultural action: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function generateCulturalActions(
+  token?: string,
+  includeDemo = false
+): Promise<ApiResponse<CulturalGovernmentActionItem[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-actions/generate?includeDemo=${includeDemo}`, {
+    method: 'POST',
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to generate cultural actions: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function updateCulturalActionStatus(
+  actionId: string,
+  status: string,
+  resolutionNotes?: string,
+  token?: string
+): Promise<ApiResponse<CulturalGovernmentActionItem>> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/cultural-actions/${encodeURIComponent(actionId)}/status`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({ status, resolutionNotes }),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to update cultural action status: ${res.status}`);
+  }
+  return res.json();
+}
+
+// ==========================================
+// HOTEL PARTNER ONBOARDING & VERIFICATION APIS
+// ==========================================
+
+export async function getMyPartnerHotels(token?: string): Promise<ApiResponse<HotelItem[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/partner/hotels`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch partner hotels: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getMyPartnerHotelById(id: string, token?: string): Promise<ApiResponse<HotelItem>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(id)}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch partner hotel: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function createPartnerHotel(data: CreateHotelRequest, token?: string): Promise<ApiResponse<HotelItem>> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/partner/hotels`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.message || `Failed to create hotel property: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function updatePartnerHotel(id: string, data: UpdateHotelRequest, token?: string): Promise<ApiResponse<HotelItem>> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.message || `Failed to update hotel property: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function submitPartnerHotel(id: string, token?: string): Promise<ApiResponse<HotelItem>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(id)}/submit`, {
+    method: 'POST',
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.message || `Failed to submit hotel for verification: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function deletePartnerHotel(id: string, token?: string): Promise<ApiResponse<void>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to delete hotel: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPendingGovernmentHotels(token?: string): Promise<ApiResponse<HotelItem[]>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/hotels/pending`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch pending hotel verifications: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getGovernmentHotelById(id: string, token?: string): Promise<ApiResponse<HotelItem>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/hotels/${encodeURIComponent(id)}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch hotel for verification review: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function reviewGovernmentHotel(
+  id: string,
+  data: HotelVerificationRequest,
+  token?: string
+): Promise<ApiResponse<HotelItem>> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/government/hotels/${encodeURIComponent(id)}/review`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.message || `Failed to review hotel verification: ${res.status}`);
+  }
+  return res.json();
+}
+
+// ----------------------------------------------------
+// PHASE 22.3: HOTEL ROOM TYPES & INVENTORY API CLIENT
+// ----------------------------------------------------
+
+export async function getPublicHotelRooms(hotelId: string): Promise<ApiResponse<HotelRoomTypeItem[]>> {
+  const res = await fetch(`${API_BASE_URL}/hotels/${encodeURIComponent(hotelId)}/rooms`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch hotel room types: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPartnerHotelRooms(hotelId: string, token: string): Promise<ApiResponse<HotelRoomTypeItem[]>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch partner room types: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function createPartnerHotelRoom(
+  hotelId: string,
+  data: CreateRoomTypeRequest,
+  token: string
+): Promise<ApiResponse<HotelRoomTypeItem>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to create room type: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function updatePartnerHotelRoom(
+  hotelId: string,
+  roomId: string,
+  data: UpdateRoomTypeRequest,
+  token: string
+): Promise<ApiResponse<HotelRoomTypeItem>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to update room type: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function deletePartnerHotelRoom(
+  hotelId: string,
+  roomId: string,
+  token: string
+): Promise<ApiResponse<void>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to delete room type: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPartnerRoomInventory(
+  hotelId: string,
+  roomId: string,
+  token: string
+): Promise<ApiResponse<HotelInventoryItem[]>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/inventory`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch room inventory: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function updatePartnerRoomInventory(
+  hotelId: string,
+  roomId: string,
+  data: UpdateInventoryRequest,
+  token: string
+): Promise<ApiResponse<HotelInventoryItem>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/inventory`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to update room inventory: ${res.status}`);
+  }
+  return res.json();
+}
+
+// ----------------------------------------------------------------------------
+// PHASE 22.4 — HOTEL RATE PLANS & PRICING API
+// ----------------------------------------------------------------------------
+
+export async function getPublicHotelRatePlans(
+  hotelId: string
+): Promise<ApiResponse<HotelRatePlanItem[]>> {
+  const res = await fetch(`${API_BASE_URL}/hotels/${encodeURIComponent(hotelId)}/rate-plans`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch hotel rate plans: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPublicRoomRatePlans(
+  hotelId: string,
+  roomId: string
+): Promise<ApiResponse<HotelRatePlanItem[]>> {
+  const res = await fetch(`${API_BASE_URL}/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/rate-plans`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch room rate plans: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPartnerRatePlans(
+  hotelId: string,
+  roomId: string,
+  token: string
+): Promise<ApiResponse<HotelRatePlanItem[]>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/rate-plans`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch partner rate plans: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function createPartnerRatePlan(
+  hotelId: string,
+  roomId: string,
+  data: CreateRatePlanRequest,
+  token: string
+): Promise<ApiResponse<HotelRatePlanItem>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/rate-plans`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to create rate plan: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function updatePartnerRatePlan(
+  hotelId: string,
+  roomId: string,
+  ratePlanId: string,
+  data: UpdateRatePlanRequest,
+  token: string
+): Promise<ApiResponse<HotelRatePlanItem>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/rate-plans/${encodeURIComponent(ratePlanId)}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to update rate plan: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function activatePartnerRatePlan(
+  hotelId: string,
+  roomId: string,
+  ratePlanId: string,
+  token: string
+): Promise<ApiResponse<HotelRatePlanItem>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/rate-plans/${encodeURIComponent(ratePlanId)}/activate`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to activate rate plan: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function deactivatePartnerRatePlan(
+  hotelId: string,
+  roomId: string,
+  ratePlanId: string,
+  token: string
+): Promise<ApiResponse<HotelRatePlanItem>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/rate-plans/${encodeURIComponent(ratePlanId)}/deactivate`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to deactivate rate plan: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function deletePartnerRatePlan(
+  hotelId: string,
+  roomId: string,
+  ratePlanId: string,
+  token: string
+): Promise<ApiResponse<void>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/rate-plans/${encodeURIComponent(ratePlanId)}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to delete rate plan: ${res.status}`);
+  }
+  return res.json();
+}
+
+// ----------------------------------------------------------------------------
+// PHASE 22.5 — DATE-SPECIFIC REAL HOTEL AVAILABILITY ENGINE API
+// ----------------------------------------------------------------------------
+
+export type HotelAvailabilityStatus = 'AVAILABLE' | 'LIMITED' | 'SOLD_OUT' | 'UNAVAILABLE_DATA';
+
+export interface BulkInventoryUpdateRequest {
+  startDate: string; // YYYY-MM-DD
+  endDate: string;   // YYYY-MM-DD
+  totalUnits: number;
+  blockedUnits?: number;
+}
+
+export interface NightlyAvailabilityDto {
+  date: string;
+  totalUnits: number;
+  blockedUnits: number;
+  reservedUnits: number;
+  availableUnits: number;
+  status: HotelAvailabilityStatus;
+  isDateOverride: boolean;
+}
+
+export interface RoomTypeAvailabilityDto {
+  roomTypeId: string;
+  roomTypeName: string;
+  maxOccupancy: number;
+  totalUnits: number;
+  blockedUnits: number;
+  reservedUnits: number;
+  availableUnits: number;
+  status: HotelAvailabilityStatus;
+  isAvailable: boolean;
+  nightly: NightlyAvailabilityDto[];
+  ratePlans: HotelRatePlanItem[];
+}
+
+export interface HotelAvailabilityDto {
+  hotelId: string;
+  hotelName: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  guests?: number;
+  status: HotelAvailabilityStatus;
+  isLiveAvailability: boolean;
+  provenance: string;
+  note: string;
+  rooms: RoomTypeAvailabilityDto[];
+}
+
+export async function getHotelAvailability(
+  hotelId: string,
+  params: {
+    checkIn: string;
+    checkOut: string;
+    roomTypeId?: string;
+    guests?: number;
+  }
+): Promise<ApiResponse<HotelAvailabilityDto>> {
+  const query = new URLSearchParams();
+  query.set('checkIn', params.checkIn);
+  query.set('checkOut', params.checkOut);
+  if (params.roomTypeId) query.set('roomTypeId', params.roomTypeId);
+  if (params.guests) query.set('guests', params.guests.toString());
+
+  const res = await fetch(`${API_BASE_URL}/hotels/${encodeURIComponent(hotelId)}/availability?${query.toString()}`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch availability: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function updatePartnerBulkRoomInventory(
+  hotelId: string,
+  roomId: string,
+  data: BulkInventoryUpdateRequest,
+  token: string
+): Promise<ApiResponse<HotelInventoryItem[]>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/inventory/bulk`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to bulk update room inventory: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPartnerHotelInventoryCalendar(
+  hotelId: string,
+  roomId: string,
+  startDate?: string,
+  endDate?: string,
+  token?: string
+): Promise<ApiResponse<HotelInventoryCalendarDto[]>> {
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate);
+  if (endDate) params.set('endDate', endDate);
+  const query = params.toString() ? `?${params.toString()}` : '';
+
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/rooms/${encodeURIComponent(roomId)}/inventory/calendar${query}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch inventory calendar: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPartnerHotelAnalytics(
+  hotelId: string,
+  token?: string
+): Promise<ApiResponse<PartnerHotelAnalyticsDto>> {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/analytics`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch partner hotel analytics: ${res.status}`);
+  }
+  return res.json();
+}
+
+export type HotelBookingStatus = 
+  | 'REQUESTED'
+  | 'ACCEPTED'
+  | 'REJECTED'
+  | 'PENDING_PAYMENT' 
+  | 'CONFIRMED' 
+  | 'CHECKED_IN'
+  | 'CHECKED_OUT'
+  | 'COMPLETED'
+  | 'CANCELLED' 
+  | 'EXPIRED';
+export type HotelPaymentStatus = 'UNPAID' | 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
+
+export interface HotelBookingAllocationDto {
+  id: string;
+  allocationDate: string;
+  allocatedUnits: number;
+  status: string;
+}
+
+export interface BookingStatusHistoryDto {
+  id: string;
+  previousStatus?: string;
+  newStatus: string;
+  reason?: string;
+  actorUserId?: string;
+  createdAt: string;
+}
+
+export interface HotelBookingDto {
+  id: string;
+  bookingReference: string;
+  travelerId?: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  specialRequests?: string;
+  hotelId: string;
+  hotelName: string;
+  hotelCity?: string;
+  hotelState?: string;
+  hotelAddress?: string;
+  roomTypeId: string;
+  roomTypeName: string;
+  ratePlanId: string;
+  ratePlanName: string;
+  mealPlan?: string;
+  checkIn: string;
+  checkOut: string;
+  numberOfRooms: number;
+  numberOfNights: number;
+  adults: number;
+  children?: number;
+  currency: string;
+  pricePerNight: number;
+  subtotal: number;
+  taxesAmount: number;
+  feesAmount: number;
+  totalAmount: number;
+  pricingDisclosure: string;
+  bookingStatus: HotelBookingStatus;
+  paymentStatus: HotelPaymentStatus;
+  sourceType: string;
+  idempotencyKey?: string;
+  expiresAt?: string;
+  cancelledAt?: string;
+  cancellationReason?: string;
+  cancellationReasonCode?: string;
+  cancellationPolicySnapshot?: string;
+  cancellationDeadlineHours?: number;
+  qrToken?: string;
+  paymentMethod?: 'ONLINE' | 'PAY_AT_HOTEL' | string;
+  rejectionReason?: string;
+  checkedInAt?: string;
+  checkedOutAt?: string;
+  reviewRating?: number;
+  reviewComment?: string;
+  reviewedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  allocations?: HotelBookingAllocationDto[];
+  statusHistory?: BookingStatusHistoryDto[];
+}
+
+export interface CreateHotelBookingRequest {
+  roomTypeId: string;
+  ratePlanId: string;
+  checkIn: string;
+  checkOut: string;
+  numberOfRooms: number;
+  adults: number;
+  children?: number;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  specialRequests?: string;
+  idempotencyKey?: string;
+  paymentMethod?: 'ONLINE' | 'PAY_AT_HOTEL' | string;
+}
+
+export interface CancelHotelBookingRequest {
+  reason?: string;
+  reasonCode?: string;
+}
+
+export interface NotificationDto {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  category: string;
+  referenceLink?: string;
+  read: boolean;
+  createdAt: string;
+}
+
+export async function createHotelBooking(
+  hotelId: string,
+  data: CreateHotelBookingRequest,
+  token: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/hotels/${encodeURIComponent(hotelId)}/bookings`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to create booking: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getMyHotelBookings(
+  token: string
+): Promise<ApiResponse<HotelBookingDto[]>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch bookings: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getHotelBookingByReference(
+  bookingReference: string,
+  token: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/${encodeURIComponent(bookingReference)}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch booking details: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPartnerHotelBookings(
+  hotelId: string,
+  token: string
+): Promise<ApiResponse<HotelBookingDto[]>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/${encodeURIComponent(hotelId)}/bookings`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch partner bookings: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getAllPartnerHotelBookings(
+  token: string
+): Promise<ApiResponse<HotelBookingDto[]>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/bookings`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch all partner bookings: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function acceptPartnerHotelBooking(
+  bookingReference: string,
+  token: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/bookings/${encodeURIComponent(bookingReference)}/accept`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to accept booking: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function rejectPartnerHotelBooking(
+  bookingReference: string,
+  reason?: string,
+  token?: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/bookings/${encodeURIComponent(bookingReference)}/reject`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ reason }),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to reject booking: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function verifyPartnerHotelQr(
+  tokenString: string,
+  token: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/verify-qr`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ token: tokenString }),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to verify QR token: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function checkinPartnerHotelGuest(
+  bookingReference: string,
+  token: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/bookings/${encodeURIComponent(bookingReference)}/checkin`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to check in guest: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function checkoutPartnerHotelGuest(
+  bookingReference: string,
+  token: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/partner/hotels/bookings/${encodeURIComponent(bookingReference)}/checkout`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to check out guest: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function submitHotelReview(
+  bookingReference: string,
+  rating: number,
+  comment: string,
+  token: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/${encodeURIComponent(bookingReference)}/review`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ rating, comment }),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to submit review: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getNotifications(
+  unreadOnly = false,
+  token: string
+): Promise<ApiResponse<NotificationDto[]>> {
+  const res = await fetch(`${API_BASE_URL}/notifications?unreadOnly=${unreadOnly}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch notifications: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getUnreadNotificationsCount(
+  token: string
+): Promise<ApiResponse<{ unreadCount: number }>> {
+  const res = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch unread count: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function markNotificationAsRead(
+  notificationId: string,
+  token: string
+): Promise<ApiResponse<NotificationDto>> {
+  const res = await fetch(`${API_BASE_URL}/notifications/${encodeURIComponent(notificationId)}/read`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to mark notification as read: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function markAllNotificationsAsRead(
+  token: string
+): Promise<ApiResponse<{ updatedCount: number }>> {
+  const res = await fetch(`${API_BASE_URL}/notifications/read-all`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to mark all notifications as read: ${res.status}`);
+  }
+  return res.json();
+}
+
+
+export interface CreatePaymentOrderResponse {
+  bookingReference: string;
+  provider: string;
+  providerOrderId: string;
+  keyId: string;
+  amount: number;
+  amountInPaise: number;
+  currency: string;
+  hotelName: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  status: string;
+}
+
+export interface VerifyPaymentRequest {
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
+  razorpaySignature: string;
+}
+
+export interface PaymentTransactionDto {
+  id: string;
+  bookingReference: string;
+  provider: string;
+  providerOrderId: string;
+  providerPaymentId?: string;
+  amount: number;
+  currency: string;
+  status: string;
+  failureCode?: string;
+  failureDescription?: string;
+  verifiedAt?: string;
+  createdAt: string;
+}
+
+export interface PaymentStatusResponse {
+  bookingReference: string;
+  bookingStatus: string;
+  paymentStatus: string;
+  totalAmount: number;
+  currency: string;
+  paymentGatewayAvailable: boolean;
+  provider: string;
+  activeOrderId?: string;
+  transactions: PaymentTransactionDto[];
+}
+
+export async function createHotelPaymentOrder(
+  bookingReference: string,
+  token: string
+): Promise<ApiResponse<CreatePaymentOrderResponse>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/${encodeURIComponent(bookingReference)}/payment/order`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to create payment order: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function verifyHotelPayment(
+  bookingReference: string,
+  data: VerifyPaymentRequest,
+  token: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/${encodeURIComponent(bookingReference)}/payment/verify`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to verify payment: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getHotelPaymentStatus(
+  bookingReference: string,
+  token: string
+): Promise<ApiResponse<PaymentStatusResponse>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/${encodeURIComponent(bookingReference)}/payment`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch payment status: ${res.status}`);
+  }
+  return res.json();
+}
+
+// --------------------------------------------------------------------------
+// Phase 22.9 — Confirmation, Voucher & Notification Engine
+// --------------------------------------------------------------------------
+
+export interface BookingTimelineEntryDto {
+  status: string;
+  paymentStatus?: string;
+  notes?: string;
+  reasonCode?: string;
+  timestamp: string;
+}
+
+export interface BookingConfirmationDto {
+  bookingReference: string;
+  bookingStatus: string;
+  paymentStatus: string;
+  createdAt: string;
+  confirmedAt?: string;
+  hotelId: string;
+  hotelName: string;
+  hotelAddress?: string;
+  hotelCity?: string;
+  hotelState?: string;
+  hotelStars?: number;
+  hotelSourceType?: string;
+  roomTypeId: string;
+  roomTypeName: string;
+  roomCapacity?: number;
+  checkInDate: string;
+  checkOutDate: string;
+  nights: number;
+  numberOfRooms: number;
+  numberOfGuests: number;
+  guestFullName: string;
+  guestEmail: string;
+  guestPhone: string;
+  specialRequests?: string;
+  basePriceSnapshot: number;
+  taxesAmount: number;
+  totalAmount: number;
+  currency: string;
+  taxDisclosure: string;
+  pricingProvenance: string;
+  cancellationPolicySnapshot?: string;
+  cancellationDeadline?: string;
+  cancellationRefundState?: string;
+  cancellationDisclosure?: string;
+  timeline: BookingTimelineEntryDto[];
+  voucherAvailable: boolean;
+}
+
+export interface NotificationDto {
+  id: string;
+  userId: string;
+  type: string;
+  category: string;
+  title: string;
+  message: string;
+  link?: string;
+  metadata?: Record<string, unknown>;
+  isRead: boolean;
+  createdAt: string;
+  readAt?: string;
+}
+
+export async function getBookingConfirmation(
+  bookingReference: string,
+  token: string
+): Promise<ApiResponse<BookingConfirmationDto>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/${encodeURIComponent(bookingReference)}/confirmation`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch booking confirmation: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function downloadBookingVoucher(
+  bookingReference: string,
+  token: string
+): Promise<Blob> {
+  const res = await fetch(`${API_BASE_URL}/bookings/${encodeURIComponent(bookingReference)}/voucher`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to download voucher: ${res.status}`);
+  }
+  return res.blob();
+}
+
+export async function getMyNotifications(
+  token: string,
+  limit: number = 20,
+  offset: number = 0
+): Promise<ApiResponse<NotificationDto[]>> {
+  const res = await fetch(`${API_BASE_URL}/notifications?limit=${limit}&offset=${offset}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch notifications: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function cancelHotelBooking(
+  bookingReference: string,
+  payload: { reason: string; reasonCode?: string },
+  token: string
+): Promise<ApiResponse<HotelBookingDto>> {
+  const res = await fetch(`${API_BASE_URL}/hotels/bookings/${encodeURIComponent(bookingReference)}/cancel`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to cancel hotel booking: ${res.status}`);
+  }
+  return res.json();
+}
+
+export interface ExperienceSupportingProvider {
+  id: string;
+  experienceId: string;
+  providerId: string;
+  providerName: string;
+  providerType: 'ARTISAN' | 'HOTEL' | 'LOCAL_BUSINESS' | 'GUIDE' | 'RESTAURANT';
+  roleDescription: string;
+  status: 'INVITED' | 'ACCEPTED' | 'DECLINED';
+  notes?: string;
+  createdAt: string;
+}
+
+export interface TripCheckin {
+  id: string;
+  bookingId: string;
+  checkpointName: string;
+  checkpointType: 'START' | 'MIDPOINT' | 'CHECKPOINT' | 'COMPLETION';
+  status: 'PENDING' | 'COMPLETED' | 'MISSED' | 'ESCALATED';
+  scheduledTime?: string;
+  checkedInAt?: string;
+  notes?: string;
+  latitude?: number;
+  longitude?: number;
+  createdAt: string;
+}
+
+export interface TripSafetyIncident {
+  id: string;
+  bookingId?: string;
+  userId: string;
+  userName: string;
+  incidentType: 'SOS' | 'MISSED_CHECKIN' | 'ROUTE_DEVIATION' | 'REPORTED_ISSUE';
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  status: 'REPORTED' | 'ACKNOWLEDGED' | 'RESOLVED';
+  details: string;
+  emergencyContactNotified: boolean;
+  latitude?: number;
+  longitude?: number;
+  createdAt: string;
+  resolvedAt?: string;
+}
+
+export interface ExperienceBooking {
+  id: string;
+  bookingReference: string;
+  touristUserId: string;
+  touristName: string;
+  touristEmail: string;
+  hostId: string;
+  hostName: string;
+  hostRoleTitle?: string;
+  hostAvatarUrl?: string;
+  experienceId?: string;
+  experienceTitle?: string;
+  destinationId?: string;
+  destinationName?: string;
+  bookingType: 'PREDEFINED' | 'CUSTOMIZED';
+  bookingDate: string;
+  startTime?: string;
+  guestCount: number;
+  totalAmount: number;
+  currency: string;
+  status: 
+    | 'REQUESTED' 
+    | 'ACCEPTED' 
+    | 'PAYMENT_PENDING' 
+    | 'CONFIRMED' 
+    | 'TRAVELER_CHECKED_IN'
+    | 'GUIDE_CHECKED_IN'
+    | 'TRIP_STARTED' 
+    | 'IN_PROGRESS' 
+    | 'COMPLETION_PENDING' 
+    | 'COMPLETED' 
+    | 'REVIEWED' 
+    | 'REJECTED' 
+    | 'CANCELLED' 
+    | 'DISPUTED' 
+    | 'PAYMENT_FAILED' 
+    | 'EXPIRED';
+  customRequirements?: string;
+  customItinerary?: string;
+  paymentStatus: 'PENDING' | 'AUTHORIZED' | 'PAID' | 'FAILED' | 'REFUNDED';
+  paymentMethod?: 'ONLINE' | 'CASH';
+  cashMilestone1Amount?: number;
+  cashMilestone1Paid?: boolean;
+  cashMilestone1PaidAt?: string;
+  cashMilestone2Amount?: number;
+  cashMilestone2Paid?: boolean;
+  cashMilestone2PaidAt?: string;
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
+  notes?: string;
+  meetingPointName?: string;
+  meetingPointAddress?: string;
+  meetingPointLatitude?: number;
+  meetingPointLongitude?: number;
+  hostPhone?: string;
+  durationHours?: number;
+  checkins?: TripCheckin[];
+  supportingProviders?: ExperienceSupportingProvider[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BookingMessage {
+  id: string;
+  bookingId: string;
+  senderId: string;
+  senderName: string;
+  senderRole: string;
+  receiverId: string;
+  receiverName: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface RecommendedGuide {
+  guide: LocalHost;
+  matchScore: number;
+  matchReasons: string[];
+  availableExperiences: ExperienceItem[];
+}
+
+export interface GuideMatchRequest {
+  destinationId?: string;
+  cityId?: string;
+  interests?: string[];
+  languages?: string[];
+  maxBudgetPerHour?: number;
+  skill?: string;
+  verifiedOnly?: boolean;
+}
+
+export interface GuideMatchResponse {
+  matches: RecommendedGuide[];
+  exactMatchFound: boolean;
+  message: string;
+  relaxationSuggestions: string[];
+}
+
+// Tourist Experience Booking APIs
+export async function createExperienceBooking(
+  data: {
+    hostId: string;
+    experienceId?: string;
+    destinationId?: string;
+    bookingType?: 'PREDEFINED' | 'CUSTOMIZED';
+    bookingDate: string;
+    startTime?: string;
+    guestCount: number;
+    totalAmount?: number;
+    customRequirements?: string;
+    notes?: string;
+  },
+  token?: string
+): Promise<ApiResponse<ExperienceBooking>> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE_URL}/bookings/experience`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to create booking: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getMyExperienceBookings(token: string): Promise<ApiResponse<ExperienceBooking[]>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/experience`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch bookings: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getExperienceBookingById(id: string, token: string): Promise<ApiResponse<ExperienceBooking>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/experience/${encodeURIComponent(id)}`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch booking details: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function createExperiencePaymentOrder(
+  id: string,
+  token: string
+): Promise<ApiResponse<CreatePaymentOrderResponse>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/experience/${encodeURIComponent(id)}/payment/order`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to create experience payment order: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function confirmBookingPayment(
+  id: string,
+  paymentData: { razorpayOrderId?: string; razorpayPaymentId?: string; razorpaySignature?: string },
+  token: string
+): Promise<ApiResponse<ExperienceBooking>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/experience/${encodeURIComponent(id)}/payment`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(paymentData),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to confirm payment: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function selectCashPayment(
+  id: string,
+  token: string
+): Promise<ApiResponse<ExperienceBooking>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/experience/${encodeURIComponent(id)}/payment/cash`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to select cash payment: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function recordCashMilestone(
+  id: string,
+  milestoneNumber: number,
+  token: string
+): Promise<ApiResponse<ExperienceBooking>> {
+  const res = await fetch(`${API_BASE_URL}/partner/bookings/${encodeURIComponent(id)}/cash-milestone/${milestoneNumber}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to record cash milestone: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function checkinCheckpoint(
+  bookingId: string,
+  data: { checkpointId: string; latitude?: number; longitude?: number; notes?: string },
+  token: string
+): Promise<ApiResponse<TripCheckin>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/experience/${encodeURIComponent(bookingId)}/safety/checkin`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to check in: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function triggerSosAlert(
+  bookingId: string,
+  data: { details?: string; latitude?: number; longitude?: number },
+  token: string
+): Promise<ApiResponse<TripSafetyIncident>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/experience/${encodeURIComponent(bookingId)}/safety/sos`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to trigger SOS: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function confirmTripCompletion(bookingId: string, token: string): Promise<ApiResponse<ExperienceBooking>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/experience/${encodeURIComponent(bookingId)}/complete`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to confirm completion: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function submitExperienceReview(
+  bookingId: string,
+  data: { rating: number; title?: string; comment: string },
+  token: string
+): Promise<ApiResponse<ExperienceBooking>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/experience/${encodeURIComponent(bookingId)}/review`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to submit review: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function raiseBookingDispute(
+  bookingId: string,
+  data: { reason: string; details: string; requestedRefundAmount?: number },
+  token: string
+): Promise<ApiResponse<ExperienceBooking>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/experience/${encodeURIComponent(bookingId)}/dispute`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to raise dispute: ${res.status}`);
+  }
+  return res.json();
+}
+
+// Destination Guide Recommendation & Matching
+export async function getRecommendedGuides(
+  destinationId: string,
+  interests?: string[],
+  languages?: string[]
+): Promise<ApiResponse<RecommendedGuide[]>> {
+  const params = new URLSearchParams();
+  if (interests && interests.length > 0) {
+    interests.forEach(i => params.append('interests', i));
+  }
+  if (languages && languages.length > 0) {
+    languages.forEach(l => params.append('languages', l));
+  }
+  const query = params.toString() ? `?${params.toString()}` : '';
+  const res = await fetch(`${API_BASE_URL}/destinations/${encodeURIComponent(destinationId)}/recommend-guides${query}`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to get recommended guides: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function matchGuides(request: GuideMatchRequest): Promise<ApiResponse<GuideMatchResponse>> {
+  const res = await fetch(`${API_BASE_URL}/local/match`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to match guides: ${res.status}`);
+  }
+  return res.json();
+}
+
+// Partner Booking Management APIs
+export async function getPartnerExperienceBookings(token: string): Promise<ApiResponse<ExperienceBooking[]>> {
+  const res = await fetch(`${API_BASE_URL}/partner/bookings`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch partner bookings: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function acceptPartnerBooking(bookingId: string, token: string): Promise<ApiResponse<ExperienceBooking>> {
+  const res = await fetch(`${API_BASE_URL}/partner/bookings/${encodeURIComponent(bookingId)}/accept`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to accept booking: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function rejectPartnerBooking(
+  bookingId: string,
+  reason?: string,
+  token?: string
+): Promise<ApiResponse<ExperienceBooking>> {
+  const res = await fetch(`${API_BASE_URL}/partner/bookings/${encodeURIComponent(bookingId)}/reject`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ reason: reason || 'Booking rejected by partner' }),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to reject booking: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function customizePartnerBooking(
+  bookingId: string,
+  data: { itinerary?: string; customPrice?: number; partnerNotes?: string } | number,
+  partnerNotesOrToken?: string,
+  tokenParam?: string
+): Promise<ApiResponse<ExperienceBooking>> {
+  let payload: Record<string, unknown> = {};
+  let token = tokenParam;
+
+  if (typeof data === 'number') {
+    payload = { customPrice: data, partnerNotes: partnerNotesOrToken || '' };
+    token = tokenParam;
+  } else {
+    payload = data;
+    token = partnerNotesOrToken;
+  }
+
+  const res = await fetch(`${API_BASE_URL}/partner/bookings/${encodeURIComponent(bookingId)}/customize`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(payload),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to customize booking: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function startPartnerTrip(bookingId: string, token: string): Promise<ApiResponse<ExperienceBooking>> {
+  const res = await fetch(`${API_BASE_URL}/partner/bookings/${encodeURIComponent(bookingId)}/start-trip`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to start trip: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function completePartnerTrip(bookingId: string, token: string): Promise<ApiResponse<ExperienceBooking>> {
+  const res = await fetch(`${API_BASE_URL}/partner/bookings/${encodeURIComponent(bookingId)}/complete-trip`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to mark trip complete: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function partnerCheckinCheckpoint(
+  bookingId: string,
+  checkpointDataOrName: { checkpointId?: string; checkpointName?: string; notes?: string; latitude?: number; longitude?: number } | string,
+  notesOrToken?: string,
+  latitude?: number,
+  longitude?: number,
+  tokenParam?: string
+): Promise<ApiResponse<TripCheckin>> {
+  let payload: Record<string, unknown> = {};
+  let token = tokenParam;
+
+  if (typeof checkpointDataOrName === 'string') {
+    payload = {
+      checkpointName: checkpointDataOrName,
+      checkpointId: checkpointDataOrName,
+      notes: notesOrToken || '',
+      latitude,
+      longitude,
+    };
+    token = tokenParam;
+  } else {
+    payload = checkpointDataOrName;
+    token = notesOrToken;
+  }
+
+  const res = await fetch(`${API_BASE_URL}/partner/bookings/${encodeURIComponent(bookingId)}/checkin`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(payload),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to check in: ${res.status}`);
+  }
+  return res.json();
+}
+
+export interface PartnerReview {
+  id: string;
+  bookingId?: string;
+  experienceId?: string;
+  experienceTitle?: string;
+  hostId?: string;
+  hostName?: string;
+  userId?: string;
+  userName?: string;
+  userAvatarUrl?: string;
+  rating: number;
+  title?: string;
+  comment: string;
+  verifiedTrip?: boolean;
+  createdAt: string;
+}
+
+export async function getPartnerReviews(token: string): Promise<ApiResponse<PartnerReview[]>> {
+  const res = await fetch(`${API_BASE_URL}/partner/bookings/reviews`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch partner reviews: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getPartnerParticipations(token: string): Promise<ApiResponse<ExperienceSupportingProvider[]>> {
+  const res = await fetch(`${API_BASE_URL}/partner/participations`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch participations: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function respondToParticipation(
+  id: string,
+  action: 'ACCEPT' | 'DECLINE' | boolean,
+  notes?: string,
+  token?: string
+): Promise<ApiResponse<ExperienceSupportingProvider>> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const resolvedAction = typeof action === 'boolean' ? (action ? 'ACCEPT' : 'DECLINE') : action;
+
+  const res = await fetch(`${API_BASE_URL}/partner/participations/${encodeURIComponent(id)}/respond`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ action: resolvedAction, notes }),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to respond to participation: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function inviteSupportingProvider(
+  experienceId: string,
+  data: { providerId?: string; providerName: string; providerType: string; roleDescription: string; notes?: string },
+  token: string
+): Promise<ApiResponse<ExperienceSupportingProvider>> {
+  const res = await fetch(`${API_BASE_URL}/partner/experiences/${encodeURIComponent(experienceId)}/supporting-providers`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to invite supporting provider: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function removeSupportingProvider(
+  experienceId: string,
+  supportingId: string,
+  token: string
+): Promise<ApiResponse<void>> {
+  const res = await fetch(`${API_BASE_URL}/partner/experiences/${encodeURIComponent(experienceId)}/supporting-providers/${encodeURIComponent(supportingId)}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to remove supporting provider: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getBookingMessages(
+  bookingId: string,
+  token: string
+): Promise<ApiResponse<BookingMessage[]>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/experience/${encodeURIComponent(bookingId)}/messages`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch trip messages: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function sendBookingMessage(
+  bookingId: string,
+  message: string,
+  token: string
+): Promise<ApiResponse<BookingMessage>> {
+  const res = await fetch(`${API_BASE_URL}/bookings/experience/${encodeURIComponent(bookingId)}/messages`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ message }),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to send message: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getAvailableSupportingProviders(
+  destinationId?: string,
+  cityId?: string
+): Promise<ApiResponse<ExperienceSupportingProvider[]>> {
+  const params = new URLSearchParams();
+  if (destinationId) params.append('destinationId', destinationId);
+  if (cityId) params.append('cityId', cityId);
+  const query = params.toString() ? `?${params.toString()}` : '';
+
+  const res = await fetch(`${API_BASE_URL}/partner/participations/available-providers${query}`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Failed to fetch available providers: ${res.status}`);
+  }
+  return res.json();
+}
 
 

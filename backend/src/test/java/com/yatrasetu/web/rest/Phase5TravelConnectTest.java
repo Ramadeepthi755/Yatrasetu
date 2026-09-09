@@ -7,16 +7,19 @@ import com.yatrasetu.web.dto.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityManager;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -24,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Transactional
 public class Phase5TravelConnectTest {
 
     @Autowired
@@ -59,6 +63,15 @@ public class Phase5TravelConnectTest {
     @Autowired
     private NotificationRepository notificationRepository;
 
+        @Autowired
+        private ExperienceRepository experienceRepository;
+
+        @Autowired
+        private LocalHostRepository localHostRepository;
+
+        @Autowired
+        private EntityManager entityManager;
+
     private User travelerA;
     private User travelerB;
     private User travelerC;
@@ -69,24 +82,29 @@ public class Phase5TravelConnectTest {
     private TravelBuddy buddyA;
     private TravelBuddy buddyB;
     private TravelBuddy buddyC;
+        private String testRunId;
 
     @BeforeEach
     void setUp() {
+                testRunId = UUID.randomUUID().toString().substring(0, 8);
         messageRepository.deleteAll();
         notificationRepository.deleteAll();
         travelBuddyRequestRepository.deleteAll();
         travelBuddyRepository.deleteAll();
+        experienceRepository.deleteAll();
+        localHostRepository.deleteAll();
         profileRepository.deleteAll();
         destinationRepository.deleteAll();
         cityRepository.deleteAll();
         stateRepository.deleteAll();
         userRepository.deleteAll();
+        userRepository.flush();
 
         // 1. Create Users
-        travelerA = userRepository.save(User.builder()
+        travelerA = userRepository.saveAndFlush(User.builder()
                 .id("usr-a")
                 .authUserId("auth-usr-a")
-                .email("traveler_a@test.com")
+                .email("traveler_a_" + testRunId + "@test.com")
                 .fullName("Aarav Explorer")
                 .role(Role.TRAVELER)
                 .verified(true)
@@ -94,10 +112,10 @@ public class Phase5TravelConnectTest {
                 .createdAt(Instant.now())
                 .build());
 
-        travelerB = userRepository.save(User.builder()
+        travelerB = userRepository.saveAndFlush(User.builder()
                 .id("usr-b")
                 .authUserId("auth-usr-b")
-                .email("traveler_b@test.com")
+                .email("traveler_b_" + testRunId + "@test.com")
                 .fullName("Bhavna Culture")
                 .role(Role.TRAVELER)
                 .verified(true)
@@ -105,10 +123,10 @@ public class Phase5TravelConnectTest {
                 .createdAt(Instant.now())
                 .build());
 
-        travelerC = userRepository.save(User.builder()
+        travelerC = userRepository.saveAndFlush(User.builder()
                 .id("usr-c")
                 .authUserId("auth-usr-c")
-                .email("traveler_c@test.com")
+                .email("traveler_c_" + testRunId + "@test.com")
                 .fullName("Chirag Hidden")
                 .role(Role.TRAVELER)
                 .verified(true)
@@ -127,7 +145,7 @@ public class Phase5TravelConnectTest {
                 .languages(List.of("English", "Hindi"))
                 .build();
         travelerA.setProfile(profA);
-        travelerA = userRepository.save(travelerA);
+        entityManager.persist(profA);
 
         Profile profB = Profile.builder()
                 .id(travelerB.getId())
@@ -140,7 +158,7 @@ public class Phase5TravelConnectTest {
                 .languages(List.of("English", "Hindi"))
                 .build();
         travelerB.setProfile(profB);
-        travelerB = userRepository.save(travelerB);
+        entityManager.persist(profB);
 
         // Traveler C has Travel Connect DISABLED
         Profile profC = Profile.builder()
@@ -154,7 +172,7 @@ public class Phase5TravelConnectTest {
                 .languages(List.of("English"))
                 .build();
         travelerC.setProfile(profC);
-        travelerC = userRepository.save(travelerC);
+        entityManager.persist(profC);
 
         // 3. Create Locations
         testState = stateRepository.save(State.builder()

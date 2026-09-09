@@ -1,22 +1,40 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Bed, Filter, Map, Grid, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { Search, Bed, Filter, Map, Grid, RefreshCw, CheckCircle, AlertCircle, X, MapPin, Database, Info } from 'lucide-react';
 import { getHotels, getHotelCategories, HotelItem } from '@/lib/api';
 import { HotelCard } from '@/components/explore/HotelCard';
 import { MapView, MapMarker } from '@/components/map/MapView';
 
-export default function HotelsDirectoryPage() {
+function HotelsDirectoryContent() {
+  const router = useRouter();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const searchParams = useSearchParams();
+  const initialDestinationId = searchParams.get('destinationId') || '';
+  const initialCityId = searchParams.get('cityId') || '';
+  const initialSearch = searchParams.get('search') || '';
+
   const [hotels, setHotels] = useState<HotelItem[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      const redirectQuery = initialDestinationId ? `?destinationId=${initialDestinationId}` : '';
+      router.push(`/login?redirect=${encodeURIComponent('/hotels' + redirectQuery)}`);
+    }
+  }, [authLoading, isAuthenticated, router, initialDestinationId]);
+
   // View toggle: 'grid' vs 'map'
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
 
   // Filters
-  const [search, setSearch] = useState<string>('');
+  const [search, setSearch] = useState<string>(initialSearch);
+  const [destinationId, setDestinationId] = useState<string>(initialDestinationId);
+  const [cityId, setCityId] = useState<string>(initialCityId);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isPartnerOnly, setIsPartnerOnly] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<string>('hotelRating');
@@ -25,6 +43,16 @@ export default function HotelsDirectoryPage() {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalElements, setTotalElements] = useState<number>(0);
+
+  // Synchronize when URL searchParams change
+  useEffect(() => {
+    const urlDest = searchParams.get('destinationId') || '';
+    const urlCity = searchParams.get('cityId') || '';
+    const urlSearch = searchParams.get('search') || '';
+    if (urlDest !== destinationId) setDestinationId(urlDest);
+    if (urlCity !== cityId) setCityId(urlCity);
+    if (urlSearch && urlSearch !== search) setSearch(urlSearch);
+  }, [searchParams, destinationId, cityId, search]);
 
   // Load distinct categories
   useEffect(() => {
@@ -46,6 +74,8 @@ export default function HotelsDirectoryPage() {
     setError(null);
     try {
       const res = await getHotels({
+        destinationId: destinationId || undefined,
+        cityId: cityId || undefined,
         search: search.trim() || undefined,
         category: selectedCategory !== 'all' ? selectedCategory : undefined,
         isPartnerProperty: isPartnerOnly ? true : undefined,
@@ -66,7 +96,7 @@ export default function HotelsDirectoryPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, selectedCategory, isPartnerOnly, sortBy, currentPage, viewMode]);
+  }, [destinationId, cityId, search, selectedCategory, isPartnerOnly, sortBy, currentPage, viewMode]);
 
   useEffect(() => {
     loadHotels();
@@ -80,6 +110,8 @@ export default function HotelsDirectoryPage() {
 
   const handleReset = () => {
     setSearch('');
+    setDestinationId('');
+    setCityId('');
     setSelectedCategory('all');
     setIsPartnerOnly(false);
     setSortBy('hotelRating');
@@ -92,7 +124,7 @@ export default function HotelsDirectoryPage() {
     .map((h) => ({
       id: h.id,
       title: h.hotelName,
-      subtitle: `${h.category || 'Hotel'} · ₹${Number(h.pricePerNight).toLocaleString('en-IN')}/night`,
+      subtitle: `${h.category || 'Hotel'} · ₹${Number(h.pricePerNight).toLocaleString('en-IN')}/night (Indicative)`,
       latitude: Number(h.latitude),
       longitude: Number(h.longitude),
       type: 'hotel',
@@ -108,13 +140,13 @@ export default function HotelsDirectoryPage() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-300 border border-indigo-500/20 mb-4">
               <Bed className="h-3.5 w-3.5 mr-1.5" />
-              Accommodations & Havelis
+              Accommodations & Havelis Directory
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl">
               Stay in Heritage Havelis & Authentic Homestays
             </h1>
             <p className="mt-4 text-base text-stone-300 sm:text-lg leading-relaxed">
-              From centuries-old Rajasthani royal retreats and tranquil Kerala plantation estates to boutique hill-station chalets.
+              Explore authentic regional stays, heritage estates, and boutique homestays curated across Indian destinations.
             </p>
           </div>
 
@@ -126,7 +158,7 @@ export default function HotelsDirectoryPage() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search hotels by property name, city, or address..."
+                placeholder="Search hotels by property name, city, or address in current dataset..."
                 className="w-full rounded-xl border border-stone-700 bg-stone-800/90 py-3 pl-10 pr-4 text-sm text-white placeholder-stone-400 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 backdrop-blur-sm"
               />
             </div>
@@ -144,14 +176,53 @@ export default function HotelsDirectoryPage() {
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-6">
         {/* Transparent Notice Banner */}
         <div className="mb-6 rounded-xl border border-indigo-200 bg-indigo-50/90 p-4 text-xs text-indigo-900 shadow-sm backdrop-blur-md flex items-start gap-2.5">
-          <AlertCircle className="h-4 w-4 text-indigo-600 flex-shrink-0 mt-0.5" />
+          <Info className="h-4 w-4 text-indigo-600 flex-shrink-0 mt-0.5" />
           <div>
-            <span className="font-bold">Prototype Hotel Directory:</span> Curated directory of 1,007 properties from the supplied national hotel dataset, providing baseline ratings, amenities, and price estimates across Indian cities. Live booking availability will connect via hotel partner PMS integrations.
+            <span className="font-bold">Accommodation Coverage & Provenance Notice:</span> YatraSetu currently indexes 1,007 curated property records across 51 Indian cities. Listed rates represent baseline dataset estimates. Live real-time availability and dynamic rates will be powered directly through hotel partner integrations.
           </div>
         </div>
 
         {/* Filter Controls Bar */}
         <div className="mb-8 space-y-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+          {/* Active Context Badges (if destinationId or cityId active) */}
+          {(destinationId || cityId) && (
+            <div className="flex flex-wrap items-center gap-2 pb-2 border-b border-stone-100 text-xs">
+              <span className="text-stone-500 font-medium flex items-center">
+                <MapPin className="h-3.5 w-3.5 mr-1 text-amber-500" /> Location Filter:
+              </span>
+              {destinationId && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-900 border border-indigo-200">
+                  Destination: {destinationId}
+                  <button
+                    onClick={() => {
+                      setDestinationId('');
+                      setCurrentPage(0);
+                    }}
+                    className="ml-1 hover:text-rose-600"
+                    title="Remove destination filter"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+              {cityId && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-900 border border-teal-200">
+                  City: {cityId}
+                  <button
+                    onClick={() => {
+                      setCityId('');
+                      setCurrentPage(0);
+                    }}
+                    className="ml-1 hover:text-rose-600"
+                    title="Remove city filter"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Category Tabs */}
           <div className="flex items-center space-x-2 overflow-x-auto pb-1 text-xs">
             <button
@@ -222,7 +293,7 @@ export default function HotelsDirectoryPage() {
                 <option value="priceDesc">Price: High to Low</option>
               </select>
 
-              {(search || selectedCategory !== 'all' || isPartnerOnly || sortBy !== 'hotelRating') && (
+              {(search || destinationId || cityId || selectedCategory !== 'all' || isPartnerOnly || sortBy !== 'hotelRating') && (
                 <button
                   onClick={handleReset}
                   className="flex items-center text-xs text-indigo-700 hover:text-indigo-800 font-medium ml-2"
@@ -261,7 +332,8 @@ export default function HotelsDirectoryPage() {
         {/* Results Counter */}
         <div className="mb-4 flex items-center justify-between text-xs text-stone-500 px-1">
           <span>
-            Showing <strong className="text-stone-900">{hotels.length}</strong> properties
+            Showing <strong className="text-stone-900">{hotels.length}</strong> properties in YatraSetu dataset
+            {totalElements > 0 && <span> of <strong>{totalElements}</strong> total</span>}
           </span>
           {viewMode === 'grid' && totalPages > 1 && (
             <span>
@@ -303,9 +375,9 @@ export default function HotelsDirectoryPage() {
         {!loading && !error && hotels.length === 0 && (
           <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-12 text-center">
             <Bed className="mx-auto h-12 w-12 text-stone-400 mb-3" />
-            <h3 className="text-base font-bold text-stone-900">No properties matched your criteria</h3>
+            <h3 className="text-base font-bold text-stone-900">No properties matched your criteria in YatraSetu&apos;s dataset</h3>
             <p className="mt-1 text-xs text-stone-500 max-w-sm mx-auto">
-              Try choosing another accommodation category or resetting the filters.
+              Try choosing another accommodation category or resetting the location filters.
             </p>
             <button
               onClick={handleReset}
@@ -327,7 +399,7 @@ export default function HotelsDirectoryPage() {
                     zoom={6}
                     className="h-[560px] w-full rounded-2xl overflow-hidden"
                     title="Explore Properties on Map"
-                    subtitle="Click any pin to inspect rates, category, and direct property page"
+                    subtitle="Click any pin to inspect indicative rates, category, and property details"
                   />
                 </div>
 
@@ -372,5 +444,21 @@ export default function HotelsDirectoryPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function HotelsDirectoryPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+          <div className="animate-pulse text-xs font-semibold uppercase tracking-wider text-stone-400">
+            Loading Accommodations...
+          </div>
+        </div>
+      }
+    >
+      <HotelsDirectoryContent />
+    </Suspense>
   );
 }

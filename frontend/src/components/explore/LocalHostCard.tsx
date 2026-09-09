@@ -48,15 +48,15 @@ export function LocalHostCard({ host }: LocalHostCardProps) {
               >
                 {host.name}
               </Link>
-              {host.isDemoData ? (
-                <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800 border border-amber-200">
-                  Sample Guide
+              {host.isVerified ? (
+                <span className="flex items-center rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-bold text-teal-800 border border-teal-200 shadow-sm">
+                  <CheckCircle className="h-3 w-3 mr-1 text-teal-600" /> YatraSetu Verified
                 </span>
-              ) : host.isVerified ? (
-                <span className="flex items-center rounded-full bg-teal-50 px-1.5 py-0.5 text-[10px] font-bold text-teal-800 border border-teal-200">
-                  <CheckCircle className="h-3 w-3 mr-0.5" /> Verified Partner
+              ) : (
+                <span className="rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-medium text-stone-600 border border-stone-200">
+                  Identity Verified
                 </span>
-              ) : null}
+              )}
             </div>
 
             <p className="text-xs font-medium text-amber-700 mt-0.5">{host.roleTitle}</p>

@@ -30,6 +30,8 @@ import java.time.Instant;
 public class SecurityConfig {
 
     private final SupabaseAuthenticationFilter supabaseAuthenticationFilter;
+    private final CorrelationIdFilter correlationIdFilter;
+    private final RateLimitingFilter rateLimitingFilter;
     private final ObjectMapper objectMapper;
 
     @Bean
@@ -43,6 +45,9 @@ public class SecurityConfig {
                 .accessDeniedHandler(accessDeniedHandler())
             )
             .authorizeHttpRequests(auth -> auth
+                // Actuator Probes
+                .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
+
                 // Public Health & Discovery
                 .requestMatchers("/api/v1/health/**").permitAll()
                 .requestMatchers("/api/v1/public/**").permitAll()
@@ -54,12 +59,14 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/hotels/**").permitAll()
                 .requestMatchers("/api/v1/local/**").permitAll()
                 .requestMatchers("/api/v1/experiences/**").permitAll()
+                .requestMatchers("/api/v1/culture/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/travel-connect").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/travel-connect/destination/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/travel-connect/*").permitAll()
                 .requestMatchers("/api/v1/search/**").permitAll()
                 .requestMatchers("/api/v1/discovery/**").permitAll()
                 .requestMatchers("/api/v1/ai/**").permitAll()
+                .requestMatchers("/api/v1/payments/razorpay/webhook").permitAll()
                 .requestMatchers("/error").permitAll()
 
                 // Partner Protected Routes
@@ -78,7 +85,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/**").authenticated()
                 .anyRequest().permitAll()
             )
-            .addFilterBefore(supabaseAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(correlationIdFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(supabaseAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(rateLimitingFilter, SupabaseAuthenticationFilter.class);
 
         return http.build();
     }

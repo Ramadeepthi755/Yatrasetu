@@ -1,5 +1,6 @@
 package com.yatrasetu.web.dto.intelligence;
 
+import com.yatrasetu.domain.intelligence.GovernmentActionPriority;
 import com.yatrasetu.domain.intelligence.GovernmentActionType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,4 +17,5 @@ public class GovernmentActionRequest {
     private GovernmentActionType actionType;
     private String title;
     private String notes;
+    private GovernmentActionPriority priority;
 }

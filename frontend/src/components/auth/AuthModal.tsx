@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, getDefaultDashboardForRole } from '@/context/AuthContext';
 import {
   Compass,
   Lock,
@@ -10,7 +10,6 @@ import {
   ArrowRight,
   AlertCircle,
   X,
-  Sparkles,
   Briefcase,
   Landmark,
 } from 'lucide-react';
@@ -21,14 +20,15 @@ export default function AuthModal() {
     isAuthModalOpen,
     closeAuthModal,
     authModalTargetRole,
+    authModalReturnTo,
     login,
-    loginAsDemo,
+    loginAsSihDemo,
   } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [demoLoadingRole, setDemoLoadingRole] = useState<string | null>(null);
+  const [demoLoadingKey, setDemoLoadingKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Close on ESC key and prevent body scroll
@@ -57,7 +57,7 @@ export default function AuthModal() {
       setEmail('');
       setPassword('');
       setError(null);
-      setDemoLoadingRole(null);
+      setDemoLoadingKey(null);
     }
   }, [isAuthModalOpen]);
 
@@ -71,14 +71,16 @@ export default function AuthModal() {
     }
     setError(null);
     setLoading(true);
+    const targetRole = authModalTargetRole;
+    const returnTo = authModalReturnTo;
     try {
-      await login(email, password);
+      const profile = await login(email, password);
       closeAuthModal();
-      // Route appropriately if target was set
-      if (authModalTargetRole === 'PARTNER') {
-        router.push('/partner/dashboard');
-      } else if (authModalTargetRole === 'GOVERNMENT') {
-        router.push('/government/dashboard');
+      const resolvedRole = profile?.role || targetRole;
+      if (returnTo) {
+        router.push(returnTo);
+      } else {
+        router.push(getDefaultDashboardForRole(resolvedRole));
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to sign in. Please verify your credentials.';
@@ -88,27 +90,93 @@ export default function AuthModal() {
     }
   };
 
-  const handleSelectDemo = async (role: 'TRAVELER' | 'PARTNER' | 'GOVERNMENT') => {
-    setDemoLoadingRole(role);
+  const handleSelectSihDemo = async (
+    key: 'TOURIST' | 'GUIDE' | 'CULTURE_HOST' | 'HOTEL_PROVIDER',
+    targetRoute: string
+  ) => {
+    setDemoLoadingKey(key);
     setError(null);
+    const returnTo = authModalReturnTo;
     try {
-      await loginAsDemo(role);
+      const profile = await loginAsSihDemo(key);
       closeAuthModal();
 
-      if (role === 'PARTNER') {
-        router.push('/partner/dashboard');
-      } else if (role === 'GOVERNMENT') {
-        router.push('/government/dashboard');
+      if (returnTo) {
+        router.push(returnTo);
       } else {
-        router.push('/explore');
+        const dest = profile?.role === 'PARTNER'
+          ? '/partner/dashboard'
+          : profile?.role === 'GOVERNMENT'
+          ? '/government/dashboard'
+          : targetRoute || '/dashboard';
+        router.push(dest);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Demo sign-in failed. Please try again.';
       setError(msg);
     } finally {
-      setDemoLoadingRole(null);
+      setDemoLoadingKey(null);
     }
   };
+
+  const sihModalAccounts = [
+    {
+      key: 'TOURIST' as const,
+      roleBadge: 'TOURIST',
+      label: 'SIH Demo Tourist',
+      email: 'tourist@yatrasetu.demo',
+      sub: 'Explorer Persona • Real-time Trip & Hotel Bookings',
+      targetRoute: '/explore',
+      icon: Compass,
+      textColor: 'text-amber-700',
+      bgClass: 'bg-amber-50/80 hover:bg-amber-50 border-amber-200/90 hover:border-amber-400',
+      iconBg: 'bg-amber-100',
+      iconColor: 'text-[#F59E0B]',
+      badgeBg: 'bg-amber-200/80 text-amber-900',
+    },
+    {
+      key: 'GUIDE' as const,
+      roleBadge: 'GUIDE',
+      label: 'Ravi Kumar (Guide)',
+      email: 'ravi.guide@yatrasetu.demo',
+      sub: 'Heritage & Temple Guide • Tirupati (host-5)',
+      targetRoute: '/partner/dashboard',
+      icon: Briefcase,
+      textColor: 'text-[#0F766E]',
+      bgClass: 'bg-teal-50/70 hover:bg-teal-50 border-teal-200/90 hover:border-teal-400',
+      iconBg: 'bg-teal-100',
+      iconColor: 'text-[#0F766E]',
+      badgeBg: 'bg-teal-200/80 text-teal-900',
+    },
+    {
+      key: 'CULTURE_HOST' as const,
+      roleBadge: 'ARTISAN',
+      label: 'Smt. Lakshmi Prasanna',
+      email: 'lakshmi.host@yatrasetu.demo',
+      sub: 'Kalamkari Artisan • Tirupati (host-45)',
+      targetRoute: '/partner/dashboard',
+      icon: Briefcase,
+      textColor: 'text-purple-700',
+      bgClass: 'bg-purple-50/70 hover:bg-purple-50 border-purple-200/90 hover:border-purple-400',
+      iconBg: 'bg-purple-100',
+      iconColor: 'text-purple-600',
+      badgeBg: 'bg-purple-200/80 text-purple-900',
+    },
+    {
+      key: 'HOTEL_PROVIDER' as const,
+      roleBadge: 'HOTEL',
+      label: 'Tirupati Hotel Provider',
+      email: 'tirupati.hotel@yatrasetu.demo',
+      sub: 'Tirupati Grand Residency • Reservations',
+      targetRoute: '/partner/dashboard',
+      icon: Landmark,
+      textColor: 'text-blue-700',
+      bgClass: 'bg-blue-50/70 hover:bg-blue-50 border-blue-200/90 hover:border-blue-400',
+      iconBg: 'bg-blue-100',
+      iconColor: 'text-blue-600',
+      badgeBg: 'bg-blue-200/80 text-blue-900',
+    },
+  ];
 
   return (
     <div
@@ -144,12 +212,12 @@ export default function AuthModal() {
             Welcome to YatraSetu
           </h2>
           <p className="text-xs sm:text-sm text-slate-200 mt-1">
-            Sign in to continue
+            SIH Grand Finale Multi-Tenant Demo
           </p>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 sm:p-7 space-y-6">
+        <div className="p-6 sm:p-7 space-y-5">
           {error && (
             <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-rose-700 text-xs">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -158,7 +226,7 @@ export default function AuthModal() {
           )}
 
           {/* Email / Password Sign In Form */}
-          <form onSubmit={handleEmailPasswordSubmit} className="space-y-4">
+          <form onSubmit={handleEmailPasswordSubmit} className="space-y-3.5">
             <div>
               <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider mb-1.5">
                 Email
@@ -172,7 +240,7 @@ export default function AuthModal() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="traveler@yatrasetu.in"
+                  placeholder="tourist@yatrasetu.demo"
                   className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-[#171717] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#312E81]/20 focus:border-[#312E81] transition-all"
                 />
               </div>
@@ -198,7 +266,7 @@ export default function AuthModal() {
 
             <button
               type="submit"
-              disabled={loading || Boolean(demoLoadingRole)}
+              disabled={loading || Boolean(demoLoadingKey)}
               className="w-full py-3 px-4 bg-[#312E81] hover:bg-[#1E1B4B] text-white font-bold rounded-xl text-sm shadow-md shadow-[#312E81]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading ? (
@@ -215,114 +283,39 @@ export default function AuthModal() {
           {/* Divider */}
           <div className="relative flex items-center justify-center">
             <div className="border-t border-slate-200 w-full" />
-            <span className="bg-[#FFFBF5] px-3 text-[11px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap">
-              OR
+            <span className="bg-[#FFFBF5] px-3 text-[11px] font-bold uppercase tracking-widest text-[#312E81] whitespace-nowrap">
+              SIH Demo Accounts
             </span>
             <div className="border-t border-slate-200 w-full" />
           </div>
 
           {/* Demo Account Section */}
-          <div className="space-y-3">
-            <div className="text-center">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-[#171717] inline-flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[#F59E0B]" />
-                Try Demo Account
-              </span>
-              <p className="text-[11px] text-[#64748B] mt-0.5">
-                Explore YatraSetu with a preconfigured demo account.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-2.5">
-              {/* Traveler Demo */}
+          <div className="space-y-2">
+            {sihModalAccounts.map(({ key, roleBadge, label, email: accEmail, sub, targetRoute, icon: Icon, textColor, bgClass, iconBg, iconColor, badgeBg }) => (
               <button
+                key={key}
                 type="button"
-                onClick={() => handleSelectDemo('TRAVELER')}
-                disabled={loading || Boolean(demoLoadingRole)}
-                className={`w-full p-3 rounded-2xl border text-left transition-all flex items-center justify-between group ${
-                  authModalTargetRole === 'TRAVELER'
-                    ? 'border-[#F59E0B] bg-amber-50/80 ring-2 ring-[#F59E0B]/50'
-                    : 'border-slate-200 hover:border-amber-400 bg-white hover:bg-amber-50/50'
-                }`}
+                onClick={() => handleSelectSihDemo(key, targetRoute)}
+                disabled={loading || Boolean(demoLoadingKey)}
+                className={`w-full p-2.5 rounded-2xl border text-left transition-all flex items-center justify-between group ${bgClass} shadow-sm`}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <Compass className="w-4 h-4 text-[#F59E0B]" />
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className={`w-8 h-8 rounded-xl ${iconBg} flex items-center justify-center group-hover:scale-105 transition-transform flex-shrink-0`}>
+                    <Icon className={`w-4 h-4 ${iconColor}`} />
                   </div>
-                  <div>
-                    <div className="text-xs font-bold text-[#171717] flex items-center gap-1.5">
-                      Traveler Demo
-                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-medium">Demo</span>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-[#171717] flex items-center gap-1.5 flex-wrap">
+                      <span>{label}</span>
+                      <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${badgeBg}`}>{roleBadge}</span>
                     </div>
-                    <div className="text-[11px] text-slate-500">Aditi Sharma • Explorer persona</div>
+                    <div className="text-[10px] text-slate-500 truncate">{accEmail}</div>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-amber-700 group-hover:translate-x-0.5 transition-transform">
-                  {demoLoadingRole === 'TRAVELER' ? 'Entering...' : 'Continue →'}
+                <span className={`text-xs font-bold ${textColor} group-hover:translate-x-0.5 transition-transform flex-shrink-0 ml-2`}>
+                  {demoLoadingKey === key ? 'Entering...' : '→'}
                 </span>
               </button>
-
-              {/* Local Partner Demo */}
-              <button
-                type="button"
-                onClick={() => handleSelectDemo('PARTNER')}
-                disabled={loading || Boolean(demoLoadingRole)}
-                className={`w-full p-3 rounded-2xl border text-left transition-all flex items-center justify-between group ${
-                  authModalTargetRole === 'PARTNER'
-                    ? 'border-[#0F766E] bg-teal-50/80 ring-2 ring-[#0F766E]/50'
-                    : 'border-slate-200 hover:border-teal-400 bg-white hover:bg-teal-50/50'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-teal-100 text-[#0F766E] flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <Briefcase className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-[#171717] flex items-center gap-1.5">
-                      Local Partner Demo
-                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-teal-100 text-teal-800 font-medium">Demo</span>
-                    </div>
-                    <div className="text-[11px] text-slate-500">Rajesh Guide • Host & Guide portal</div>
-                  </div>
-                </div>
-                <span className="text-xs font-bold text-[#0F766E] group-hover:translate-x-0.5 transition-transform">
-                  {demoLoadingRole === 'PARTNER' ? 'Entering...' : 'Continue →'}
-                </span>
-              </button>
-
-              {/* Government Demo */}
-              <button
-                type="button"
-                onClick={() => handleSelectDemo('GOVERNMENT')}
-                disabled={loading || Boolean(demoLoadingRole)}
-                className={`w-full p-3 rounded-2xl border text-left transition-all flex items-center justify-between group ${
-                  authModalTargetRole === 'GOVERNMENT'
-                    ? 'border-[#312E81] bg-indigo-50/80 ring-2 ring-[#312E81]/50'
-                    : 'border-slate-200 hover:border-indigo-400 bg-white hover:bg-indigo-50/50'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-indigo-100 text-[#312E81] flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <Landmark className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-[#171717] flex items-center gap-1.5">
-                      Government Demo
-                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-800 font-medium">Demo</span>
-                    </div>
-                    <div className="text-[11px] text-slate-500">Director General • Tourism analytics</div>
-                  </div>
-                </div>
-                <span className="text-xs font-bold text-[#312E81] group-hover:translate-x-0.5 transition-transform">
-                  {demoLoadingRole === 'GOVERNMENT' ? 'Entering...' : 'Continue →'}
-                </span>
-              </button>
-            </div>
-
-            {/* Disclaimer */}
-            <p className="text-[11px] text-center text-slate-400 leading-relaxed px-2 pt-1">
-              Demo accounts are provided for platform exploration and do not represent verified real-world users.
-            </p>
+            ))}
           </div>
         </div>
       </div>

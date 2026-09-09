@@ -20,7 +20,7 @@ public class AiAssistantController {
 
     @PostMapping("/chat")
     public ResponseEntity<ApiResponse<AiChatResponse>> chat(
-            @RequestBody AiChatRequest request,
+            @Valid @RequestBody AiChatRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
         
         AiChatResponse response = aiAssistantService.chat(request, principal);

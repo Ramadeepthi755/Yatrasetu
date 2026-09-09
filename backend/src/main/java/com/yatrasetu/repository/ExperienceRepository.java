@@ -18,6 +18,19 @@ public interface ExperienceRepository extends JpaRepository<Experience, String> 
 
     List<Experience> findByDestinationId(String destinationId);
 
+    List<Experience> findByCityId(String cityId);
+
+    List<Experience> findByCulturalTraditionId(String culturalTraditionId);
+
+    @Query("SELECT e FROM Experience e WHERE e.culturalTradition.id = :culturalTraditionId " +
+            "AND e.isActive = true " +
+            "AND (e.verificationStatus = com.yatrasetu.domain.ExperienceVerificationStatus.VERIFIED OR e.isDemoData = true)")
+    List<Experience> findVerifiedByCulturalTraditionId(@Param("culturalTraditionId") String culturalTraditionId);
+
+    List<Experience> findByVerificationStatus(com.yatrasetu.domain.ExperienceVerificationStatus verificationStatus);
+
+    List<Experience> findByVerificationStatusIn(List<com.yatrasetu.domain.ExperienceVerificationStatus> statuses);
+
     @Query("SELECT e.destination.id, COUNT(e) FROM Experience e WHERE e.destination IS NOT NULL GROUP BY e.destination.id")
     List<Object[]> countExperiencesByDestination();
 

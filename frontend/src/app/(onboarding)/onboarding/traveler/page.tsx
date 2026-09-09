@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { Compass, Sparkles, Check, ArrowRight, SkipForward } from 'lucide-react';
+import { Compass, Check, ArrowRight, SkipForward } from 'lucide-react';
 
 const INTERESTS_OPTIONS = [
   { id: 'Nature', label: '🌿 Nature & Hills', desc: 'Mountains, forests & lakes' },
@@ -116,7 +116,7 @@ export default function TravelerOnboardingPage() {
       {/* Header */}
       <div className="text-center space-y-3">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#312E81]/10 text-[#312E81] text-xs font-semibold">
-          <Sparkles className="w-4 h-4 text-[#F59E0B]" />
+          <Compass className="w-4 h-4 text-[#F59E0B]" />
           Personalize Your India Journey
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-[#171717] tracking-tight">

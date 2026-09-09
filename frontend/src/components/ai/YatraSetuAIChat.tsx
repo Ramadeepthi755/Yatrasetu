@@ -185,7 +185,9 @@ export const YatraSetuAIChat: React.FC<YatraSetuAIChatProps> = ({
         setMessages((prev) => [...prev, assistantMsg]);
       }
     } catch (err: unknown) {
-      const errorMsg = err instanceof Error ? err.message : 'Unable to connect to AI assistant.';
+      const errorMsg = err instanceof TypeError && err.message.toLowerCase().includes('fetch')
+        ? 'The backend is not reachable right now. You can still browse the app, or start the backend at http://localhost:8080.'
+        : err instanceof Error ? err.message : 'Unable to connect to AI assistant.';
       const fallbackErrorMsg: MessageState = {
         id: 'msg-' + Date.now() + '-err',
         sender: 'assistant',

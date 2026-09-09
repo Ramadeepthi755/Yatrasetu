@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Filter, SlidersHorizontal, Compass, Sparkles } from 'lucide-react';
+import { Filter, SlidersHorizontal, Compass, Layers } from 'lucide-react';
 import { StateSummary } from '@/lib/api';
 
 interface FilterBarProps {
@@ -27,14 +27,14 @@ const REGIONS = [
 
 const CATEGORIES = [
   'All',
+  'Beaches',
   'Heritage',
-  'Nature',
-  'Beach',
-  'Adventure',
-  'Spiritual',
+  'Temples',
   'Culture',
-  'Hill Station',
+  'Adventure',
   'Food',
+  'Nature',
+  'Hill Station',
 ];
 
 export function FilterBar({
@@ -58,7 +58,7 @@ export function FilterBar({
       {/* Category Pills Bar */}
       <div>
         <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2.5">
-          <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+          <Layers className="h-3.5 w-3.5 text-amber-500" />
           <span>Travel Themes</span>
         </div>
         <div className="flex flex-wrap gap-2">

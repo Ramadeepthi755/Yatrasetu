@@ -28,9 +28,11 @@ export function StateCard({ state }: StateCardProps) {
             loading="lazy"
           />
         ) : (
-          <div className="h-full w-full bg-gradient-to-br from-indigo-900 via-indigo-800 to-teal-800 flex flex-col items-center justify-center p-4 text-center transition-transform duration-500 group-hover:scale-105">
-            <Compass className="h-10 w-10 text-amber-400 mb-2 opacity-80" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-stone-200">
+          <div className="h-full w-full bg-stone-900 flex flex-col items-center justify-center p-4 text-center">
+            <span className="text-xs font-medium text-stone-400">
+              Image currently unavailable
+            </span>
+            <span className="text-[11px] text-stone-500 mt-1 uppercase tracking-wider">
               {state.region}
             </span>
           </div>

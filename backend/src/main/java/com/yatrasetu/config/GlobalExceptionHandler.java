@@ -3,17 +3,22 @@ package com.yatrasetu.config;
 import com.yatrasetu.web.dto.ApiResponse;
 import com.yatrasetu.web.dto.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -23,7 +28,7 @@ public class GlobalExceptionHandler {
         
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
+            String fieldName = error instanceof FieldError fe ? fe.getField() : error.getObjectName();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
@@ -47,14 +52,16 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
-    public ResponseEntity<ApiResponse<ErrorResponse>> handleIllegalArgument(
-            RuntimeException ex, HttpServletRequest request) {
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class, HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleBadRequest(
+            Exception ex, HttpServletRequest request) {
         
+        log.warn("Bad request on {}: {}", request.getRequestURI(), ex.getMessage());
+
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
                 .error("Bad Request")
-                .message(ex.getMessage())
+                .message(ex.getMessage() != null ? ex.getMessage() : "Invalid request parameters or payload")
                 .path(request.getRequestURI())
                 .timestamp(Instant.now())
                 .build();
@@ -62,7 +69,77 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 ApiResponse.<ErrorResponse>builder()
                         .success(false)
-                        .message(ex.getMessage())
+                        .message(errorResponse.getMessage())
+                        .data(errorResponse)
+                        .timestamp(Instant.now())
+                        .build()
+        );
+    }
+
+    @ExceptionHandler({ResourceNotFoundException.class, NoResourceFoundException.class})
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleNotFound(
+            Exception ex, HttpServletRequest request) {
+        
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(HttpStatus.NOT_FOUND.value())
+                .error("Not Found")
+                .message(ex.getMessage() != null ? ex.getMessage() : "The requested resource was not found")
+                .path(request.getRequestURI())
+                .timestamp(Instant.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                ApiResponse.<ErrorResponse>builder()
+                        .success(false)
+                        .message(errorResponse.getMessage())
+                        .data(errorResponse)
+                        .timestamp(Instant.now())
+                        .build()
+        );
+    }
+
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleTooManyRequests(
+            TooManyRequestsException ex, HttpServletRequest request) {
+        
+        log.warn("Rate limit triggered on {}: {}", request.getRequestURI(), ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(HttpStatus.TOO_MANY_REQUESTS.value())
+                .error("Too Many Requests")
+                .message(ex.getMessage() != null ? ex.getMessage() : "Rate limit exceeded. Please wait a moment before trying again.")
+                .path(request.getRequestURI())
+                .timestamp(Instant.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(
+                ApiResponse.<ErrorResponse>builder()
+                        .success(false)
+                        .message(errorResponse.getMessage())
+                        .data(errorResponse)
+                        .timestamp(Instant.now())
+                        .build()
+        );
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleConflict(
+            ConflictException ex, HttpServletRequest request) {
+
+        log.warn("Conflict on {}: {}", request.getRequestURI(), ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .error("Conflict")
+                .message(ex.getMessage() != null ? ex.getMessage() : "Resource conflict or insufficient capacity")
+                .path(request.getRequestURI())
+                .timestamp(Instant.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                ApiResponse.<ErrorResponse>builder()
+                        .success(false)
+                        .message(errorResponse.getMessage())
                         .data(errorResponse)
                         .timestamp(Instant.now())
                         .build()
@@ -91,14 +168,71 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleDataIntegrityViolation(
+            org.springframework.dao.DataIntegrityViolationException ex, HttpServletRequest request) {
+
+        log.warn("Data integrity violation on {}: {}", request.getRequestURI(), ex.getMessage());
+
+        String message = "A record with the specified unique details already exists or violates a database constraint.";
+        if (ex.getMessage() != null && ex.getMessage().toLowerCase().contains("email")) {
+            message = "An account with this email address already exists. Please sign in or use another email.";
+        }
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .error("Data Conflict")
+                .message(message)
+                .path(request.getRequestURI())
+                .timestamp(Instant.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                ApiResponse.<ErrorResponse>builder()
+                        .success(false)
+                        .message(message)
+                        .data(errorResponse)
+                        .timestamp(Instant.now())
+                        .build()
+        );
+    }
+
+    @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleConstraintViolation(
+            jakarta.validation.ConstraintViolationException ex, HttpServletRequest request) {
+
+        log.warn("Constraint violation on {}: {}", request.getRequestURI(), ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Validation Failed")
+                .message(ex.getMessage() != null ? ex.getMessage() : "Validation constraints failed")
+                .path(request.getRequestURI())
+                .timestamp(Instant.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                ApiResponse.<ErrorResponse>builder()
+                        .success(false)
+                        .message(errorResponse.getMessage())
+                        .data(errorResponse)
+                        .timestamp(Instant.now())
+                        .build()
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<ErrorResponse>> handleGeneralException(
             Exception ex, HttpServletRequest request) {
         
+        // Log real stack trace securely internally
+        log.error("Internal Server Error on {}: ", request.getRequestURI(), ex);
+
+        // Sanitize response to prevent leaking internal database schema, SQL errors, or stack traces
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error("Internal Server Error")
-                .message(ex.getMessage() != null ? ex.getMessage() : "An unexpected server error occurred")
+                .message("An unexpected error occurred. Please try again later.")
                 .path(request.getRequestURI())
                 .timestamp(Instant.now())
                 .build();

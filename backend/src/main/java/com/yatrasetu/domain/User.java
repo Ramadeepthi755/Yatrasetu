@@ -2,6 +2,7 @@ package com.yatrasetu.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.domain.Persistable;
 
 import java.time.Instant;
 
@@ -12,7 +13,7 @@ import java.time.Instant;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class User implements Persistable<String> {
 
     @Id
     @Column(name = "id", length = 50, nullable = false)
@@ -65,4 +66,24 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Profile profile;
+
+    @Transient
+    @Builder.Default
+    private boolean newEntity = true;
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public boolean isNew() {
+        return newEntity;
+    }
+
+    @PostPersist
+    @PostLoad
+    private void markNotNew() {
+        newEntity = false;
+    }
 }

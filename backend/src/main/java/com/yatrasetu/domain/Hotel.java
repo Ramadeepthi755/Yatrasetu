@@ -26,6 +26,10 @@ public class Hotel {
     private String hotelName;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private User owner;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "city_id")
     private City city;
 
@@ -70,6 +74,42 @@ public class Hotel {
     @Column(name = "source_type", length = 50)
     @Builder.Default
     private SourceType sourceType = SourceType.DATASET;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "verification_status", length = 30, nullable = false)
+    @Builder.Default
+    private HotelVerificationStatus verificationStatus = HotelVerificationStatus.UNVERIFIED;
+
+    @Column(name = "verification_notes", columnDefinition = "TEXT")
+    private String verificationNotes;
+
+    @Column(name = "verified_by", length = 50)
+    private String verifiedBy;
+
+    @Column(name = "verified_at")
+    private Instant verifiedAt;
+
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
+
+    @Column(name = "contact_phone", length = 50)
+    private String contactPhone;
+
+    @Column(name = "contact_email", length = 255)
+    private String contactEmail;
+
+    @Column(name = "official_website", length = 255)
+    private String officialWebsite;
+
+    @Column(name = "check_in_time", length = 50)
+    private String checkInTime;
+
+    @Column(name = "check_out_time", length = 50)
+    private String checkOutTime;
+
+    @Column(name = "is_demo_data", nullable = false)
+    @Builder.Default
+    private Boolean isDemoData = false;
 
     @Column(name = "is_active")
     @Builder.Default

@@ -86,7 +86,7 @@ public class DeterministicFallbackAiProvider implements AiProvider {
         // Role-based response generation
         switch (role.toUpperCase()) {
             case "PARTNER" -> generatePartnerResponse(response, destName, destInfo, userMessage);
-            case "GOVERNMENT" -> generateGovernmentResponse(response, destName, destInfo, pois, userMessage);
+            case "GOVERNMENT" -> generateGovernmentResponse(response, destName, destInfo, pois, userMessage, context);
             case "TRAVELER" -> generateTravelerResponse(response, destName, destInfo, pois, foods, hotels, experiences, userMessage);
             default -> generateGuestResponse(response, destName, destInfo, pois, foods, userMessage);
         }
@@ -193,19 +193,56 @@ public class DeterministicFallbackAiProvider implements AiProvider {
     }
 
     private void generateGovernmentResponse(StringBuilder sb, String destName, Map<String, Object> destInfo,
-                                            List<Map<String, Object>> pois, String query) {
-        sb.append("### Tourism Administration & Policy Insights\n\n");
-        sb.append("YatraSetu Government Operations Dashboard Assistant:\n\n");
-        if (destName != null) {
-            sb.append(String.format("#### Regional Heritage Profile: %s\n", destName));
-            sb.append(String.format("- **Managed POIs in Dataset:** %d registered monuments and attractions.\n", pois.size()));
-            sb.append(String.format("- **Conservation Priority:** Balanced footfall distribution across peak and off-peak visiting windows.\n"));
-            sb.append("- **Verification Standards:** Only audited tourism operators receive platform endorsement.\n\n");
+                                            List<Map<String, Object>> pois, String query, Map<String, Object> context) {
+        String lowerQuery = query.toLowerCase();
+
+        // 1. Check for unavailable information requests (revenue, IoT footfall, live crowd count)
+        if (lowerQuery.contains("revenue") || lowerQuery.contains("tax") || lowerQuery.contains("footfall") ||
+                lowerQuery.contains("crowd count") || lowerQuery.contains("physically present") || lowerQuery.contains("how many tourists visited india today")) {
+            sb.append("### Tourism Administration & Policy Notice\n\n");
+            sb.append("**[UNAVAILABLE_INFORMATION]**\n");
+            sb.append("Official municipal tourism revenue figures and physical real-time crowd censuses are currently unavailable from external government endpoints. YatraSetu does not operate physical IoT gate sensors or municipal tax gateways.\n\n");
+            sb.append("**[DERIVED_PLATFORM_METRIC]**\n");
+            sb.append("YatraSetu provides **Activity Pressure Proxies** and **Local Opportunity Scores** calculated strictly from verified platform demand signals, accommodation listings, and registered local hosts to support carrying capacity planning.\n");
+            return;
         }
-        sb.append("#### Key Strategic Focus Areas:\n");
-        sb.append("1. **Sustainable Tourism:** Managing visitor carrying capacity at ASI protected sites.\n");
-        sb.append("2. **Economic Dispersal:** Encouraging travelers to visit secondary heritage nodes and patronize local culinary artisans.\n");
-        sb.append("3. **Data Integrity:** Real-time alignment with official state tourism portals and safety directives.\n");
+
+        sb.append("### Government Tourism Intelligence & Decision Support\n\n");
+
+        if (destName != null && destInfo != null) {
+            sb.append(String.format("#### Regional Node: %s (%s, %s)\n\n", destName, destInfo.getOrDefault("city", ""), destInfo.getOrDefault("state", "")));
+            
+            sb.append("**[STRUCTURED_FACT]**\n");
+            sb.append(String.format("- **Verified Attractions (POIs):** %d registered heritage/natural assets in YatraSetu dataset.\n", pois.size()));
+            sb.append(String.format("- **Transit Accessibility:** %s\n\n", destInfo.getOrDefault("accessibility", "Moderate")));
+
+            Object healthObj = context.get("governmentDestinationHealth");
+            if (healthObj != null) {
+                sb.append("**[DERIVED_PLATFORM_METRIC]**\n");
+                sb.append(String.format("- **Platform Health Status:** Evaluated across demand signals, activity pressure, and local supplier density.\n\n"));
+            }
+
+            sb.append("**[TRANSPARENT_BASELINE_FORECAST]**\n");
+            sb.append("- **Demand Trend Model:** Deterministic exponential moving average scaled by horizon days and peak season weighting.\n\n");
+
+            sb.append("**[AI_EXPLANATION]**\n");
+            sb.append("1. **Carrying Capacity Governance:** Monitor activity pressure against attraction capacity to prevent local overcrowding.\n");
+            sb.append("2. **Local Economy Dispersal:** Direct visitor interest toward registered local guides, homestays, and culinary artisans.\n");
+            sb.append("3. **Policy Action:** Utilize the Government Action Center to log promotional campaigns or infrastructure directives.\n");
+        } else {
+            sb.append("**[DERIVED_PLATFORM_METRIC]**\n");
+            sb.append("- **Active Monitored Nodes:** 164 Tier-A and regional destinations across all 28 states and 8 Union Territories.\n");
+            sb.append("- **Intelligence Models:** Multi-factor Destination Health Scores, Dynamic Hidden-Gem Discovery, and Ecosystem Gap Detection.\n\n");
+
+            sb.append("**[AI_EXPLANATION]**\n");
+            sb.append("Access the **National Tourism Intelligence Hub** to inspect:\n");
+            sb.append("1. **Prioritized Government Alerts** (High Pressure, Supply Bottlenecks, Underutilized Gems).\n");
+            sb.append("2. **Dynamic Demand Redistribution Corridors** linking congested hubs with compatible secondary nodes.\n");
+            sb.append("3. **Ecosystem Gaps** to deploy targeted homestay and local guide onboarding initiatives.\n\n");
+
+            sb.append("**[UNAVAILABLE_INFORMATION]**\n");
+            sb.append("Physical crowd counts and municipal financial revenues are not tracked. All intelligence is based on transparent platform supply and demand proxies.\n");
+        }
     }
 
     private String generateMultiDestinationResponse(String queryType, List<Map<String, Object>> destinations,

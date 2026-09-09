@@ -32,10 +32,33 @@ public class DestinationEcosystemService {
 
     @Transactional(readOnly = true)
     public List<FamousFoodDto> getFamousFoods(String destinationId) {
-        return famousFoodRepository.findByDestinationId(destinationId)
+        List<FamousFoodDto> list = famousFoodRepository.findByDestinationId(destinationId)
                 .stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
+
+        if (list.isEmpty()) {
+            destinationRepository.findById(destinationId).ifPresent(dest -> {
+                if (dest.getLocalCuisineMustTry() != null && !dest.getLocalCuisineMustTry().isBlank()) {
+                    String[] items = dest.getLocalCuisineMustTry().split("\\|");
+                    int idx = 1;
+                    for (String item : items) {
+                        String dish = item.trim();
+                        if (dish.isEmpty()) continue;
+                        list.add(FamousFoodDto.builder()
+                                .id("food-" + destinationId + "-" + (idx++))
+                                .destinationId(destinationId)
+                                .dishName(dish)
+                                .description("Authentic regional specialty and must-try local flavor of " + dest.getDestinationName())
+                                .cuisineType(dest.getFoodScene() != null ? dest.getFoodScene() : "Regional Specialty")
+                                .sourceType("DATASET")
+                                .sourceLabel("Dataset")
+                                .build());
+                    }
+                }
+            });
+        }
+        return list;
     }
 
     @Transactional(readOnly = true)
@@ -48,10 +71,60 @@ public class DestinationEcosystemService {
 
     @Transactional(readOnly = true)
     public List<DestinationTransportDto> getTransports(String destinationId) {
-        return destinationTransportRepository.findByDestinationId(destinationId)
+        List<DestinationTransportDto> transports = destinationTransportRepository.findByDestinationId(destinationId)
                 .stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
+
+        if (transports.isEmpty()) {
+            destinationRepository.findById(destinationId).ifPresent(dest -> {
+                if (dest.getNearestAirport() != null && !dest.getNearestAirport().trim().isEmpty()) {
+                    String name = dest.getNearestAirport();
+                    java.math.BigDecimal dist = null;
+                    try {
+                        if (name.startsWith("{")) {
+                            com.fasterxml.jackson.databind.JsonNode node = new com.fasterxml.jackson.databind.ObjectMapper().readTree(name);
+                            if (node.has("name")) name = node.get("name").asText();
+                            if (node.has("distance_km")) dist = java.math.BigDecimal.valueOf(node.get("distance_km").asDouble());
+                        }
+                    } catch (Exception ignored) {}
+                    transports.add(DestinationTransportDto.builder()
+                            .id("trans-" + destinationId + "-air-meta")
+                            .destinationId(destinationId)
+                            .mode("AIRPORT")
+                            .name(name)
+                            .distanceKm(dist)
+                            .description("Nearest airport connected to major domestic and international hubs.")
+                            .priceType("PRICE_UNAVAILABLE")
+                            .sourceType("DATASET")
+                            .sourceLabel("Dataset")
+                            .build());
+                }
+                if (dest.getNearestRailway() != null && !dest.getNearestRailway().trim().isEmpty()) {
+                    String name = dest.getNearestRailway();
+                    java.math.BigDecimal dist = null;
+                    try {
+                        if (name.startsWith("{")) {
+                            com.fasterxml.jackson.databind.JsonNode node = new com.fasterxml.jackson.databind.ObjectMapper().readTree(name);
+                            if (node.has("name")) name = node.get("name").asText();
+                            if (node.has("distance_km")) dist = java.math.BigDecimal.valueOf(node.get("distance_km").asDouble());
+                        }
+                    } catch (Exception ignored) {}
+                    transports.add(DestinationTransportDto.builder()
+                            .id("trans-" + destinationId + "-rail-meta")
+                            .destinationId(destinationId)
+                            .mode("RAILWAY")
+                            .name(name)
+                            .distanceKm(dist)
+                            .description("Nearest railway station on Indian Railways national network.")
+                            .priceType("PRICE_UNAVAILABLE")
+                            .sourceType("DATASET")
+                            .sourceLabel("Dataset")
+                            .build());
+                }
+            });
+        }
+        return transports;
     }
 
     @Transactional(readOnly = true)

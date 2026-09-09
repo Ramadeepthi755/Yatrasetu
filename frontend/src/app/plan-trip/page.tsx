@@ -35,9 +35,15 @@ import {
 function PlanTripContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { user, token, isAuthenticated, openAuthModal } = useAuth();
+  const { user, token, isAuthenticated, loading: authLoading, openAuthModal } = useAuth();
 
   const preselectedDestId = searchParams.get('destinationId') || '';
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push(`/login?redirect=${encodeURIComponent('/plan-trip' + (preselectedDestId ? `?destinationId=${preselectedDestId}` : ''))}`);
+    }
+  }, [authLoading, isAuthenticated, router, preselectedDestId]);
 
   // Form State
   const [destinations, setDestinations] = useState<DestinationSummary[]>([]);

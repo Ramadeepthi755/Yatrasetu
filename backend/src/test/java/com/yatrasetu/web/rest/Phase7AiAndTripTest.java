@@ -53,6 +53,12 @@ public class Phase7AiAndTripTest {
     @Autowired
     private UserService userService;
 
+        @Autowired
+        private LocalHostRepository localHostRepository;
+
+        @Autowired
+        private ExperienceRepository experienceRepository;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -61,6 +67,8 @@ public class Phase7AiAndTripTest {
     @BeforeEach
     void setup() {
         tripRepository.deleteAll();
+        experienceRepository.deleteAll();
+                localHostRepository.deleteAll();
         userRepository.deleteAll();
 
         // Seed Users
@@ -106,7 +114,7 @@ public class Phase7AiAndTripTest {
                         .description("UNESCO World Heritage site of the Vijayanagara Empire")
                         .heroImageUrl("https://images.unsplash.com/photo-hampi")
                         .tripTypes(List.of("Heritage", "Architecture", "Cultural"))
-                        .bestSeasons(List.of("September", "October", "November", "December", "January", "February"))
+                        .bestSeasons("September, October, November, December, January, February")
                         .build()));
 
         if (destinationPoiRepository.findByDestinationId("dest-hampi").isEmpty()) {
@@ -163,7 +171,7 @@ public class Phase7AiAndTripTest {
                         .description("Cultural heart of Tamil Nadu famous for Brihadisvara Temple")
                         .heroImageUrl("https://images.unsplash.com/photo-thanjavur")
                         .tripTypes(List.of("Heritage", "Cultural"))
-                        .bestSeasons(List.of("September", "October", "November", "December", "January", "February"))
+                        .bestSeasons("September, October, November, December, January, February")
                         .build()));
 
         if (destinationPoiRepository.findByDestinationId("dest-thanjavur").isEmpty()) {
@@ -200,7 +208,7 @@ public class Phase7AiAndTripTest {
                         .longitude(BigDecimal.valueOf(76.6394))
                         .description("City of Palaces and royal heritage in Karnataka")
                         .tripTypes(List.of("Heritage", "Cultural"))
-                        .bestSeasons(List.of("September", "October", "November", "December"))
+                        .bestSeasons("September, October, November, December")
                         .build()));
 
         if (destinationPoiRepository.findByDestinationId("dest-mysore").isEmpty()) {

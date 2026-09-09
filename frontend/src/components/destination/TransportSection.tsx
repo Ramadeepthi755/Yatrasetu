@@ -110,10 +110,10 @@ export function TransportSection({ destinationId, destinationName }: TransportSe
         </div>
       ) : transports.length === 0 ? (
         <EcosystemEmptyState
-          title="Transport Logistics Being Compiled"
+          title="Connectivity Information Limited"
           category="Transport"
           destinationName={destinationName}
-          description={`Logistics for ${destinationName} are being compiled from regional transport authorities.`}
+          description={`Connectivity information is currently limited for this destination. Regional route logistics are updated as official state transport schedules become available.`}
           showPartnerCta={false}
         />
       ) : (

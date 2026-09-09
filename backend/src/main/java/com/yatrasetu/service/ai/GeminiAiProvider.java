@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
+import org.springframework.beans.factory.annotation.Qualifier;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -24,8 +25,13 @@ public class GeminiAiProvider implements AiProvider {
     @Value("${app.gemini.model:gemini-flash-latest}")
     private String modelName;
 
-    private final RestTemplate restTemplate = new RestTemplate();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
+
+    public GeminiAiProvider(@Qualifier("geminiRestTemplate") RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
+    }
 
     // Defensive patterns against prompt injection and jailbreak attempts
     private static final List<Pattern> INJECTION_PATTERNS = List.of(

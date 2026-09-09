@@ -1,7 +1,23 @@
+'use client';
+
+import React from 'react';
 import Link from 'next/link';
-import { Compass, Users, Landmark, MapPin, Sparkles, ArrowRight, ShieldCheck, BarChart3 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Compass, Users, Landmark, MapPin, ArrowRight, ShieldCheck, CalendarCheck, Sparkles } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function HomePage() {
+  const router = useRouter();
+  const { user, requireAuth } = useAuth();
+
+  const handleProtectedClick = (destination: string, targetRole: 'TRAVELER' | 'PARTNER' | 'GOVERNMENT' = 'TRAVELER') => {
+    if (!user) {
+      router.push(`/login?redirect=${encodeURIComponent(destination)}`);
+    } else {
+      router.push(destination);
+    }
+  };
+
   return (
     <div className="space-y-16 sm:space-y-24 pb-12">
       {/* Hero Section */}
@@ -12,7 +28,7 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto text-center relative z-10 space-y-6">
           {/* Tagline Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs sm:text-sm font-medium text-[#F59E0B]">
-            <Sparkles className="w-4 h-4 text-[#F59E0B]" />
+            <Compass className="w-4 h-4 text-[#F59E0B]" />
             Discover India • Connect Locally • Grow Tourism
           </div>
 
@@ -28,24 +44,32 @@ export default function HomePage() {
             Connecting travelers with authentic local hosts, community guides, and verified experiences, while empowering local economies and delivering actionable tourism intelligence.
           </p>
 
-          {/* Primary Action Buttons */}
+          {/* Primary Action Buttons (Task 6, 21) */}
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-            <Link
-              href="/explore"
-              className="px-6 py-3.5 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#171717] font-semibold shadow-lg shadow-[#F59E0B]/20 transition-all flex items-center gap-2 group"
+            <button
+              onClick={() => handleProtectedClick('/explore')}
+              className="px-6 py-3.5 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#171717] font-semibold shadow-lg shadow-[#F59E0B]/20 transition-all flex items-center gap-2 group cursor-pointer"
             >
               <Compass className="w-5 h-5 text-[#171717]" />
-              Explore Destinations
+              Find Your Local Guide
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-            </Link>
+            </button>
 
-            <Link
-              href="/local"
-              className="px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium backdrop-blur-md transition-all flex items-center gap-2"
+            <button
+              onClick={() => handleProtectedClick('/local')}
+              className="px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium backdrop-blur-md transition-all flex items-center gap-2 cursor-pointer"
             >
               <MapPin className="w-5 h-5 text-[#0F766E]" />
               Meet Local Hosts
-            </Link>
+            </button>
+
+            <button
+              onClick={() => handleProtectedClick('/bookings')}
+              className="px-5 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 text-sm font-medium backdrop-blur-md transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <CalendarCheck className="w-4 h-4 text-amber-400" />
+              My Bookings &amp; Live Trips
+            </button>
           </div>
 
           {/* Seed Foundation Badge */}
@@ -76,20 +100,29 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl font-bold text-[#171717]">1. Travelers</h3>
               <p className="text-xs font-medium text-[#F59E0B] uppercase tracking-wider">
-                Discover → Plan → Connect → Book → Review
+                Discover → Match Guide → Book → Trip Safety → Review
               </p>
               <p className="text-sm text-[#64748B] leading-relaxed">
-                Personalized discovery, AI-grounded itinerary planning, verified stays, authentic local experiences, and safe travel buddy connections.
+                Personalized discovery, place-specific explainable guide recommendations, verified tours, live checkpoint safety check-ins, and trusted ratings.
               </p>
             </div>
-            <div className="pt-6 border-t border-slate-100 mt-6">
-              <Link href="/plan-trip" className="text-xs font-semibold text-[#312E81] hover:text-[#F59E0B] flex items-center gap-1">
+            <div className="pt-6 border-t border-slate-100 mt-6 flex items-center justify-between">
+              <button
+                onClick={() => handleProtectedClick('/plan-trip')}
+                className="text-xs font-semibold text-[#312E81] hover:text-[#F59E0B] flex items-center gap-1 cursor-pointer"
+              >
                 Try AI Trip Planner <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+              </button>
+              <button
+                onClick={() => handleProtectedClick('/bookings')}
+                className="text-xs font-semibold text-amber-700 hover:text-amber-800 flex items-center gap-1 cursor-pointer"
+              >
+                Track Live Trip →
+              </button>
             </div>
           </div>
 
-          {/* 2. Local Partner Card */}
+          {/* 2. Local Partner Card (Task 8) */}
           <div className="bg-white rounded-2xl p-8 border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between">
             <div className="space-y-4">
               <div className="w-12 h-12 rounded-xl bg-[#0F766E]/10 flex items-center justify-center text-[#0F766E]">
@@ -97,20 +130,23 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl font-bold text-[#171717]">2. Local Partners</h3>
               <p className="text-xs font-medium text-[#0F766E] uppercase tracking-wider">
-                Register → Host → Get Bookings → Earn
+                One Single Provider Portal (Guides • Hotels • Artisans • Businesses)
               </p>
               <p className="text-sm text-[#64748B] leading-relaxed">
-                Direct economic participation for local guides, artisans, home chefs, cultural custodians, and homestay owners with zero middlemen.
+                Direct economic participation for local guides, artisans, and businesses. Manage verification, customized tour requests, and live trip execution with zero middlemen.
               </p>
             </div>
             <div className="pt-6 border-t border-slate-100 mt-6">
-              <Link href="/partner" className="text-xs font-semibold text-[#0F766E] hover:underline flex items-center gap-1">
-                Partner Portal <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+              <button
+                onClick={() => handleProtectedClick('/partner', 'PARTNER')}
+                className="text-xs font-semibold text-[#0F766E] hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                Enter Partner Portal <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
 
-          {/* 3. Government & Authorities Card */}
+          {/* 3. Government & Authorities Card (Task 19) */}
           <div className="bg-white rounded-2xl p-8 border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between">
             <div className="space-y-4">
               <div className="w-12 h-12 rounded-xl bg-[#F59E0B]/10 flex items-center justify-center text-[#F59E0B]">
@@ -121,13 +157,16 @@ export default function HomePage() {
                 Observe → Analyze → Support → Measure Impact
               </p>
               <p className="text-sm text-[#64748B] leading-relaxed">
-                Aggregated visitor trends, emerging destination opportunity indices, sentiment clustering, and grassroots economic impact analytics.
+                Aggregated visitor demand trends, emerging destination opportunity indices, ecosystem provider participation, and grassroots economic impact intelligence.
               </p>
             </div>
             <div className="pt-6 border-t border-slate-100 mt-6">
-              <Link href="/government" className="text-xs font-semibold text-[#312E81] hover:text-[#F59E0B] flex items-center gap-1">
+              <button
+                onClick={() => handleProtectedClick('/government', 'GOVERNMENT')}
+                className="text-xs font-semibold text-[#312E81] hover:text-[#F59E0B] flex items-center gap-1 cursor-pointer"
+              >
                 Governance Intelligence <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+              </button>
             </div>
           </div>
         </div>
@@ -142,7 +181,7 @@ export default function HomePage() {
                 Core Differentiators
               </span>
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                Empowering People Through Human Connection
+                Empowering People Through Human Connection &amp; Safety
               </h2>
               <p className="text-sm text-slate-200 leading-relaxed font-light">
                 YatraSetu doesn&apos;t stop at destination information. Our explainable matching engine connects travelers directly with verified local hosts and compatible travel companions, keeping all interactions securely inside YatraSetu.

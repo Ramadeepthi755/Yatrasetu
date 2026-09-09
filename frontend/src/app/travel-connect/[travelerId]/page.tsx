@@ -16,7 +16,7 @@ import ConnectModal from '@/components/travel-connect/ConnectModal';
 import {
   MapPin,
   Calendar,
-  Sparkles,
+  Compass,
   UserPlus,
   Clock,
   MessageCircle,
@@ -274,7 +274,7 @@ export default function TravelerProfilePage() {
 
               <div className="p-4 bg-white rounded-2xl border border-gray-200 space-y-2">
                 <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                  <Compass className="w-3.5 h-3.5 text-amber-600" />
                   Travel Interests & Passions
                 </span>
                 <div className="flex flex-wrap gap-1.5">

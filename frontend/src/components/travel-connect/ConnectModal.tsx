@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { sendConnectionRequest, TravelerDiscovery } from '@/lib/api';
-import { X, Send, UserCheck, AlertCircle, Sparkles } from 'lucide-react';
+import { X, Send, UserCheck, AlertCircle, Users } from 'lucide-react';
 import Link from 'next/link';
 
 interface ConnectModalProps {
@@ -98,7 +98,7 @@ export default function ConnectModal({ traveler, onClose, onSuccess }: ConnectMo
             </div>
             <div className="text-right">
               <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                <Sparkles className="w-3 h-3" />
+                <Users className="w-3 h-3" />
                 {traveler.matchScore}%
               </span>
             </div>

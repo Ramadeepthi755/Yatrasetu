@@ -25,7 +25,9 @@ public interface CityRepository extends JpaRepository<City, String> {
     List<City> searchCities(@Param("query") String query, Pageable pageable);
 
     @Query(value = "SELECT c.* FROM cities c " +
-            "ORDER BY (6371 * acos(cos(radians(:lat)) * cos(radians(c.latitude)) * cos(radians(c.longitude) - radians(:lng)) + sin(radians(:lat)) * sin(radians(c.latitude)))) ASC " +
+            "WHERE c.latitude IS NOT NULL AND c.longitude IS NOT NULL AND c.latitude != 0.0 AND c.longitude != 0.0 " +
+            "ORDER BY (6371 * acos(LEAST(1.0, GREATEST(-1.0, cos(radians(:lat)) * cos(radians(c.latitude)) * cos(radians(c.longitude) - radians(:lng)) + sin(radians(:lat)) * sin(radians(c.latitude)))))) ASC " +
             "LIMIT :limit", nativeQuery = true)
     List<City> findNearestCities(@Param("lat") double lat, @Param("lng") double lng, @Param("limit") int limit);
 }
+
