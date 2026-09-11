@@ -222,6 +222,7 @@ export default function LoginPage() {
 
         <div className="relative z-10 space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-[#F59E0B]">
+            <Sparkles className="w-3.5 h-3.5" />
             <Compass className="w-3.5 h-3.5" />
             India&apos;s Connected Tourism Ecosystem
           </div>
@@ -237,6 +238,7 @@ export default function LoginPage() {
           </h2>
 
           <p className="text-slate-300 text-sm leading-relaxed max-w-xs">
+            Connecting India&apos;s 1.4 billion stories ΓÇö travelers, local guides, and cultural custodians ΓÇö into one living ecosystem.
             Connecting India&apos;s 1.4 billion stories — travelers, local guides, and cultural custodians — into one living ecosystem.
           </p>
 

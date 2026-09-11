@@ -412,6 +412,10 @@ export default function SignupPage() {
             Verified Tourism Network
           </div>
           <h2 className="text-3xl font-extrabold text-white leading-tight">
+            India&apos;s largest<br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F59E0B] to-[#FBBF24]">community</span><br/>
+            of travelers<br/>
+            & storytellers.
             Connecting India&apos;s<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F59E0B] to-[#FBBF24]">travelers, partners</span><br />
             & governance.
@@ -472,6 +476,7 @@ export default function SignupPage() {
               <div>
                 <h1 className="text-2xl font-extrabold text-[#171717] tracking-tight">Create your account</h1>
                 <p className="text-sm text-[#64748B] mt-1">
+                  Let&apos;s start with your basic details.
                   Select how you want to use YatraSetu and enter your credentials.
                 </p>
               </div>
@@ -1106,6 +1111,9 @@ export default function SignupPage() {
                 </div>
               </div>
 
+              {/* Verification note */}
+              <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
+                <strong>Verification note:</strong> Your guide profile will be reviewed by regional tourism authorities. Once approved, you&apos;ll receive a verified badge and appear in traveler searches.
               {/* Partner Verification Lifecycle Notice */}
               <div className="p-4 rounded-2xl bg-teal-50/80 border border-teal-200 text-xs text-teal-950 space-y-2">
                 <div className="flex items-center gap-2 font-bold text-[#0F766E]">
