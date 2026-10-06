@@ -31,6 +31,7 @@ ON CONFLICT (email) DO UPDATE SET
     is_active = true,
     updated_at = CURRENT_TIMESTAMP;
 
+-- Create the profile using the ACTUAL users.id for this email
 INSERT INTO profiles (
     id,
     display_name,
@@ -38,11 +39,15 @@ INSERT INTO profiles (
     created_at,
     updated_at
 )
-VALUES (
-    'usr-sih-government',
+SELECT
+    u.id,
     'Ministry of Tourism Official',
     'VERIFIED',
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
-)
-ON CONFLICT (id) DO NOTHING;
+FROM users u
+WHERE u.email = 'official@tourism.gov.in'
+ON CONFLICT (id) DO UPDATE SET
+    display_name = 'Ministry of Tourism Official',
+    verification_status = 'VERIFIED',
+    updated_at = CURRENT_TIMESTAMP;
