@@ -1,0 +1,254 @@
+[
+  {
+    "id": "IN-AN",
+    "stateName": "Andaman & Nicobar Islands",
+    "region": "South India",
+    "capitalCity": "Port Blair",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-AP",
+    "stateName": "Andhra Pradesh",
+    "region": "South India",
+    "capitalCity": "Amaravati",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-AR",
+    "stateName": "Arunachal Pradesh",
+    "region": "North East India",
+    "capitalCity": "Itanagar",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-AS",
+    "stateName": "Assam",
+    "region": "North East India",
+    "capitalCity": "Dispur",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-BR",
+    "stateName": "Bihar",
+    "region": "East India",
+    "capitalCity": "Patna",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-CG",
+    "stateName": "Chhattisgarh",
+    "region": "Central India",
+    "capitalCity": "Raipur",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-CH",
+    "stateName": "Chandigarh",
+    "region": "North India",
+    "capitalCity": "Chandigarh",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-DH",
+    "stateName": "Dadra and Nagar Haveli and Daman and Diu",
+    "region": "West India",
+    "capitalCity": "Daman",
+    "bannerImageUrl": "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "id": "IN-DL",
+    "stateName": "Delhi",
+    "region": "North India",
+    "capitalCity": "New Delhi",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-GA",
+    "stateName": "Goa",
+    "region": "West India",
+    "capitalCity": "Panaji",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-GJ",
+    "stateName": "Gujarat",
+    "region": "West India",
+    "capitalCity": "Gandhinagar",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-HP",
+    "stateName": "Himachal Pradesh",
+    "region": "North India",
+    "capitalCity": "Shimla",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-HR",
+    "stateName": "Haryana",
+    "region": "North India",
+    "capitalCity": "Chandigarh",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-JH",
+    "stateName": "Jharkhand",
+    "region": "East India",
+    "capitalCity": "Ranchi",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-JK",
+    "stateName": "Jammu & Kashmir",
+    "region": "North India",
+    "capitalCity": "Srinagar",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-KA",
+    "stateName": "Karnataka",
+    "region": "South India",
+    "capitalCity": "Bengaluru",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-KL",
+    "stateName": "Kerala",
+    "region": "South India",
+    "capitalCity": "Thiruvananthapuram",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-LA",
+    "stateName": "Ladakh",
+    "region": "North India",
+    "capitalCity": "Leh",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-LD",
+    "stateName": "Lakshadweep",
+    "region": "Island Territory",
+    "capitalCity": "Kavaratti",
+    "bannerImageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/72/Kadmat_Island_Beach_Lakshadweep.jpg"
+  },
+  {
+    "id": "IN-MH",
+    "stateName": "Maharashtra",
+    "region": "West India",
+    "capitalCity": "Mumbai",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-ML",
+    "stateName": "Meghalaya",
+    "region": "North East India",
+    "capitalCity": "Shillong",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-MN",
+    "stateName": "Manipur",
+    "region": "North East India",
+    "capitalCity": "Imphal",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-MP",
+    "stateName": "Madhya Pradesh",
+    "region": "Central India",
+    "capitalCity": "Bhopal",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-MZ",
+    "stateName": "Mizoram",
+    "region": "North East India",
+    "capitalCity": "Aizawl",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-NL",
+    "stateName": "Nagaland",
+    "region": "North East India",
+    "capitalCity": "Kohima",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-OD",
+    "stateName": "Odisha",
+    "region": "East India",
+    "capitalCity": "Bhubaneswar",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-PB",
+    "stateName": "Punjab",
+    "region": "North India",
+    "capitalCity": "Chandigarh",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-PY",
+    "stateName": "Puducherry",
+    "region": "South India",
+    "capitalCity": "Puducherry",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-RJ",
+    "stateName": "Rajasthan",
+    "region": "North India",
+    "capitalCity": "Jaipur",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-SK",
+    "stateName": "Sikkim",
+    "region": "North East India",
+    "capitalCity": "Gangtok",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-TG",
+    "stateName": "Telangana",
+    "region": "South India",
+    "capitalCity": "Hyderabad",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-TN",
+    "stateName": "Tamil Nadu",
+    "region": "South India",
+    "capitalCity": "Chennai",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-TR",
+    "stateName": "Tripura",
+    "region": "North East India",
+    "capitalCity": "Agartala",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-UP",
+    "stateName": "Uttar Pradesh",
+    "region": "North India",
+    "capitalCity": "Lucknow",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-UT",
+    "stateName": "Uttarakhand",
+    "region": "North India",
+    "capitalCity": "Dehradun",
+    "bannerImageUrl": null
+  },
+  {
+    "id": "IN-WB",
+    "stateName": "West Bengal",
+    "region": "East India",
+    "capitalCity": "Kolkata",
+    "bannerImageUrl": null
+  }
+]

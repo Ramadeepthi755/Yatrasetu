@@ -1,0 +1,255 @@
+-- ==============================================================================
+-- YatraSetu Flyway Migration V4: Experiences & Local Hosts Enhancements
+-- ==============================================================================
+
+-- 1. Schema adjustments for experiences table
+ALTER TABLE experiences ADD COLUMN IF NOT EXISTS is_demo_data BOOLEAN DEFAULT FALSE;
+ALTER TABLE experiences ADD COLUMN IF NOT EXISTS city_id VARCHAR(50) REFERENCES cities(id) ON DELETE SET NULL;
+
+CREATE INDEX IF NOT EXISTS idx_experiences_city_id ON experiences(city_id);
+CREATE INDEX IF NOT EXISTS idx_experiences_category ON experiences(category);
+CREATE INDEX IF NOT EXISTS idx_experiences_demo ON experiences(is_demo_data);
+
+-- 2. Link existing local hosts to destinations matching their cities if destination_id is null
+UPDATE local_hosts h
+SET destination_id = d.id
+FROM destinations d
+WHERE h.city_id = d.city_id
+  AND h.destination_id IS NULL;
+
+-- 3. Curated Sample Experiences (Honest DEMO/SAMPLE data)
+-- Tied to verified demo hosts and real destination IDs from V2
+INSERT INTO experiences (
+    id, host_id, destination_id, city_id, title, description, category,
+    duration_hours, price_per_person, max_group_size, included_items,
+    requirements, languages, cover_image_url, is_approved, is_active, is_demo_data
+) VALUES
+(
+    'exp-1',
+    'host-26',
+    'dest-4',
+    'varanasi',
+    'Varanasi Dawn Ghats & Hidden Alleys Walk',
+    '[SAMPLE] Experience the spiritual awakening of Varanasi at sunrise. Walk through ancient lanes, witness centuries-old rituals at Manikarnika and Dashashwamedh ghats, and taste freshly brewed masala chai with local kachori.',
+    'Heritage Tour',
+    3.0,
+    850.00,
+    8,
+    '{"Hand-rowed sunrise boat ride","Morning street breakfast & Kulhad chai","Local ritual explanations & heritage notes"}',
+    'Comfortable walking shoes, modest attire suitable for holy riverfronts',
+    '{"English","Hindi"}',
+    'https://images.unsplash.com/photo-1561359313-0639aad49ca6?w=1200&q=80',
+    TRUE,
+    TRUE,
+    TRUE
+),
+(
+    'exp-2',
+    'host-21',
+    'dest-3',
+    'jaipur',
+    'Royal Jaipur Havelis & Hand Block Printing Studio',
+    '[SAMPLE] Step inside centuries-old royal quarters of the Pink City. Meet master artisans in their family workshop, understand traditional natural indigo dye preparation, and stamp your own authentic cotton stole to take home.',
+    'Craft Workshop',
+    3.5,
+    1200.00,
+    6,
+    '{"Artisan workshop access","Cotton fabric and natural dyes","Handmade souvenir stole","Rajasthani refreshments"}',
+    'Old clothes recommended as dye work is hands-on',
+    '{"English","Hindi","Rajasthani"}',
+    'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=1200&q=80',
+    TRUE,
+    TRUE,
+    TRUE
+),
+(
+    'exp-3',
+    'host-28',
+    'dest-1',
+    'north-goa',
+    'Chorao Island Mangrove Kayaking & Birding',
+    '[SAMPLE] Paddle along the calm backwaters and lush mangroves of the Mandovi River near Dr. Salim Ali Bird Sanctuary. Spot kingfishers, otters, and mudskippers guided by an expert Goan naturalist.',
+    'Adventure',
+    2.5,
+    1450.00,
+    8,
+    '{"Sit-on-top kayak & paddle","Life jacket & safety briefing","Binoculars sharing","Fresh coconut water"}',
+    'No previous kayaking experience required; basic water comfort helpful',
+    '{"English","Hindi","Konkani"}',
+    'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=1200&q=80',
+    TRUE,
+    TRUE,
+    TRUE
+),
+(
+    'exp-4',
+    'host-22',
+    'dest-6',
+    'udaipur',
+    'Mewar Miniature Painting & Lake Pichola Stories',
+    '[SAMPLE] Learn the delicate brushwork and stone-powder pigments of traditional Mewari miniature art directly from a 4th-generation royal court artisan family overlooking Lake Pichola.',
+    'Craft Workshop',
+    3.0,
+    950.00,
+    6,
+    '{"Handmade silk/paper canvas","Natural squirrel-hair brushes & stone colors","Take-home finished painting","Herbal tea"}',
+    'Patience and attention to fine detail; all skill levels welcome',
+    '{"English","Hindi"}',
+    'https://images.unsplash.com/photo-1615836245337-f5b9b2303f10?w=1200&q=80',
+    TRUE,
+    TRUE,
+    TRUE
+),
+(
+    'exp-5',
+    'host-25',
+    'dest-5',
+    'agra',
+    'Taj Mahal Sunrise Perspective & Mughal Culinary Heritage',
+    '[SAMPLE] Capture the sublime changing morning light on the Taj Mahal from curated secret riverfront and garden viewpoints away from tourist crowds, followed by a heritage Mughal breakfast in old Agra.',
+    'Photography',
+    3.5,
+    1100.00,
+    6,
+    '{"Curated vantage points guidance","Architectural storytelling","Traditional Bedai-Jalebi breakfast","Historical notes"}',
+    'Camera or smartphone with full battery; early morning start at 5:30 AM',
+    '{"English","Hindi"}',
+    'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=1200&q=80',
+    TRUE,
+    TRUE,
+    TRUE
+),
+(
+    'exp-6',
+    'host-17',
+    'dest-7',
+    'alappuzha',
+    'Alleppey Canal Canoe & Backwater Village Life',
+    '[SAMPLE] Drift peacefully through slender, palm-fringed village canals inaccessible to houseboats. Witness traditional coir-spinning, toddy tapping, and savor a homestyle banana-leaf lunch prepared by a village family.',
+    'Food Walk',
+    4.0,
+    1350.00,
+    8,
+    '{"Traditional open wooden canoe ride","Village artisan visits","Authentic Keralite banana-leaf lunch","Tender coconut water"}',
+    'Sun protection hat and sunscreen recommended',
+    '{"English","Malayalam","Hindi"}',
+    'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=1200&q=80',
+    TRUE,
+    TRUE,
+    TRUE
+),
+(
+    'exp-7',
+    'host-36',
+    'dest-2',
+    'leh',
+    'Leh Heritage Walking Tour & Himalayan Tea Tasting',
+    '[SAMPLE] Wander through the earthen-brick labyrinths of the 17th-century Leh Old Town, learn the preservation story of historic chortens, and taste rare herbal Ladakhi Tsampa teas and Gur-Gur butter tea.',
+    'Heritage Tour',
+    2.5,
+    750.00,
+    10,
+    '{"Architectural heritage guide","Traditional Ladakhi butter tea and Tsampa","Heritage conservation map booklet"}',
+    'Acclimatization to 3,500m elevation required (Day 2+ in Leh)',
+    '{"English","Hindi","Ladakhi"}',
+    'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?w=1200&q=80',
+    TRUE,
+    TRUE,
+    TRUE
+),
+(
+    'exp-8',
+    'host-33',
+    'dest-37',
+    'dehradun',
+    'Rishikesh Holy Ganga Aarti & Yogic Meditation Walk',
+    '[SAMPLE] Walk alongside the sacred Ganges at sunset, participate in an authentic Vedic meditation and breathwork session by the riverbed, and receive special insight into the evening fire prayer ceremony.',
+    'Spiritual Walk',
+    2.5,
+    600.00,
+    12,
+    '{"Vedic breathwork guidance","Flower offering basket for Ganga Aarti","Spiritual philosophy discussion","Herbal tulsi tea"}',
+    'Modest clothing covering shoulders and knees',
+    '{"English","Hindi"}',
+    'https://images.unsplash.com/photo-1600100397608-f010f443b749?w=1200&q=80',
+    TRUE,
+    TRUE,
+    TRUE
+),
+(
+    'exp-9',
+    'host-39',
+    'dest-40',
+    'amritsar',
+    'Amritsar Old City Food Odyssey & Langar Service',
+    '[SAMPLE] Feast on Amritsari kulchas dripping with homemade butter, thick velvety lassi, and jalebis from 70-year-old street carts. Experience the humbling devotion of seva (volunteer service) in the world’s largest community kitchen.',
+    'Food Walk',
+    3.0,
+    800.00,
+    8,
+    '{"Food tastings across 5 historic eateries","Guided walk of Golden Temple community kitchen","Headscarf provided for temple area"}',
+    'Head covering required inside gurudwara premises; shoes must be checked at entrance',
+    '{"English","Hindi","Punjabi"}',
+    'https://images.unsplash.com/photo-1596405835955-e6111ef836ca?w=1200&q=80',
+    TRUE,
+    TRUE,
+    TRUE
+),
+(
+    'exp-10',
+    'host-31',
+    'dest-13',
+    'kullu',
+    'Old Manali Apple Orchard Walk & Mountain Cafe Trail',
+    '[SAMPLE] Walk among century-old Himachali cedar houses and fragrant apple groves. Explore indie bohemian cafes, sample artisanal rhododendron cider, and hear local mountain folklore.',
+    'Heritage Tour',
+    3.0,
+    750.00,
+    8,
+    '{"Orchard walk entry & fruit tasting in season","Local apple cider or herbal tea","Old Manali cultural storytelling"}',
+    'Light trail walking shoes; mountain weather layer',
+    '{"English","Hindi"}',
+    'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1200&q=80',
+    TRUE,
+    TRUE,
+    TRUE
+),
+(
+    'exp-11',
+    'host-8',
+    'dest-27',
+    'vijayanagara',
+    'Hampi Boulder Sunset Walk & Coracle Crossing',
+    '[SAMPLE] Traverse the mystical boulder landscapes of the Vijayanagara Empire. Cross the Tungabhadra river on a traditional circular woven coracle, ascend Matanga Hill for golden-hour panoramas, and hear the epic history of ancient Hampi.',
+    'Adventure',
+    3.5,
+    950.00,
+    8,
+    '{"Traditional coracle river crossing","Certified local history guide","Sunset chai & banana fritters","Heritage photo spots guidance"}',
+    'Good grip walking shoes for smooth granite boulders',
+    '{"English","Hindi","Kannada"}',
+    'https://images.unsplash.com/photo-1600100397608-f010f443b749?w=1200&q=80',
+    TRUE,
+    TRUE,
+    TRUE
+),
+(
+    'exp-12',
+    'host-32',
+    'dest-11',
+    'shimla',
+    'Shimla Deodar Forest Trail & Pahari Homestyle Kitchen',
+    '[SAMPLE] Escape the crowded Mall Road on a serene nature trail through ancient Himalayan deodars. Conclude at a local home to taste authentic Himachali Dham dishes including Madra and fresh warm Siddu.',
+    'Food Walk',
+    3.5,
+    1100.00,
+    6,
+    '{"Guided pine forest trail","Traditional home-cooked Pahari thali","Siddu making demonstration","Mountain herbal tea"}',
+    'Moderate uphill walking; comfortable sneakers recommended',
+    '{"English","Hindi"}',
+    'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=1200&q=80',
+    TRUE,
+    TRUE,
+    TRUE
+)
+ON CONFLICT (id) DO NOTHING;

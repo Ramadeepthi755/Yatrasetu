@@ -1,0 +1,1642 @@
+[
+  {
+    "id": "dest-1",
+    "destinationName": "Goa",
+    "stateId": "IN-GA",
+    "stateName": "Goa",
+    "cityId": "north-goa",
+    "cityName": "North Goa",
+    "district": "North Goa, South Goa",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fc/BeachFun.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-10",
+    "destinationName": "Mawlynnong & nearby (including Living Root Bridges region)",
+    "stateId": "IN-ML",
+    "stateName": "Meghalaya",
+    "cityId": "east-khasi-hills",
+    "cityName": "East Khasi Hills",
+    "district": "East Khasi Hills",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d9/Mawlynnong_-_Cleanest_village_of_Asia.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-100",
+    "destinationName": "Haridwar\u2013Rishikesh\u2013Char Dham Spiritual Trail (Meta\u2011Circuit Node)",
+    "stateId": "IN-UT",
+    "stateName": "Uttarakhand",
+    "cityId": "haridwar",
+    "cityName": "Haridwar",
+    "district": "Haridwar",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/6/68/Badrinath_Temple-_Uttarakhand.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-101",
+    "destinationName": "Hyderabad",
+    "stateId": "IN-TG",
+    "stateName": "Telangana",
+    "cityId": "hyderabad",
+    "cityName": "Hyderabad",
+    "district": "Hyderabad",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/71/Charminar_Hyderabad_1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-102",
+    "destinationName": "Warangal",
+    "stateId": "IN-TG",
+    "stateName": "Telangana",
+    "cityId": "warangal",
+    "cityName": "Warangal",
+    "district": "Hanamkonda",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/1000pillar_temple_warangal.jpg/3840px-1000pillar_temple_warangal.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-103",
+    "destinationName": "Delhi",
+    "stateId": "IN-DL",
+    "stateName": "Delhi",
+    "cityId": "delhi",
+    "cityName": "Delhi",
+    "district": "Central Delhi",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Delhi_fort.jpg/3840px-Delhi_fort.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-104",
+    "destinationName": "New Delhi",
+    "stateId": "IN-DL",
+    "stateName": "Delhi",
+    "cityId": "new-delhi",
+    "cityName": "New Delhi",
+    "district": "New Delhi",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5b/India_Gate_in_the_Evening.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-105",
+    "destinationName": "Bengaluru",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "cityId": "bangalore",
+    "cityName": "Bangalore",
+    "district": "Bengaluru Urban",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8f/Bangalore_Mysore_Maharaja_Palace.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-106",
+    "destinationName": "Mumbai",
+    "stateId": "IN-MH",
+    "stateName": "Maharashtra",
+    "cityId": "mumbai",
+    "cityName": "Mumbai",
+    "district": "Mumbai City",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3a/Mumbai_03-2016_30_Gateway_of_India.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-107",
+    "destinationName": "Kolkata",
+    "stateId": "IN-WB",
+    "stateName": "West Bengal",
+    "cityId": "kolkata",
+    "cityName": "Kolkata",
+    "district": "Kolkata",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Victoria_Memorial_situated_in_Kolkata.jpg/3840px-Victoria_Memorial_situated_in_Kolkata.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-108",
+    "destinationName": "Chennai",
+    "stateId": "IN-TN",
+    "stateName": "Tamil Nadu",
+    "cityId": "chennai",
+    "cityName": "Chennai",
+    "district": "Chennai",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/99/Kapaleeswarar1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-109",
+    "destinationName": "Chandigarh",
+    "stateId": "IN-CH",
+    "stateName": "Chandigarh",
+    "cityId": "chandigarh",
+    "cityName": "Chandigarh",
+    "district": "Chandigarh",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c2/Chandigarh_Rock_Garden_4.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-11",
+    "destinationName": "Shimla",
+    "stateId": "IN-HP",
+    "stateName": "Himachal Pradesh",
+    "cityId": "shimla",
+    "cityName": "Shimla",
+    "district": "Shimla",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/b/ba/Landscape_of_Shimla_%2C_Himachal_Pradesh.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-110",
+    "destinationName": "Ranchi",
+    "stateId": "IN-JH",
+    "stateName": "Jharkhand",
+    "cityId": "ranchi",
+    "cityName": "Ranchi",
+    "district": "Ranchi",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Hundru_Falls%2C_Jharkhand%2C_India_4.jpg/3840px-Hundru_Falls%2C_Jharkhand%2C_India_4.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-111",
+    "destinationName": "Jamshedpur",
+    "stateId": "IN-JH",
+    "stateName": "Jharkhand",
+    "cityId": "jamshedpur",
+    "cityName": "Jamshedpur",
+    "district": "East Singhbhum",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Jublie_Park_Night_on_March.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-112",
+    "destinationName": "Srinagar",
+    "stateId": "IN-JK",
+    "stateName": "Jammu & Kashmir",
+    "cityId": "srinagar",
+    "cityName": "Srinagar",
+    "district": "Srinagar",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Dal_Lake_Hazratbal_Srinagar.jpg/3840px-Dal_Lake_Hazratbal_Srinagar.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-113",
+    "destinationName": "Mysore (Mysuru)",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "cityId": "mysore",
+    "cityName": "Mysore",
+    "district": "Mysuru",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Mysore_Palace_Morning.jpg/3840px-Mysore_Palace_Morning.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-114",
+    "destinationName": "Coimbatore",
+    "stateId": "IN-TN",
+    "stateName": "Tamil Nadu",
+    "cityId": "coimbatore",
+    "cityName": "Coimbatore",
+    "district": "Coimbatore",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1e/Adiyogi_Shiva_steel_burst_2018.jpg"
+  },
+  {
+    "id": "dest-115",
+    "destinationName": "Guwahati",
+    "stateId": "IN-AS",
+    "stateName": "Assam",
+    "cityId": "guwahati",
+    "cityName": "Guwahati",
+    "district": "Kamrup Metropolitan",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Kamakhya_Temple_-_DEV_8829.jpg/3840px-Kamakhya_Temple_-_DEV_8829.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-116",
+    "destinationName": "Diu",
+    "stateId": "IN-DH",
+    "stateName": "Dadra and Nagar Haveli and Daman and Diu",
+    "cityId": "diu",
+    "cityName": "Diu",
+    "district": "Diu",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/1/17/Diu%2CGujarat%2CIndia_%2837%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-117",
+    "destinationName": "Daman",
+    "stateId": "IN-DH",
+    "stateName": "Dadra and Nagar Haveli and Daman and Diu",
+    "cityId": "daman",
+    "cityName": "Daman",
+    "district": "Daman",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/08/Jampore_Beach_%2878525%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-118",
+    "destinationName": "Silvassa",
+    "stateId": "IN-DH",
+    "stateName": "Dadra and Nagar Haveli and Daman and Diu",
+    "cityId": "silvassa",
+    "cityName": "Silvassa",
+    "district": "Dadra and Nagar Haveli",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Dadra_and_Nagar_Haveli_Silvassa_3.jpg/3840px-Dadra_and_Nagar_Haveli_Silvassa_3.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-119",
+    "destinationName": "Kurukshetra",
+    "stateId": "IN-HR",
+    "stateName": "Haryana",
+    "cityId": "kurukshetra",
+    "cityName": "Kurukshetra",
+    "district": "Kurukshetra",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Holy_pic_kkr.jpg/3840px-Holy_pic_kkr.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-12",
+    "destinationName": "Dharamshala & McLeod Ganj",
+    "stateId": "IN-HP",
+    "stateName": "Himachal Pradesh",
+    "cityId": "kangra",
+    "cityName": "Kangra",
+    "district": "Kangra",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/4/44/McLeod_Ganj_Dharamkot_Dharmsala_Himachal_Pradesh_India_April_2014.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-120",
+    "destinationName": "Pinjore & Yadavindra Gardens",
+    "stateId": "IN-HR",
+    "stateName": "Haryana",
+    "cityId": "pinjore",
+    "cityName": "Pinjore",
+    "district": "Panchkula",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/4/41/Pinjore_Garden_Panchkula.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-121",
+    "destinationName": "Morni Hills & Tikkar Taal",
+    "stateId": "IN-HR",
+    "stateName": "Haryana",
+    "cityId": "morni-hills",
+    "cityName": "Morni Hills",
+    "district": "Panchkula",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Mornihills.jpg/3840px-Mornihills.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-122",
+    "destinationName": "Sultanpur National Park",
+    "stateId": "IN-HR",
+    "stateName": "Haryana",
+    "cityId": "sultanpur-gurugram",
+    "cityName": "Sultanpur",
+    "district": "Gurugram",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/5/58/Sultanpur_Bird_Sanctuary%2C_Gurgaon.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-123",
+    "destinationName": "Loktak Lake & Keibul Lamjao",
+    "stateId": "IN-MN",
+    "stateName": "Manipur",
+    "cityId": "moirang",
+    "cityName": "Moirang",
+    "district": "Bishnupur",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e9/The_Loktak_Lake.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-124",
+    "destinationName": "Imphal & Kangla Fort",
+    "stateId": "IN-MN",
+    "stateName": "Manipur",
+    "cityId": "imphal",
+    "cityName": "Imphal",
+    "district": "Imphal West",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/03/The_sacred_idols_of_God_Pakhangba_and_his_divine_consort_kept_inside_the_Pakhangba_Temple_in_the_Kangla_Fort_in_Imphal.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-125",
+    "destinationName": "Moirang & INA War Memorial",
+    "stateId": "IN-MN",
+    "stateName": "Manipur",
+    "cityId": "moirang",
+    "cityName": "Moirang",
+    "district": "Bishnupur",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d2/INA_Memorial%2C_Moirang%2C_Manipur_%2812%29.jpeg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-126",
+    "destinationName": "Ukhrul & Shirui Kashong",
+    "stateId": "IN-MN",
+    "stateName": "Manipur",
+    "cityId": "ukhrul",
+    "cityName": "Ukhrul",
+    "district": "Ukhrul",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/5/50/Partial_View_of_North-Eastern_Ukhrul_Town_01.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-127",
+    "destinationName": "Aizawl & Durtlang Hills",
+    "stateId": "IN-MZ",
+    "stateName": "Mizoram",
+    "cityId": "aizawl",
+    "cityName": "Aizawl",
+    "district": "Aizawl",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Mizoram_Assembly_House_%28wider_view%29.jpg/3840px-Mizoram_Assembly_House_%28wider_view%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-128",
+    "destinationName": "Reiek Heritage Village",
+    "stateId": "IN-MZ",
+    "stateName": "Mizoram",
+    "cityId": "reiek",
+    "cityName": "Reiek",
+    "district": "Mamit",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Reiek.JPG/3840px-Reiek.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-129",
+    "destinationName": "Vantawng Falls & Thenzawl",
+    "stateId": "IN-MZ",
+    "stateName": "Mizoram",
+    "cityId": "thenzawl",
+    "cityName": "Thenzawl",
+    "district": "Serchhip",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Vantawng_Falls_in_1990s.jpg/3840px-Vantawng_Falls_in_1990s.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-13",
+    "destinationName": "Manali",
+    "stateId": "IN-HP",
+    "stateName": "Himachal Pradesh",
+    "cityId": "manali",
+    "cityName": "Manali",
+    "district": "Kullu",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/03/Manali_City.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-130",
+    "destinationName": "Champhai & Eastern Ridge",
+    "stateId": "IN-MZ",
+    "stateName": "Mizoram",
+    "cityId": "champhai",
+    "cityName": "Champhai",
+    "district": "Champhai",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e9/Champhai%2C_Mizoram%2C_from_south%2C_with_Zotlang_in_the_foreground.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-131",
+    "destinationName": "Kohima",
+    "stateId": "IN-NL",
+    "stateName": "Nagaland",
+    "cityId": "kohima",
+    "cityName": "Kohima",
+    "district": "Kohima",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/a/ae/Capital_Cultural_Hall.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-132",
+    "destinationName": "Kisama Heritage Village",
+    "stateId": "IN-NL",
+    "stateName": "Nagaland",
+    "cityId": "kisama",
+    "cityName": "Kisama",
+    "district": "Kohima",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Kisama_main_arena_Hornbill_Festival_2019.jpg/3840px-Kisama_main_arena_Hornbill_Festival_2019.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-133",
+    "destinationName": "Dz\u00fckou Valley",
+    "stateId": "IN-NL",
+    "stateName": "Nagaland",
+    "cityId": "viswema",
+    "cityName": "Viswema",
+    "district": "Kohima",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Breathtaking_beauty_of_Dzukou_Valley_in_Manipur-Nagaland_border_%28edit%29.jpg/3840px-Breathtaking_beauty_of_Dzukou_Valley_in_Manipur-Nagaland_border_%28edit%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-134",
+    "destinationName": "Khonoma",
+    "stateId": "IN-NL",
+    "stateName": "Nagaland",
+    "cityId": "khonoma",
+    "cityName": "Khonoma",
+    "district": "Kohima",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/View_of_Khonoma_%282024%29.jpg/3840px-View_of_Khonoma_%282024%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-135",
+    "destinationName": "Mokokchung",
+    "stateId": "IN-NL",
+    "stateName": "Nagaland",
+    "cityId": "mokokchung",
+    "cityName": "Mokokchung",
+    "district": "Mokokchung",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/2/2d/Mokokchung.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-136",
+    "destinationName": "Tirupati",
+    "stateId": "IN-AP",
+    "stateName": "Andhra Pradesh",
+    "cityId": "tirupati",
+    "cityName": "Tirupati",
+    "district": "Tirupati",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Tirumala_090615.jpg/3840px-Tirumala_090615.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-137",
+    "destinationName": "Visakhapatnam",
+    "stateId": "IN-AP",
+    "stateName": "Andhra Pradesh",
+    "cityId": "visakhapatnam",
+    "cityName": "Visakhapatnam",
+    "district": "Visakhapatnam",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7a/INS_Kursura_at_RK_Beach_Vizag.JPG"
+  },
+  {
+    "id": "dest-138",
+    "destinationName": "Gandikota & Belum Caves",
+    "stateId": "IN-AP",
+    "stateName": "Andhra Pradesh",
+    "cityId": "gandikota",
+    "cityName": "Gandikota",
+    "district": "YSR Kadapa",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a7/Indian_Grand_Canyon_Sudhakar_Bichali.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-139",
+    "destinationName": "Srisailam",
+    "stateId": "IN-AP",
+    "stateName": "Andhra Pradesh",
+    "cityId": "srisailam",
+    "cityName": "Srisailam",
+    "district": "Nandyal",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b0/Srisailam-temple-entrance.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-14",
+    "destinationName": "Tawang",
+    "stateId": "IN-AR",
+    "stateName": "Arunachal Pradesh",
+    "cityId": "tawang",
+    "cityName": "Tawang",
+    "district": "Tawang",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d9/The_buddist_monastry.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-140",
+    "destinationName": "Lepakshi",
+    "stateId": "IN-AP",
+    "stateName": "Andhra Pradesh",
+    "cityId": "lepakshi",
+    "cityName": "Lepakshi",
+    "district": "Sri Sathya Sai",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/b/bd/Veerabhadra_Temple_Tower.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-141",
+    "destinationName": "Vijayawada & Amaravati",
+    "stateId": "IN-AP",
+    "stateName": "Andhra Pradesh",
+    "cityId": "vijayawada",
+    "cityName": "Vijayawada",
+    "district": "NTR",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/b/ba/Kanakadurga_Temple_gopuram.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-142",
+    "destinationName": "Ramappa Temple & Palampet",
+    "stateId": "IN-TG",
+    "stateName": "Telangana",
+    "cityId": "palampet-mulugu",
+    "cityName": "Palampet (Mulugu)",
+    "district": "Mulugu",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Ramappa_Temple_%28Human_Scale%29.jpg/3840px-Ramappa_Temple_%28Human_Scale%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-143",
+    "destinationName": "Nagarjuna Sagar & Anupu",
+    "stateId": "IN-TG",
+    "stateName": "Telangana",
+    "cityId": "nagarjuna-sagar",
+    "cityName": "Nagarjuna Sagar",
+    "district": "Nalgonda",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c9/NagarjunaSagarDam.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-144",
+    "destinationName": "Bhadrachalam",
+    "stateId": "IN-TG",
+    "stateName": "Telangana",
+    "cityId": "bhadrachalam",
+    "cityName": "Bhadrachalam",
+    "district": "Bhadradri Kothagudem",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Sri_sita_rama_temple_bhadrachalam_temple_view.jpg/3840px-Sri_sita_rama_temple_bhadrachalam_temple_view.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-145",
+    "destinationName": "Madurai",
+    "stateId": "IN-TN",
+    "stateName": "Tamil Nadu",
+    "cityId": "madurai",
+    "cityName": "Madurai",
+    "district": "Madurai",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/An_aerial_view_of_Madurai_city_from_atop_of_Meenakshi_Amman_temple.jpg/3840px-An_aerial_view_of_Madurai_city_from_atop_of_Meenakshi_Amman_temple.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-146",
+    "destinationName": "Thanjavur",
+    "stateId": "IN-TN",
+    "stateName": "Tamil Nadu",
+    "cityId": "thanjavur",
+    "cityName": "Thanjavur",
+    "district": "Thanjavur",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Brihadisvara_Temple_during_Maha_Shivaratri-WUS03611_%28edit%29.jpg/3840px-Brihadisvara_Temple_during_Maha_Shivaratri-WUS03611_%28edit%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-147",
+    "destinationName": "Kodaikanal",
+    "stateId": "IN-TN",
+    "stateName": "Tamil Nadu",
+    "cityId": "kodaikanal",
+    "cityName": "Kodaikanal",
+    "district": "Dindigul",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c4/Kodaikanal_lake.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-148",
+    "destinationName": "Kanchipuram",
+    "stateId": "IN-TN",
+    "stateName": "Tamil Nadu",
+    "cityId": "kanchipuram",
+    "cityName": "Kanchipuram",
+    "district": "Kanchipuram",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Parameswara_Vinnagaram.JPG/3840px-Parameswara_Vinnagaram.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-149",
+    "destinationName": "Chettinad",
+    "stateId": "IN-TN",
+    "stateName": "Tamil Nadu",
+    "cityId": "chettinad-karaikudi",
+    "cityName": "Karaikudi (Chettinad)",
+    "district": "Sivaganga",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d0/The_Chettinad_palace_karaikudi_2013-09-07_00-11.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-15",
+    "destinationName": "Khajjiar",
+    "stateId": "IN-HP",
+    "stateName": "Himachal Pradesh",
+    "cityId": "chamba",
+    "cityName": "Chamba",
+    "district": "Chamba",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/b/bf/Nature_of_Khajjiar.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-150",
+    "destinationName": "Badami, Pattadakal & Aihole",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "cityId": "badami",
+    "cityName": "Badami",
+    "district": "Bagalkot",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Vishnu_image_inside_cave_number_3_in_Badami.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-151",
+    "destinationName": "Belur & Halebidu",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "cityId": "hassan",
+    "cityName": "Hassan (Belur-Halebidu)",
+    "district": "Hassan",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0d/Hoysaleshwara_temple_in_Monsoon.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-152",
+    "destinationName": "Jog Falls & Sharavathi Valley",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "cityId": "sagara-jogfalls",
+    "cityName": "Sagara (Jog Falls)",
+    "district": "Shivamogga",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Jog_Falls_05092016.jpg/3840px-Jog_Falls_05092016.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-153",
+    "destinationName": "Dandeli",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "cityId": "dandeli",
+    "cityName": "Dandeli",
+    "district": "Uttara Kannada",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/5/53/Dandeli_1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-154",
+    "destinationName": "Udupi & Coastal Circuit",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "cityId": "udupi",
+    "cityName": "Udupi",
+    "district": "Udupi",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7d/Udupi_Sri_Krishna_Matha_Temple.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-155",
+    "destinationName": "Fort Kochi & Mattancherry",
+    "stateId": "IN-KL",
+    "stateName": "Kerala",
+    "cityId": "kochi",
+    "cityName": "Kochi",
+    "district": "Ernakulam",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Kochi%2C_Fishing_nets_at_sunset%2C_Kerala%2C_India.jpg/3840px-Kochi%2C_Fishing_nets_at_sunset%2C_Kerala%2C_India.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-156",
+    "destinationName": "Thekkady & Periyar",
+    "stateId": "IN-KL",
+    "stateName": "Kerala",
+    "cityId": "thekkady",
+    "cityName": "Thekkady (Kumily)",
+    "district": "Idukki",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/6/66/Periyar_National_Park.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-157",
+    "destinationName": "Kovalam & South Coast",
+    "stateId": "IN-KL",
+    "stateName": "Kerala",
+    "cityId": "kovalam",
+    "cityName": "Kovalam",
+    "district": "Thiruvananthapuram",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Kovalam_beach_trivandrum_kerala.jpg/3840px-Kovalam_beach_trivandrum_kerala.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-158",
+    "destinationName": "Bekal & North Malabar",
+    "stateId": "IN-KL",
+    "stateName": "Kerala",
+    "cityId": "bekal",
+    "cityName": "Bekal",
+    "district": "Kasaragod",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d1/Bakel_Fort_Beach_Kasaragod7.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-159",
+    "destinationName": "Bhubaneswar",
+    "stateId": "IN-OD",
+    "stateName": "Odisha",
+    "cityId": "bhubaneswar",
+    "cityName": "Bhubaneswar",
+    "district": "Khordha",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5d/Lingaraj_Temple_%2C_Bhubaneswar.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-16",
+    "destinationName": "Spiti Valley",
+    "stateId": "IN-HP",
+    "stateName": "Himachal Pradesh",
+    "cityId": "lahaul-and-spiti",
+    "cityName": "Lahaul and Spiti",
+    "district": "Lahaul and Spiti",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Spiti_River_Kaza_Himachal_Jun18_D72_7232.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-160",
+    "destinationName": "Puri & Jagannath Dham",
+    "stateId": "IN-OD",
+    "stateName": "Odisha",
+    "cityId": "puri",
+    "cityName": "Puri",
+    "district": "Puri",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Shri_Jagannath_temple.jpg/3840px-Shri_Jagannath_temple.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-161",
+    "destinationName": "Konark Sun Temple & Coast",
+    "stateId": "IN-OD",
+    "stateName": "Odisha",
+    "cityId": "konark",
+    "cityName": "Konark",
+    "district": "Puri",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/4/47/Konarka_Temple.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-162",
+    "destinationName": "Chilika Lake & Ramsar Wetland",
+    "stateId": "IN-OD",
+    "stateName": "Odisha",
+    "cityId": "balugaon-chilika",
+    "cityName": "Balugaon (Chilika)",
+    "district": "Khordha",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/94/Birds_eyeview_of_Chilika_Lake.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-163",
+    "destinationName": "Sundarbans Mangrove Biosphere",
+    "stateId": "IN-WB",
+    "stateName": "West Bengal",
+    "cityId": "canning-sundarbans",
+    "cityName": "Canning (Sundarbans)",
+    "district": "South 24 Parganas",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/2/23/Sundarban_Tiger.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-164",
+    "destinationName": "Shantiniketan & Bolpur",
+    "stateId": "IN-WB",
+    "stateName": "West Bengal",
+    "cityId": "bolpur-shantiniketan",
+    "cityName": "Bolpur (Shantiniketan)",
+    "district": "Birbhum",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Shantiniketan_Bari_of_Rabindranath_Tagore.jpg/3840px-Shantiniketan_Bari_of_Rabindranath_Tagore.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-165",
+    "destinationName": "Kalimpong",
+    "stateId": "IN-WB",
+    "stateName": "West Bengal",
+    "cityId": "kalimpong",
+    "cityName": "Kalimpong",
+    "district": "Kalimpong",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/88/View_of_Kalimpong%2C_India.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-166",
+    "destinationName": "Nalanda & Rajgir",
+    "stateId": "IN-BR",
+    "stateName": "Bihar",
+    "cityId": "rajgir-nalanda",
+    "cityName": "Rajgir (Nalanda)",
+    "district": "Nalanda",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/dd/Temple_No.-_3%2C_Nalanda_Archaeological_Site.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-167",
+    "destinationName": "Patna & Pataliputra Heritage",
+    "stateId": "IN-BR",
+    "stateName": "Bihar",
+    "cityId": "patna",
+    "cityName": "Patna",
+    "district": "Patna",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/85/Ruins_of_Patliputra_at_Kumhrar.JPG"
+  },
+  {
+    "id": "dest-168",
+    "destinationName": "Deoghar & Baidyanath Dham",
+    "stateId": "IN-JH",
+    "stateName": "Jharkhand",
+    "cityId": "deoghar",
+    "cityName": "Deoghar",
+    "district": "Deoghar",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Baidyanath_temple_and_temple_complex%2C_Deoghar_04.jpg/3840px-Baidyanath_temple_and_temple_complex%2C_Deoghar_04.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-169",
+    "destinationName": "Netarhat & Chotanagpur Plateau",
+    "stateId": "IN-JH",
+    "stateName": "Jharkhand",
+    "cityId": "netarhat",
+    "cityName": "Netarhat",
+    "district": "Latehar",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Pine_trees_of_Netarhat_Hill_station.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-17",
+    "destinationName": "Nubra Valley",
+    "stateId": "IN-LA",
+    "stateName": "Ladakh",
+    "cityId": "leh",
+    "cityName": "Leh",
+    "district": "Leh",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/75/5_Nubra_valley.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-170",
+    "destinationName": "Jagdalpur & Kanger Valley",
+    "stateId": "IN-CG",
+    "stateName": "Chhattisgarh",
+    "cityId": "jagdalpur",
+    "cityName": "Jagdalpur",
+    "district": "Bastar",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/91/Chitrakot_waterfalls.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "id": "dest-171",
+    "destinationName": "Sirpur & Barnawapara",
+    "stateId": "IN-CG",
+    "stateName": "Chhattisgarh",
+    "cityId": "sirpur",
+    "cityName": "Sirpur",
+    "district": "Mahasamund",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/7th_-_9th_century_Surang_tila_mandapa_before_shrines%2C_Sirpur_monuments_Chhattisgarh.jpg/3840px-7th_-_9th_century_Surang_tila_mandapa_before_shrines%2C_Sirpur_monuments_Chhattisgarh.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "id": "dest-18",
+    "destinationName": "Pangong Lake (Pangong Tso)",
+    "stateId": "IN-LA",
+    "stateName": "Ladakh",
+    "cityId": "leh",
+    "cityName": "Leh",
+    "district": "Leh",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Pangong_Tso_%282308407563%29.jpg"
+  },
+  {
+    "id": "dest-19",
+    "destinationName": "Ooty (Udhagamandalam)",
+    "stateId": "IN-TN",
+    "stateName": "Tamil Nadu",
+    "cityId": "ooty",
+    "cityName": "Ooty",
+    "district": "Nilgiris",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/db/Ooty_lake.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-2",
+    "destinationName": "Ladakh (Leh)",
+    "stateId": "IN-LA",
+    "stateName": "Ladakh",
+    "cityId": "leh",
+    "cityName": "Leh",
+    "district": "Leh, Kargil",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Leh_City_seen_from_Shanti_Stupa.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-20",
+    "destinationName": "Munnar",
+    "stateId": "IN-KL",
+    "stateName": "Kerala",
+    "cityId": "munnar",
+    "cityName": "Munnar",
+    "district": "Idukki",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b9/Munnar_Overview.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-21",
+    "destinationName": "Kanyakumari",
+    "stateId": "IN-TN",
+    "stateName": "Tamil Nadu",
+    "cityId": "kanyakumari",
+    "cityName": "Kanyakumari",
+    "district": "Kanyakumari",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5b/Vivekananda_Rock_Memorial%2C_Kanyakumari.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-22",
+    "destinationName": "Rann of Kutch (White Desert, Dhordo)",
+    "stateId": "IN-GJ",
+    "stateName": "Gujarat",
+    "cityId": "kachchh",
+    "cityName": "Kachchh",
+    "district": "Kachchh",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b2/Rann_of_Kutch_-_White_Desert.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-23",
+    "destinationName": "Dhanushkodi (Ghost Town & Beach)",
+    "stateId": "IN-TN",
+    "stateName": "Tamil Nadu",
+    "cityId": "ramanathapuram",
+    "cityName": "Ramanathapuram",
+    "district": "Ramanathapuram",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/f/ff/Final_Dhanush_002.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-24",
+    "destinationName": "Chitrakote Falls",
+    "stateId": "IN-CG",
+    "stateName": "Chhattisgarh",
+    "cityId": "bastar",
+    "cityName": "Bastar",
+    "district": "Bastar",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/91/Chitrakot_waterfalls.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-25",
+    "destinationName": "Gokarna",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "cityId": "uttara-kannada",
+    "cityName": "Uttara Kannada",
+    "district": "Uttara Kannada",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/dd/Delight_india.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-26",
+    "destinationName": "Pondicherry (Puducherry)",
+    "stateId": "IN-PY",
+    "stateName": "Puducherry",
+    "cityId": "puducherry",
+    "cityName": "Puducherry",
+    "district": "Puducherry",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Pondicherry-Rock_beach_aerial_view.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-27",
+    "destinationName": "Hampi",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "cityId": "hampi",
+    "cityName": "Hampi",
+    "district": "Vijayanagara",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/dd/Wide_angle_of_Galigopuram_of_Virupaksha_Temple%2C_Hampi_%2804%29_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-28",
+    "destinationName": "Majuli Island",
+    "stateId": "IN-AS",
+    "stateName": "Assam",
+    "cityId": "majuli",
+    "cityName": "Majuli",
+    "district": "Majuli",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/c/cb/Doriya_River_of_Majuli.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-29",
+    "destinationName": "Araku Valley",
+    "stateId": "IN-AP",
+    "stateName": "Andhra Pradesh",
+    "cityId": "araku-valley",
+    "cityName": "Araku Valley",
+    "district": "Alluri Sitharama Raju",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b0/Araku-valley.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-3",
+    "destinationName": "Jaipur",
+    "stateId": "IN-RJ",
+    "stateName": "Rajasthan",
+    "cityId": "jaipur",
+    "cityName": "Jaipur",
+    "district": "Jaipur",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/4/41/East_facade_Hawa_Mahal_Jaipur_from_ground_level_%28July_2022%29_-_img_01.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-30",
+    "destinationName": "Varkala",
+    "stateId": "IN-KL",
+    "stateName": "Kerala",
+    "cityId": "thiruvananthapuram",
+    "cityName": "Thiruvananthapuram",
+    "district": "Thiruvananthapuram",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/4/49/Varkala_Beach%2C_Varkala%2C_Kerala.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-31",
+    "destinationName": "Havelock Island (Swaraj Dweep)",
+    "stateId": "IN-AN",
+    "stateName": "Andaman & Nicobar Islands",
+    "cityId": "south-andaman",
+    "cityName": "South Andaman",
+    "district": "South Andaman",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/6/63/Havelock%2C_Andaman_%26_Nicobar_Islands.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-32",
+    "destinationName": "Neil Island (Shaheed Dweep)",
+    "stateId": "IN-AN",
+    "stateName": "Andaman & Nicobar Islands",
+    "cityId": "south-andaman",
+    "cityName": "South Andaman",
+    "district": "South Andaman",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/e/ee/Keshet_neal_island_india.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-33",
+    "destinationName": "Shillong",
+    "stateId": "IN-ML",
+    "stateName": "Meghalaya",
+    "cityId": "east-khasi-hills",
+    "cityName": "East Khasi Hills",
+    "district": "East Khasi Hills",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/a/ac/Elephant_Falls_II%2C_Shillong.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-34",
+    "destinationName": "Cherrapunji & Mawsmai Area (Sohra region)",
+    "stateId": "IN-ML",
+    "stateName": "Meghalaya",
+    "cityId": "east-khasi-hills",
+    "cityName": "East Khasi Hills",
+    "district": "East Khasi Hills",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/f/ff/Cherrapunji.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-35",
+    "destinationName": "Dawki & Shnongpdeng",
+    "stateId": "IN-ML",
+    "stateName": "Meghalaya",
+    "cityId": "west-jaintia-hills",
+    "cityName": "West Jaintia Hills",
+    "district": "West Jaintia Hills",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Umngot_river%2C_Dawki.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-36",
+    "destinationName": "Krang Suri Falls",
+    "stateId": "IN-ML",
+    "stateName": "Meghalaya",
+    "cityId": "west-jaintia-hills",
+    "cityName": "West Jaintia Hills",
+    "district": "West Jaintia Hills",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3c/Krang_Suri_Waterfall_%282%29.jpg"
+  },
+  {
+    "id": "dest-37",
+    "destinationName": "Rishikesh",
+    "stateId": "IN-UT",
+    "stateName": "Uttarakhand",
+    "cityId": "rishikesh",
+    "cityName": "Rishikesh",
+    "district": "Dehradun",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/74/Trayambakeshwar_Temple_VK.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-38",
+    "destinationName": "Haridwar",
+    "stateId": "IN-UT",
+    "stateName": "Uttarakhand",
+    "cityId": "haridwar",
+    "cityName": "Haridwar",
+    "district": "Haridwar",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/00/Ganga_aarti_haridwar_01.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-4",
+    "destinationName": "Varanasi (Kashi)",
+    "stateId": "IN-UP",
+    "stateName": "Uttar Pradesh",
+    "cityId": "varanasi",
+    "cityName": "Varanasi",
+    "district": "Varanasi",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Varanasi%2C_India%2C_Ghats%2C_Cremation_ceremony_in_progress.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-40",
+    "destinationName": "Amritsar",
+    "stateId": "IN-PB",
+    "stateName": "Punjab",
+    "cityId": "amritsar",
+    "cityName": "Amritsar",
+    "district": "Amritsar",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Golden_Temple_Amritsar_Gurudwara_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-41",
+    "destinationName": "Kanatal",
+    "stateId": "IN-UT",
+    "stateName": "Uttarakhand",
+    "cityId": "tehri-garhwal",
+    "cityName": "Tehri Garhwal",
+    "district": "Tehri Garhwal",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/2/29/Kanatal.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-42",
+    "destinationName": "Binsar",
+    "stateId": "IN-UT",
+    "stateName": "Uttarakhand",
+    "cityId": "almora",
+    "cityName": "Almora",
+    "district": "Almora",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/83/Binsar_Mahadev_temple_old_structure.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-43",
+    "destinationName": "Munsiyari",
+    "stateId": "IN-UT",
+    "stateName": "Uttarakhand",
+    "cityId": "pithoragarh",
+    "cityName": "Pithoragarh",
+    "district": "Pithoragarh",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Panchchuli_range_viewed_from_Kausani.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-44",
+    "destinationName": "Chakrata",
+    "stateId": "IN-UT",
+    "stateName": "Uttarakhand",
+    "cityId": "dehradun",
+    "cityName": "Dehradun",
+    "district": "Dehradun",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/b/bd/Tiger_Falls_Uttarakhand_India.jpg"
+  },
+  {
+    "id": "dest-45",
+    "destinationName": "Kanha National Park",
+    "stateId": "IN-MP",
+    "stateName": "Madhya Pradesh",
+    "cityId": "mandla",
+    "cityName": "Mandla",
+    "district": "Mandla",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1f/Tiger_Kanha_National_Park.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-46",
+    "destinationName": "Ranthambore National Park",
+    "stateId": "IN-RJ",
+    "stateName": "Rajasthan",
+    "cityId": "sawai-madhopur",
+    "cityName": "Sawai Madhopur",
+    "district": "Sawai Madhopur",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7f/Ranthambore_National_Park.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-47",
+    "destinationName": "Bandhavgarh National Park",
+    "stateId": "IN-MP",
+    "stateName": "Madhya Pradesh",
+    "cityId": "umaria",
+    "cityName": "Umaria",
+    "district": "Umaria",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/86/Tigress_in_Bandhavgarh_NP.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-48",
+    "destinationName": "Tadoba Andhari Tiger Reserve",
+    "stateId": "IN-MH",
+    "stateName": "Maharashtra",
+    "cityId": "chandrapur",
+    "cityName": "Chandrapur",
+    "district": "Chandrapur",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/da/Panthera_tigris_tigris_Tidoba_20150306.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-49",
+    "destinationName": "Lakshadweep (Agatti\u2013Bangaram\u2013Kadmat circuit)",
+    "stateId": "IN-LD",
+    "stateName": "Lakshadweep",
+    "cityId": "agatti",
+    "cityName": "Agatti Island",
+    "district": "Lakshadweep",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/a/af/Agatti_Airstrip.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-5",
+    "destinationName": "Agra",
+    "stateId": "IN-UP",
+    "stateName": "Uttar Pradesh",
+    "cityId": "agra",
+    "cityName": "Agra",
+    "district": "Agra",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/6/68/Taj_Mahal%2C_Agra%2C_India.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-50",
+    "destinationName": "Kalpeni Island (Lakshadweep)",
+    "stateId": "IN-LD",
+    "stateName": "Lakshadweep",
+    "cityId": "kalpeni",
+    "cityName": "Kalpeni Island",
+    "district": "Lakshadweep",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/83/Koomal_beach_on_Kalpeni_island.jpg"
+  },
+  {
+    "id": "dest-51",
+    "destinationName": "Jaisalmer (Thar Desert & Fort Town)",
+    "stateId": "IN-RJ",
+    "stateName": "Rajasthan",
+    "cityId": "jaisalmer",
+    "cityName": "Jaisalmer",
+    "district": "Jaisalmer",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/4/46/Jaisalmer_Fort.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-52",
+    "destinationName": "Kutch Interior Circuit (Bhuj\u2013Mandvi\u2013Villages)",
+    "stateId": "IN-GJ",
+    "stateName": "Gujarat",
+    "cityId": "kachchh",
+    "cityName": "Kachchh",
+    "district": "Kachchh",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/83/Pragmahal_Bhuj_Kutch_Gujarat.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-54",
+    "destinationName": "Wayanad",
+    "stateId": "IN-KL",
+    "stateName": "Kerala",
+    "cityId": "wayanad",
+    "cityName": "Wayanad",
+    "district": "Wayanad",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e8/Blue%2C_Green_%26_White.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-55",
+    "destinationName": "Tamhini Ghat & Mulshi",
+    "stateId": "IN-MH",
+    "stateName": "Maharashtra",
+    "cityId": "pune",
+    "cityName": "Pune",
+    "district": "Pune",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/b/ba/I%E0%A4%A4%E0%A4%BE%E0%A4%AE%E0%A5%8D%E0%A4%B9%E0%A4%BF%E0%A4%A3%E0%A5%80_%E0%A4%98%E0%A4%BE%E0%A4%9F%28%E0%A4%AA%E0%A5%81%E0%A4%A3%E0%A5%87%29_%E0%A4%AF%E0%A5%87%E0%A4%A5%E0%A5%80%E0%A4%B2_%E0%A4%A7%E0%A4%AC%E0%A4%A7%E0%A4%AC%E0%A4%BE.jpg"
+  },
+  {
+    "id": "dest-56",
+    "destinationName": "Mahabaleshwar & Panchgani",
+    "stateId": "IN-MH",
+    "stateName": "Maharashtra",
+    "cityId": "satara",
+    "cityName": "Satara",
+    "district": "Satara",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/01/MAHABALESWAR_LANDSCAPE.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-57",
+    "destinationName": "Chikmagalur",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "cityId": "chikkamagaluru",
+    "cityName": "Chikkamagaluru",
+    "district": "Chikkamagaluru",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/db/Chikmagalur%2C_India._%287793316622%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-58",
+    "destinationName": "Amboli Ghat",
+    "stateId": "IN-MH",
+    "stateName": "Maharashtra",
+    "cityId": "sindhudurg",
+    "cityName": "Sindhudurg",
+    "district": "Sindhudurg",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/4/48/Amboli5.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-59",
+    "destinationName": "Agumbe & Western Ghats Rainforest Belt",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "cityId": "agumbe",
+    "cityName": "Agumbe",
+    "district": "Shivamogga",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Agumbe_View_point.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-6",
+    "destinationName": "Udaipur",
+    "stateId": "IN-RJ",
+    "stateName": "Rajasthan",
+    "cityId": "udaipur",
+    "cityName": "Udaipur",
+    "district": "Udaipur",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/6/6f/Evening_view%2C_City_Palace%2C_Udaipur.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-60",
+    "destinationName": "Kudremukh & Surrounding Ghats",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "cityId": "chikkamagaluru",
+    "cityName": "Chikkamagaluru",
+    "district": "Chikkamagaluru",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3c/Shola_Grasslands_and_forests_in_the_Kudremukh_National_Park%2C_Western_Ghats%2C_Karnataka.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-63",
+    "destinationName": "Port Blair & Nearby Islands",
+    "stateId": "IN-AN",
+    "stateName": "Andaman & Nicobar Islands",
+    "cityId": "south-andaman",
+    "cityName": "South Andaman",
+    "district": "South Andaman",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9b/View_from_South_Point%2C_%28Port_Blair%2C_India%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-64",
+    "destinationName": "Darjeeling",
+    "stateId": "IN-WB",
+    "stateName": "West Bengal",
+    "cityId": "darjeeling",
+    "cityName": "Darjeeling",
+    "district": "Darjeeling",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/96/DarjeelingTrainFruitshop_%282%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-65",
+    "destinationName": "Gangtok & East Sikkim",
+    "stateId": "IN-SK",
+    "stateName": "Sikkim",
+    "cityId": "east-sikkim",
+    "cityName": "East Sikkim",
+    "district": "East Sikkim",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0a/Kangch-Goechala.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-66",
+    "destinationName": "North Sikkim (Lachung\u2013Lachen Belt)",
+    "stateId": "IN-SK",
+    "stateName": "Sikkim",
+    "cityId": "north-sikkim",
+    "cityName": "North Sikkim",
+    "district": "North Sikkim",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f4/Lachung_Town.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-67",
+    "destinationName": "Meghalaya (Shillong\u2013Cherrapunji\u2013Mawlynnong circuit)",
+    "stateId": "IN-ML",
+    "stateName": "Meghalaya",
+    "cityId": "shillong",
+    "cityName": "Shillong",
+    "district": "East Khasi Hills",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/5/51/Living_root_bridges%2C_Nongriat_village%2C_Meghalaya2.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-68",
+    "destinationName": "Kaziranga National Park & Assam Tea Belt",
+    "stateId": "IN-AS",
+    "stateName": "Assam",
+    "cityId": "kaziranga",
+    "cityName": "Kaziranga",
+    "district": "Golaghat",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fe/Beauty_of_Kaziranga_National_Park.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-69",
+    "destinationName": "Khajuraho & Panna National Park",
+    "stateId": "IN-MP",
+    "stateName": "Madhya Pradesh",
+    "cityId": "khajuraho",
+    "cityName": "Khajuraho",
+    "district": "Chhatarpur",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e7/1_Khajuraho.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-7",
+    "destinationName": "Kerala Backwaters (Alappuzha & Kumarakom)",
+    "stateId": "IN-KL",
+    "stateName": "Kerala",
+    "cityId": "alappuzha",
+    "cityName": "Alappuzha",
+    "district": "Alappuzha, Kottayam",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e4/Alappuzha_Boat_Beauty_W.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-70",
+    "destinationName": "Orchha & Nearby Betwa Landscapes",
+    "stateId": "IN-MP",
+    "stateName": "Madhya Pradesh",
+    "cityId": "niwari",
+    "cityName": "Niwari",
+    "district": "Niwari",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/4/48/Chaturbhuj_Temple%2C_Orchha.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-72",
+    "destinationName": "Almora & Kasar Devi Belt",
+    "stateId": "IN-UT",
+    "stateName": "Uttarakhand",
+    "cityId": "almora",
+    "cityName": "Almora",
+    "district": "Almora",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/77/Almora_Uttarakhand_India_2013.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-75",
+    "destinationName": "Jibhi & Tirthan Valley",
+    "stateId": "IN-HP",
+    "stateName": "Himachal Pradesh",
+    "cityId": "kullu",
+    "cityName": "Kullu",
+    "district": "Kullu",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/dd/Himalayn_National_Park_01.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-76",
+    "destinationName": "Chitkul & Baspa Valley",
+    "stateId": "IN-HP",
+    "stateName": "Himachal Pradesh",
+    "cityId": "kinnaur",
+    "cityName": "Kinnaur",
+    "district": "Kinnaur",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/02/Temple_at_Chitkul.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-77",
+    "destinationName": "Miyar Valley",
+    "stateId": "IN-HP",
+    "stateName": "Himachal Pradesh",
+    "cityId": "keylong",
+    "cityName": "Keylong",
+    "district": "Lahaul and Spiti",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/6/69/Villages_Chenab_Udaipur_Lahaul_Himachal_Jul19_D72_10963.jpg"
+  },
+  {
+    "id": "dest-78",
+    "destinationName": "Keoladeo National Park (Bharatpur Bird Sanctuary)",
+    "stateId": "IN-RJ",
+    "stateName": "Rajasthan",
+    "cityId": "bharatpur",
+    "cityName": "Bharatpur",
+    "district": "Bharatpur",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Painted_stork_%28Golden_hour%29_at_Keoladeo_national_park_%28Jan%2C2023%29_01.jpg"
+  },
+  {
+    "id": "dest-79",
+    "destinationName": "Ranganathittu Bird Sanctuary",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "cityId": "mandya",
+    "cityName": "Mandya",
+    "district": "Mandya",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/75/Spot-billed_Pelican_Rising_Flight_Ranganathittu_Feb24_D72_26266.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-8",
+    "destinationName": "Coorg (Kodagu)",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "cityId": "madikeri",
+    "cityName": "Madikeri",
+    "district": "Kodagu",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/1/17/Tadiandamol_Valley%2C_Western_Ghats.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-80",
+    "destinationName": "Nal Sarovar Bird Sanctuary",
+    "stateId": "IN-GJ",
+    "stateName": "Gujarat",
+    "cityId": "ahmedabad",
+    "cityName": "Ahmedabad",
+    "district": "Ahmedabad",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c9/Nal_sarovar_birds_4.jpg"
+  },
+  {
+    "id": "dest-81",
+    "destinationName": "Great Rann of Kutch (White Desert)",
+    "stateId": "IN-GJ",
+    "stateName": "Gujarat",
+    "cityId": "kutch",
+    "cityName": "Kutch",
+    "district": "Kutch",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/4/46/%27WHITE_DESERT%27_at_Dhordo_in_Great_Rann_of_Kutch.JPG"
+  },
+  {
+    "id": "dest-82",
+    "destinationName": "Jaisalmer & Thar Desert Dunes",
+    "stateId": "IN-RJ",
+    "stateName": "Rajasthan",
+    "cityId": "jaisalmer",
+    "cityName": "Jaisalmer",
+    "district": "Jaisalmer",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Sam_sand_dunes_Jaisalmer.jpg"
+  },
+  {
+    "id": "dest-83",
+    "destinationName": "Maravanthe & Karnataka Offbeat Coast",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "cityId": "udupi",
+    "cityName": "Udupi",
+    "district": "Udupi",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/en/b/ba/Maravanthe_beach.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-84",
+    "destinationName": "Astaranga & Ramachandi Beaches (Odisha Quiet Coast)",
+    "stateId": "IN-OD",
+    "stateName": "Odisha",
+    "cityId": "puri",
+    "cityName": "Puri",
+    "district": "Puri",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Chandrabhaga_Beach_Odisha.jpg"
+  },
+  {
+    "id": "dest-85",
+    "destinationName": "Unakoti & North Tripura Heritage Belt",
+    "stateId": "IN-TR",
+    "stateName": "Tripura",
+    "cityId": "kailashahar",
+    "cityName": "Kailashahar",
+    "district": "Unakoti",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/90/Unakoti_Rock_Carvings_Tripura.jpg"
+  },
+  {
+    "id": "dest-86",
+    "destinationName": "Mamallapuram (Mahabalipuram) & Coromandel Heritage Coast",
+    "stateId": "IN-TN",
+    "stateName": "Tamil Nadu",
+    "cityId": "mahabalipuram",
+    "cityName": "Mahabalipuram",
+    "district": "Chengalpattu",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d7/A_collage_of_Mamallapuram_town_Tamil_Nadu_India.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-87",
+    "destinationName": "Hidden Goa Coves (Butterfly & Nearby Beaches)",
+    "stateId": "IN-GA",
+    "stateName": "Goa",
+    "cityId": "south-goa",
+    "cityName": "South Goa",
+    "district": "South Goa",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Palolem_Beach%2C_South_Goa.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-88",
+    "destinationName": "Bangaram & Kadmat Islands (Lakshadweep Quiet Beaches)",
+    "stateId": "IN-LD",
+    "stateName": "Lakshadweep",
+    "cityId": "bangaram",
+    "cityName": "Bangaram Island",
+    "district": "Lakshadweep",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/72/Kadmat_Island_Beach_Lakshadweep.jpg"
+  },
+  {
+    "id": "dest-89",
+    "destinationName": "Malanad\u2013Malabar Backwater & Rural Belt",
+    "stateId": "IN-KL",
+    "stateName": "Kerala",
+    "cityId": "kasaragod",
+    "cityName": "Kasaragod",
+    "district": "Kasaragod",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d1/Bakel_Fort_Beach_Kasaragod7.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-9",
+    "destinationName": "Ziro Valley",
+    "stateId": "IN-AR",
+    "stateName": "Arunachal Pradesh",
+    "cityId": "lower-subansiri",
+    "cityName": "Lower Subansiri",
+    "district": "Lower Subansiri",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1e/A_cross_section_of_luch_green_valley_of_Ziro.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-90",
+    "destinationName": "Krishna Heritage Circuit (Mathura\u2013Vrindavan\u2013Dwarka Focus)",
+    "stateId": "IN-UP",
+    "stateName": "Uttar Pradesh",
+    "cityId": "mathura",
+    "cityName": "Mathura",
+    "district": "Mathura",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Vishram_Ghat.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-91",
+    "destinationName": "Rishikesh & Haridwar (Himalayan Yoga Route)",
+    "stateId": "IN-UT",
+    "stateName": "Uttarakhand",
+    "cityId": "rishikesh",
+    "cityName": "Rishikesh",
+    "district": "Dehradun",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/08/Triveni_Ghat_Krishna_Arjun_Rath.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-92",
+    "destinationName": "Varanasi Ganga Ghats Pilgrimage",
+    "stateId": "IN-UP",
+    "stateName": "Uttar Pradesh",
+    "cityId": "varanasi",
+    "cityName": "Varanasi",
+    "district": "Varanasi",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/04/Ahilya_Ghat_by_the_Ganges%2C_Varanasi.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-93",
+    "destinationName": "Bodh Gaya Buddhist Circuit Hub",
+    "stateId": "IN-BR",
+    "stateName": "Bihar",
+    "cityId": "gaya",
+    "cityName": "Gaya",
+    "district": "Gaya",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/3/37/Mahabodhi_temple_at_Bodhgaya_in_Bihar_21.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-94",
+    "destinationName": "Rameswaram & Pamban Coast (Sacred Water Walk)",
+    "stateId": "IN-TN",
+    "stateName": "Tamil Nadu",
+    "cityId": "rameswaram",
+    "cityName": "Rameswaram",
+    "district": "Ramanathapuram",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d4/Pamban_Bridge_Train_Passing.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-95",
+    "destinationName": "Hampi & Pattadakal (UNESCO Vijayanagara\u2013Chalukya Circuit)",
+    "stateId": "IN-KA",
+    "stateName": "Karnataka",
+    "cityId": "hampi",
+    "cityName": "Hampi",
+    "district": "Vijayanagara & Bagalkot",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/03/Pattadakal_000.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-96",
+    "destinationName": "Gulmarg (Kashmir Ski & Snow Destination)",
+    "stateId": "IN-JK",
+    "stateName": "Jammu & Kashmir",
+    "cityId": "baramulla",
+    "cityName": "Baramulla",
+    "district": "Baramulla",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a9/Ancient_Temple%2C_Gulmarg.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-97",
+    "destinationName": "Auli (Garhwal Ski & Snow Resort)",
+    "stateId": "IN-UT",
+    "stateName": "Uttarakhand",
+    "cityId": "chamoli",
+    "cityName": "Chamoli",
+    "district": "Chamoli",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/83/Auli_Himalayas.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-98",
+    "destinationName": "Tiruvannamalai & Arunachala (Inner Fire Journey)",
+    "stateId": "IN-TN",
+    "stateName": "Tamil Nadu",
+    "cityId": "tiruvannamalai",
+    "cityName": "Tiruvannamalai",
+    "district": "Tiruvannamalai",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Tiruvannamalai_Montage.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  },
+  {
+    "id": "dest-99",
+    "destinationName": "Amarkantak Nature\u2013Spiritual Loop",
+    "stateId": "IN-MP",
+    "stateName": "Madhya Pradesh",
+    "cityId": "anuppur",
+    "cityName": "Anuppur",
+    "district": "Anuppur",
+    "heroImageUrl": "https://upload.wikimedia.org/wikipedia/commons/1/14/A_Hindu_temple%2C_Amarkantak_Madhya_Pradesh_India.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
+  }
+]
