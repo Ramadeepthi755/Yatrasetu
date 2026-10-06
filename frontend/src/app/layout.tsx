@@ -7,6 +7,7 @@ import AuthModal from '@/components/auth/AuthModal';
 import { AuthProvider } from '@/context/AuthContext';
 import { YatraSetuAIAssistant } from '@/components/ai/YatraSetuAIAssistant';
 import SplashWrapper from '@/components/SplashWrapper';
+import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
   title: 'YatraSetu | Discover India. Connect Locally. Grow Tourism.',
@@ -39,6 +40,7 @@ export default function RootLayout({
           <MobileNav />
           <YatraSetuAIAssistant />
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
