@@ -54,6 +54,24 @@ public class HotelController {
                 .build());
     }
 
+    @GetMapping("/nearby")
+    public ResponseEntity<ApiResponse<List<HotelDto>>> getHotelsNearby(
+            @RequestParam(name = "lat") double lat,
+            @RequestParam(name = "lng") double lng,
+            @RequestParam(name = "radiusKm", defaultValue = "30") double radiusKm,
+            @RequestParam(name = "limit", defaultValue = "6") int limit,
+            @RequestParam(name = "destinationId", required = false) String destinationId,
+            @RequestParam(name = "poiName", required = false) String poiName) {
+
+        List<HotelDto> nearby = hotelService.getHotelsNearLocation(lat, lng, radiusKm, limit, destinationId, poiName);
+        return ResponseEntity.ok(ApiResponse.<List<HotelDto>>builder()
+                .success(true)
+                .message("Retrieved nearby hotels successfully")
+                .data(nearby)
+                .timestamp(Instant.now())
+                .build());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<HotelDto>> getHotelById(@PathVariable("id") String id) {
         return hotelService.getHotelById(id)

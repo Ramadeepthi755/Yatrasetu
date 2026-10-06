@@ -53,6 +53,16 @@ public class HotelService {
         String cleanedCat = (category != null && !category.trim().isEmpty() && !category.equalsIgnoreCase("all")) ? category.trim() : null;
         String cleanedSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
 
+        if (cleanedCity != null && "vizag".equalsIgnoreCase(cleanedCity)) {
+            cleanedCity = "visakhapatnam";
+        }
+        if (cleanedDest != null && "vizag".equalsIgnoreCase(cleanedDest)) {
+            cleanedDest = "dest-137";
+        }
+        if (cleanedSearch != null && "vizag".equalsIgnoreCase(cleanedSearch)) {
+            cleanedSearch = "Visakhapatnam";
+        }
+
         String targetCityId = null;
         if (cleanedDest != null) {
             var destOpt = destinationRepository.findById(cleanedDest);
@@ -93,7 +103,8 @@ public class HotelService {
                 .map(this::toDto)
                 .collect(Collectors.toList()));
 
-        if (googlePlacesService.isConfigured() && destOpt.isPresent()) {
+        // Google Places fallback strictly if existing database hotels are insufficient
+        if (dtos.size() < 3 && googlePlacesService.isConfigured() && destOpt.isPresent()) {
             var dest = destOpt.get();
             if (dest.getLatitude() != null && dest.getLongitude() != null) {
                 List<HotelDto> places = googlePlacesService.searchNearbyHotels(
@@ -103,11 +114,89 @@ public class HotelService {
                         dest.getId(),
                         dest.getDestinationName()
                 );
-                dtos.addAll(places);
+                // Deduplicate against existing DB hotel names
+                Set<String> existingNames = dtos.stream()
+                        .map(d -> d.getHotelName() != null ? d.getHotelName().toLowerCase().trim() : "")
+                        .collect(Collectors.toSet());
+                for (HotelDto p : places) {
+                    if (p.getHotelName() != null && !existingNames.contains(p.getHotelName().toLowerCase().trim())) {
+                        dtos.add(p);
+                    }
+                }
             }
         }
 
         return dtos;
+    }
+
+    public static double calculateHaversineDistanceKm(double lat1, double lon1, double lat2, double lon2) {
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return 6371.0 * c;
+    }
+
+    @Transactional(readOnly = true)
+    public List<HotelDto> getHotelsNearLocation(
+            double lat,
+            double lng,
+            double maxDistanceKm,
+            int limit,
+            String destinationId,
+            String poiName) {
+
+        double searchRadius = maxDistanceKm > 0 ? maxDistanceKm : 30.0;
+        int maxLimit = limit > 0 ? limit : 10;
+
+        // 1. Search existing YatraSetu database first
+        List<Hotel> dbHotels = hotelRepository.findNearestHotels(lat, lng, searchRadius, maxLimit);
+        List<HotelDto> resultDtos = new ArrayList<>();
+
+        for (Hotel h : dbHotels) {
+            HotelDto dto = toDto(h);
+            if (h.getLatitude() != null && h.getLongitude() != null) {
+                double dist = calculateHaversineDistanceKm(lat, lng, h.getLatitude().doubleValue(), h.getLongitude().doubleValue());
+                dto.setDistanceKm(Math.round(dist * 10.0) / 10.0);
+                String suffix = (poiName != null && !poiName.isBlank()) ? " from " + poiName.trim() : "";
+                dto.setDistanceText(String.format(Locale.US, "%.1f km%s", dto.getDistanceKm(), suffix));
+            }
+            resultDtos.add(dto);
+        }
+
+        // 2. ONLY if database hotels are unavailable/empty and Google Places is configured, fetch external fallback discovery
+        if (resultDtos.isEmpty() && googlePlacesService.isConfigured()) {
+            String destName = null;
+            if (destinationId != null && !destinationId.isBlank()) {
+                destName = destinationRepository.findById(destinationId).map(Destination::getDestinationName).orElse(null);
+            }
+            List<HotelDto> externalPlaces = googlePlacesService.searchNearbyHotels(
+                    lat, lng, (int)(searchRadius * 1000), destinationId, destName
+            );
+
+            Set<String> existingNames = resultDtos.stream()
+                    .map(d -> d.getHotelName() != null ? d.getHotelName().toLowerCase().trim() : "")
+                    .collect(Collectors.toSet());
+
+            for (HotelDto ext : externalPlaces) {
+                if (resultDtos.size() >= maxLimit) break;
+                if (ext.getHotelName() != null && existingNames.contains(ext.getHotelName().toLowerCase().trim())) {
+                    continue;
+                }
+                if (ext.getLatitude() != null && ext.getLongitude() != null) {
+                    double dist = calculateHaversineDistanceKm(lat, lng, ext.getLatitude().doubleValue(), ext.getLongitude().doubleValue());
+                    if (dist > searchRadius) continue;
+                    ext.setDistanceKm(Math.round(dist * 10.0) / 10.0);
+                    String suffix = (poiName != null && !poiName.isBlank()) ? " from " + poiName.trim() : "";
+                    ext.setDistanceText(String.format(Locale.US, "%.1f km%s", ext.getDistanceKm(), suffix));
+                }
+                resultDtos.add(ext);
+            }
+        }
+
+        return resultDtos;
     }
 
 

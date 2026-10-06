@@ -1,13 +1,13 @@
-'use client';
-
-import React, { useState } from 'react';
-import { MapPin, ArrowRight, X, ExternalLink, Landmark, Mountain, Waves, Trees } from 'lucide-react';
-import { PoiItem, DestinationDetail } from '@/lib/api';
+import React, { useState, useEffect } from 'react';
+import { MapPin, ArrowRight, X, ExternalLink, Landmark, Mountain, Waves, Trees, Bed, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { PoiItem, DestinationDetail, HotelItem, getHotelsNearby } from '@/lib/api';
 import { resolveEntityImage } from '@/lib/imageResolver';
 
 interface MustVisitPlacesProps {
   destination: DestinationDetail;
   pois?: PoiItem[];
+  hotels?: HotelItem[];
 }
 
 interface PlaceCardData {
@@ -20,9 +20,73 @@ interface PlaceCardData {
   longitude?: number;
 }
 
-export function MustVisitPlaces({ destination, pois = [] }: MustVisitPlacesProps) {
+function calculateHaversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round((R * c) * 10) / 10;
+}
+
+export function MustVisitPlaces({ destination, pois = [], hotels = [] }: MustVisitPlacesProps) {
   const [showAllModal, setShowAllModal] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<PlaceCardData | null>(null);
+  const [nearbyHotels, setNearbyHotels] = useState<HotelItem[]>([]);
+  const [loadingNearby, setLoadingNearby] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!selectedPlace) {
+      setNearbyHotels([]);
+      return;
+    }
+
+    const lat = selectedPlace.latitude || destination.latitude;
+    const lng = selectedPlace.longitude || destination.longitude;
+
+    if (!lat || !lng) {
+      setNearbyHotels([]);
+      return;
+    }
+
+    // 1. First compute client-side from loaded destination hotels (zero N+1 API calls!)
+    if (hotels && hotels.length > 0) {
+      const matched: HotelItem[] = [];
+      for (const h of hotels) {
+        if (h.latitude && h.longitude) {
+          const dist = calculateHaversineDistance(lat, lng, h.latitude, h.longitude);
+          if (dist <= 50) {
+            matched.push({
+              ...h,
+              distanceKm: dist,
+              distanceText: `${dist} km from ${selectedPlace.name}`,
+            });
+          }
+        }
+      }
+      matched.sort((a, b) => (a.distanceKm || 0) - (b.distanceKm || 0));
+      if (matched.length > 0) {
+        setNearbyHotels(matched.slice(0, 3));
+        return;
+      }
+    }
+
+    // 2. Fallback on-demand API fetch ONLY if DB hotels were not available for this place
+    setLoadingNearby(true);
+    getHotelsNearby(lat, lng, 30, 3, destination.id, selectedPlace.name)
+      .then((res) => {
+        if (res.success && res.data) {
+          setNearbyHotels(res.data);
+        } else {
+          setNearbyHotels([]);
+        }
+      })
+      .catch(() => setNearbyHotels([]))
+      .finally(() => setLoadingNearby(false));
+  }, [selectedPlace, hotels, destination]);
 
   // Compile place items from POIs or primary attractions
   const placeItems: PlaceCardData[] = [];
@@ -182,10 +246,10 @@ export function MustVisitPlaces({ destination, pois = [] }: MustVisitPlacesProps
       {/* Place Details Modal */}
       {selectedPlace && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-lg rounded-3xl bg-white border border-stone-200 p-6 shadow-2xl space-y-4">
+          <div className="relative w-full max-w-lg rounded-3xl bg-white border border-stone-200 p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setSelectedPlace(null)}
-              className="absolute top-4 right-4 h-8 w-8 rounded-full bg-stone-100 text-stone-500 hover:text-stone-900 flex items-center justify-center cursor-pointer"
+              className="absolute top-4 right-4 h-8 w-8 rounded-full bg-stone-100 text-stone-500 hover:text-stone-900 flex items-center justify-center cursor-pointer z-10"
             >
               <X className="h-4 w-4" />
             </button>
@@ -205,6 +269,59 @@ export function MustVisitPlaces({ destination, pois = [] }: MustVisitPlacesProps
               <p className="text-xs text-stone-600 mt-2 leading-relaxed">
                 {selectedPlace.description}
               </p>
+            </div>
+
+            {/* Nearby Hotels Section */}
+            <div className="pt-3 border-t border-stone-100 space-y-2">
+              <h4 className="text-xs font-bold text-stone-900 flex items-center gap-1.5">
+                <Bed className="h-4 w-4 text-amber-600" />
+                <span>Nearby Hotels & Stays</span>
+              </h4>
+
+              {loadingNearby ? (
+                <div className="flex items-center gap-2 py-2 text-xs text-stone-400">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span>Finding nearby accommodations...</span>
+                </div>
+              ) : nearbyHotels.length > 0 ? (
+                <div className="space-y-2">
+                  {nearbyHotels.map((h) => (
+                    <div key={h.id} className="flex items-center justify-between p-2.5 rounded-xl bg-stone-50 border border-stone-200/70">
+                      <div className="pr-2">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <Link href={`/hotels/${h.id}`} className="text-xs font-bold text-stone-900 hover:text-indigo-900 line-clamp-1">
+                            {h.hotelName}
+                          </Link>
+                          {h.sourceType === 'GOOGLE_PLACES' ? (
+                            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">External Discovery</span>
+                          ) : h.isPartnerProperty ? (
+                            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-teal-50 text-teal-800">Verified</span>
+                          ) : null}
+                        </div>
+                        <p className="text-[11px] text-amber-800 font-semibold mt-0.5">
+                          📍 {h.distanceText || `${h.distanceKm || 'Near'} km from ${selectedPlace.name}`}
+                        </p>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        {h.pricePerNight ? (
+                          <span className="text-xs font-extrabold text-stone-900 block">₹{Number(h.pricePerNight).toLocaleString('en-IN')}<span className="text-[10px] font-normal text-stone-500">/night</span></span>
+                        ) : (
+                          <span className="text-[10px] text-stone-400 block">View rate</span>
+                        )}
+                        <Link
+                          href={`/hotels/${h.id}`}
+                          className="inline-block text-[10px] font-bold text-indigo-900 hover:underline mt-0.5"
+                        >
+                          View Stay &rarr;
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[11px] text-stone-400 italic">No catalog hotel listings recorded within 30 km.</p>
+              )}
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-stone-100">

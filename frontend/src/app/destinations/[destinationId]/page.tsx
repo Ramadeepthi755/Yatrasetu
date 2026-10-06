@@ -189,7 +189,7 @@ export default function DestinationDetailPage() {
       {/* SECTION 2 — MUST-VISIT (60%) + QUICK FACTS (40%) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         <div className="lg:col-span-7 flex flex-col">
-          <MustVisitPlaces destination={destination} pois={pois} />
+          <MustVisitPlaces destination={destination} pois={pois} hotels={hotels} />
         </div>
         <div className="lg:col-span-5 flex flex-col">
           <QuickFacts destination={destination} />

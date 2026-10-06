@@ -432,6 +432,8 @@ export interface HotelItem {
   address?: string;
   latitude?: number;
   longitude?: number;
+  distanceKm?: number;
+  distanceText?: string;
   isPartnerProperty?: boolean;
   inventoryType?: string;
   sourceType?: string;
@@ -1303,6 +1305,28 @@ export async function getDestinationPois(destinationId: string): Promise<ApiResp
 export async function getDestinationHotels(destinationId: string): Promise<ApiResponse<HotelItem[]>> {
   const res = await fetch(`${API_BASE_URL}/destinations/${encodeURIComponent(destinationId)}/hotels`, { next: { revalidate: 60 } });
   if (!res.ok) throw new Error(`Failed to fetch destination hotels: ${res.status}`);
+  return res.json();
+}
+
+export async function getHotelsNearby(
+  lat: number,
+  lng: number,
+  radiusKm = 30,
+  limit = 6,
+  destinationId?: string,
+  poiName?: string
+): Promise<ApiResponse<HotelItem[]>> {
+  const params = new URLSearchParams({
+    lat: lat.toString(),
+    lng: lng.toString(),
+    radiusKm: radiusKm.toString(),
+    limit: limit.toString(),
+  });
+  if (destinationId) params.append('destinationId', destinationId);
+  if (poiName) params.append('poiName', poiName);
+
+  const res = await fetch(`${API_BASE_URL}/hotels/nearby?${params.toString()}`, { next: { revalidate: 60 } });
+  if (!res.ok) throw new Error(`Failed to fetch nearby hotels: ${res.status}`);
   return res.json();
 }
 

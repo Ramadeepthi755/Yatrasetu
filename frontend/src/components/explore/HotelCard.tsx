@@ -68,9 +68,16 @@ export function HotelCard({ hotel }: HotelCardProps) {
                   </span>
                 )}
               </div>
-              <p className="text-xs text-stone-500 flex items-center mt-1">
-                <MapPin className="h-3.5 w-3.5 mr-1 text-stone-400" />
-                {hotel.cityName || hotel.address || 'India'}
+              <p className="text-xs text-stone-500 flex items-center mt-1 flex-wrap gap-x-2">
+                <span className="flex items-center">
+                  <MapPin className="h-3.5 w-3.5 mr-1 text-stone-400" />
+                  {hotel.cityName || hotel.address || 'India'}
+                </span>
+                {hotel.distanceText && (
+                  <span className="inline-flex items-center text-[11px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                    📍 {hotel.distanceText}
+                  </span>
+                )}
               </p>
             </div>
           </div>

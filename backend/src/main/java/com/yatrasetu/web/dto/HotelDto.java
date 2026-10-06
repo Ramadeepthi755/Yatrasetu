@@ -31,6 +31,8 @@ public class HotelDto {
     private String address;
     private BigDecimal latitude;
     private BigDecimal longitude;
+    private Double distanceKm;
+    private String distanceText;
     private Boolean isPartnerProperty;
     private String inventoryType;
     private String sourceType;
