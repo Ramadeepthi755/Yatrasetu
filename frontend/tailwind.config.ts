@@ -10,6 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        primary: '#312E81',
         indigo: {
           brand: '#312E81',
           50: '#EEF2FF',
