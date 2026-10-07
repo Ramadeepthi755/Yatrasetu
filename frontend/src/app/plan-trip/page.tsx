@@ -200,7 +200,7 @@ function PlanTripContent() {
                       onClick={() => setTotalDays(d)}
                       className={`flex-1 py-2 text-xs font-semibold rounded-xl border transition-all ${
                         totalDays === d
-                          ? 'bg-primary text-white border-primary shadow-xs'
+                          ? 'bg-[#312E81] text-white border-[#312E81] shadow-xs'
                           : 'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary'
                       }`}
                     >
@@ -224,7 +224,7 @@ function PlanTripContent() {
                       onClick={() => setTravelerCount(num)}
                       className={`flex-1 py-2 text-xs font-semibold rounded-xl border transition-all ${
                         travelerCount === num
-                          ? 'bg-primary text-white border-primary shadow-xs'
+                          ? 'bg-[#312E81] text-white border-[#312E81] shadow-xs'
                           : 'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary'
                       }`}
                     >
@@ -248,7 +248,7 @@ function PlanTripContent() {
                       onClick={() => setBudgetTier(tier)}
                       className={`py-2 text-xs font-semibold rounded-xl border transition-all ${
                         budgetTier === tier
-                          ? 'bg-primary text-white border-primary shadow-xs'
+                          ? 'bg-[#312E81] text-white border-[#312E81] shadow-xs'
                           : 'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary'
                       }`}
                     >
