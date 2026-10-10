@@ -305,19 +305,22 @@ YatraSetu is **not just a travel booking platform**. It connects the complete to
 
 ### 2. Backend Setup
 
+Open a terminal at the repository root, then:
+
     cd backend
 
-Configure the required environment variables:
+Configure the backend environment variables in your terminal or IDE run configuration. The names used by `application.yml` include:
 
-    DATABASE_URL
-    DATABASE_USERNAME
-    DATABASE_PASSWORD
-
+    SPRING_DATASOURCE_URL
+    SPRING_DATASOURCE_USERNAME
+    SPRING_DATASOURCE_PASSWORD
+    SUPABASE_JWT_SECRET
     GEMINI_API_KEY
-
     RAZORPAY_KEY_ID
     RAZORPAY_KEY_SECRET
-    RAZORPAY_WEBHOOK_SECRET
+    CORS_ALLOWED_ORIGINS
+
+For a local PostgreSQL/Supabase database, use your own connection details. Do not commit real credentials or API keys. The root `.env.example` is a reference template; Spring Boot does not automatically load a generic `.env` file by default, so provide these values through your shell, IDE, or an explicitly configured environment loader.
 
 Run backend tests:
 
@@ -329,39 +332,24 @@ Start the backend:
 
 ### 3. Frontend Setup
 
-Open another terminal:
+Open a second terminal from the repository root:
 
     cd frontend
+
+Create your local frontend environment file from the template:
+
+    cp .env.example .env.local
+
+Edit `.env.local` with your local API URL and Supabase public project values. Never put service-role keys or server-side secrets in variables prefixed with `NEXT_PUBLIC_`.
+
+Install dependencies and start the frontend:
+
     npm install
     npm run dev
 
 Open the application:
 
     http://localhost:3000
-
----
-
-## Testing
-
-### Backend Tests
-
-    cd backend
-    ./mvnw test
-
-### Frontend Lint
-
-    cd frontend
-    npm run lint
-
-### Frontend Production Build
-
-    npm run build
-
-### Flyway Validation
-
-    cd backend
-    ./mvnw flyway:validate
-    ./mvnw flyway:info
 
 ---
 
