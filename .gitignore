@@ -49,3 +49,11 @@ Thumbs.db
 credentials.json
 keystore.jks
 service-account*.json
+
+# Generated TypeScript and deployment artifacts
+*.tsbuildinfo
+.vercel/
+
+# Additional local environment variants (keep example templates tracked)
+.env.*
+!.env.example
