@@ -2,6 +2,9 @@
 
 ### Discover India. Connect Locally. Grow Tourism.
 
+> **Project status:** YatraSetu is currently developed and run locally. It has not been deployed publicly yet, so a live demo link is intentionally omitted.
+
+
 YatraSetu is an integrated tourism ecosystem connecting **Travelers, Local Partners, and Government Authorities** through one platform.
 
 ---
