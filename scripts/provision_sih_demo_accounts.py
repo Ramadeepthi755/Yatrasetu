@@ -8,17 +8,20 @@ import os
 import sys
 import psycopg2
 
-DB_URL = os.environ.get(
-    "SPRING_DATASOURCE_URL",
-    "postgresql://postgres:B3sUYPMVMKnQLmFK@db.ngbmkquftbcpvbchuhew.supabase.co:5432/postgres?sslmode=require"
-).replace("jdbc:postgresql://", "postgresql://")
+DB_URL = os.environ.get("SPRING_DATASOURCE_URL")
+if not DB_URL:
+    raise SystemExit(
+        "SPRING_DATASOURCE_URL must be set in the environment; "
+        "do not hardcode database credentials in this script."
+    )
+DB_URL = DB_URL.replace("jdbc:postgresql://", "postgresql://")
 
 ACCOUNTS = [
     {
         "role_type": "TRAVELER",
         "email": "tourist@yatrasetu.demo",
         "name": "SIH Demo Tourist",
-        "password": "Tourist@SIH2026",
+        "password_env": "YATRASETU_DEMO_TRAVELER_PASSWORD",
         "user_id": "usr-sih-tourist",
         "auth_id": "a0000000-0000-0000-0000-000000000001",
         "role": "TRAVELER",
@@ -28,7 +31,7 @@ ACCOUNTS = [
         "role_type": "GUIDE",
         "email": "ravi.guide@yatrasetu.demo",
         "name": "Ravi Kumar",
-        "password": "RaviGuide@SIH2026",
+        "password_env": "YATRASETU_DEMO_GUIDE_PASSWORD",
         "user_id": "usr-sih-guide-ravi",
         "auth_id": "a0000000-0000-0000-0000-000000000002",
         "role": "PARTNER",
@@ -39,7 +42,7 @@ ACCOUNTS = [
         "role_type": "CULTURE_HOST",
         "email": "lakshmi.host@yatrasetu.demo",
         "name": "Smt. Lakshmi Prasanna",
-        "password": "LakshmiHost@SIH2026",
+        "password_env": "YATRASETU_DEMO_CULTURE_HOST_PASSWORD",
         "user_id": "usr-sih-host-lakshmi",
         "auth_id": "a0000000-0000-0000-0000-000000000003",
         "role": "PARTNER",
@@ -50,7 +53,7 @@ ACCOUNTS = [
         "role_type": "HOTEL_PROVIDER",
         "email": "tirupati.hotel@yatrasetu.demo",
         "name": "Srinivasa Rao",
-        "password": "TirupatiHotel@SIH2026",
+        "password_env": "YATRASETU_DEMO_HOTEL_PASSWORD",
         "user_id": "usr-partner-hotel-tpt",
         "auth_id": "a0000000-0000-0000-0000-000000000004",
         "role": "PARTNER",
@@ -69,7 +72,12 @@ def provision():
     for acc in ACCOUNTS:
         email = acc["email"]
         name = acc["name"]
-        pwd = acc["password"]
+        password_env = acc["password_env"]
+        pwd = os.environ.get(password_env)
+        if not pwd:
+            raise RuntimeError(
+                f"Set {password_env} in the environment before provisioning demo accounts."
+            )
         user_id = acc["user_id"]
         auth_id = acc["auth_id"]
         role = acc["role"]
